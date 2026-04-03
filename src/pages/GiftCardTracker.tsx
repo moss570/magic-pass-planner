@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Bell, Mail, MessageSquare, Eye } from "lucide-react";
+import { Bell, Mail, MessageSquare, Info } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const deals = [
   {
@@ -56,6 +57,7 @@ const deals = [
 const savingsOptions = ["$10+", "$15+", "$20+", "$25+"];
 const cardValues = ["$100", "$200", "$300", "$400", "$500", "Any"];
 const retailerOptions = ["Sam's Club", "Target", "Costco", "BJ's", "Raise", "CardCash", "All"];
+const cashbackRates = ["1%", "2%", "3%", "5%", "6%", "Custom"];
 
 const historyRows = [
   { retailer: "Sam's Club", deal: "$500 for $485", savings: "$15", dates: "Mar 1 – Mar 15", status: "expired" },
@@ -74,6 +76,8 @@ const GiftCardTracker = () => {
   const [smsOn, setSmsOn] = useState(false);
   const [tripSpend, setTripSpend] = useState("6500");
   const [hasRedCard, setHasRedCard] = useState(false);
+  const [selectedCashback, setSelectedCashback] = useState("2%");
+  const [customCashback, setCustomCashback] = useState("");
 
   const toggleRetailer = (r: string) => {
     if (r === "All") { setSelectedRetailers(["All"]); return; }
@@ -84,10 +88,14 @@ const GiftCardTracker = () => {
   };
 
   const spend = parseFloat(tripSpend) || 6500;
+  const cashbackPct = selectedCashback === "Custom"
+    ? (parseFloat(customCashback) || 0) / 100
+    : parseFloat(selectedCashback) / 100;
   const samsSavings = (spend * 0.015).toFixed(2);
   const redCardSavings = hasRedCard ? (spend * 0.005).toFixed(2) : "0.00";
+  const ccSavings = (spend * cashbackPct).toFixed(2);
   const costcoSavings = "20.00";
-  const totalSavings = (parseFloat(samsSavings) + parseFloat(redCardSavings) + parseFloat(costcoSavings)).toFixed(2);
+  const totalSavings = (parseFloat(samsSavings) + parseFloat(redCardSavings) + parseFloat(costcoSavings) + parseFloat(ccSavings)).toFixed(2);
   const pct = ((parseFloat(totalSavings) / spend) * 100).toFixed(1);
 
   return (
@@ -231,29 +239,86 @@ const GiftCardTracker = () => {
             </div>
           </div>
 
+          {/* Credit Card Cashback */}
+          <div className="mb-5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+              💳 Credit Card Cashback
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs">
+                  Many credit cards earn cashback on gift card purchases. Check if your card treats gift cards as a regular retail purchase — most do.
+                </TooltipContent>
+              </Tooltip>
+            </label>
+            <p className="text-xs text-muted-foreground mb-3">What cashback rate does your credit card earn on gift card purchases?</p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {cashbackRates.map((rate) => (
+                <button
+                  key={rate}
+                  onClick={() => setSelectedCashback(rate)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${selectedCashback === rate ? "bg-primary text-primary-foreground border-primary" : "border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"}`}
+                >
+                  {rate}
+                </button>
+              ))}
+            </div>
+            {selectedCashback === "Custom" && (
+              <input
+                type="number"
+                placeholder="Enter your rate %"
+                value={customCashback}
+                onChange={(e) => setCustomCashback(e.target.value)}
+                className="w-40 bg-muted/30 border border-primary/10 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 mb-2"
+              />
+            )}
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Chase Freedom Flex: 5% rotating · Amex Blue Cash Preferred: 6% at supermarkets · Citi Double Cash: 2% everywhere · Discover it: 5% rotating
+            </p>
+          </div>
+
+          {/* Results */}
           <div className="rounded-xl bg-muted/20 border border-primary/10 p-5">
             <h3 className="text-sm font-bold text-foreground mb-4">Your Estimated Savings:</h3>
-            <div className="space-y-2 mb-4">
+            <div className="space-y-2 mb-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Sam's Club bulk purchase</span>
                 <span className="text-green-400 font-semibold">Save ${samsSavings}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Target RedCard 5% on remaining</span>
+                <span className="text-muted-foreground">Target RedCard 5% on purchase</span>
                 <span className="text-green-400 font-semibold">Save ${redCardSavings}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Credit card cashback ({selectedCashback === "Custom" ? `${customCashback || 0}%` : selectedCashback})</span>
+                <span className="text-green-400 font-semibold">Save ${ccSavings}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Stack Costco deal on dining spend</span>
                 <span className="text-green-400 font-semibold">Save ${costcoSavings}</span>
               </div>
             </div>
-            <div className="border-t border-primary/10 pt-4">
+            <div className="border-t border-primary/10 pt-3 mb-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold text-foreground">Total stack savings</span>
+                <span className="text-xl font-extrabold text-primary">${totalSavings}</span>
+              </div>
+            </div>
+            <div className="border-t border-primary/10 pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-bold text-foreground">Total Estimated Savings</span>
                 <span className="text-2xl font-extrabold text-primary">${totalSavings}</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">That's {pct}% back on your total trip spend — before you even arrive at the park</p>
+              <p className="text-xs text-muted-foreground mt-1">That's {pct}% back on your total trip spend — stacking gift card discounts + RedCard + credit card cashback</p>
             </div>
+          </div>
+
+          {/* Strategy callout */}
+          <div className="rounded-xl bg-card gold-border p-4 mt-4 border-l-4 border-l-primary">
+            <p className="text-sm text-foreground leading-relaxed">
+              🏆 <span className="font-semibold">Maximum Stack Strategy:</span> Buy $500 Sam's Club gift cards with your Amex Blue Cash at a supermarket (6% back) + Sam's Club discount ($15 off) + Target RedCard on remaining spend (5% back) = up to 8-11% total savings on your Disney spend.
+            </p>
           </div>
 
           <button className="w-full mt-4 py-3 rounded-xl border border-primary text-primary font-bold text-sm hover:bg-primary/10 transition-colors">

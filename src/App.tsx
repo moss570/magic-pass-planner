@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import TripPlanner from "./pages/TripPlanner";
 import DiningAlerts from "./pages/DiningAlerts";
 import GiftCardTracker from "./pages/GiftCardTracker";
+import LivePark from "./pages/LivePark";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/trip-planner" element={<TripPlanner />} />
           <Route path="/dining-alerts" element={<DiningAlerts />} />
           <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
+          <Route path="/live-park" element={<LivePark />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
