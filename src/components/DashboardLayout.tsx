@@ -109,10 +109,19 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
         </nav>
 
         <div className="px-3 lg:px-5 pb-6 space-y-3">
-          <div className="hidden lg:inline-flex items-center gap-1.5 bg-primary/15 text-primary text-xs font-semibold px-3 py-1.5 rounded-full">
-            <Castle className="w-3 h-3" />
-            Magic Pass Plan
-          </div>
+          {(() => {
+            const status = subscription?.status;
+            const label = !subscription ? "No Plan" : status === "trialing" ? "Free Trial" : (subscription.plan_name || "Magic Pass Plan");
+            const isActive = status === "active";
+            return (
+              <div className={`hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${
+                isActive ? "bg-primary/15 text-primary" : "bg-muted/30 text-muted-foreground"
+              }`}>
+                <Castle className="w-3 h-3" />
+                {label}
+              </div>
+            );
+          })()}
           <div className="hidden lg:block">
             <Link to="/pricing" className="block text-xs font-medium text-secondary hover:underline mb-1">Upgrade Plan</Link>
             <button onClick={handleLogout} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">

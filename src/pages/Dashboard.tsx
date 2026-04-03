@@ -35,6 +35,7 @@ const upcomingDates = [
 const Dashboard = () => {
   const { user } = useAuth();
   const [firstName, setFirstName] = useState("there");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     if (user) {
@@ -44,6 +45,16 @@ const Dashboard = () => {
         });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      toast.success("🎉 Welcome to Magic Pass Plus! Your 7-day free trial has started.", {
+        duration: 6000,
+        style: { background: "#F5C842", color: "#080E1E", border: "none", fontWeight: 600 },
+      });
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
