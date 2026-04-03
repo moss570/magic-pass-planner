@@ -184,6 +184,8 @@ const Pricing = () => {
           </div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };
