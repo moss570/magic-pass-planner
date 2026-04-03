@@ -111,7 +111,7 @@ const Dashboard = () => {
             <div className="rounded-xl bg-card gold-border p-4 md:p-5 border-l-4 border-l-primary">
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">💡 Clark's Recommendation</h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                Space Mountain wait times drop 40% between 1–3 PM while crowds eat lunch. Your itinerary has a rest break scheduled at 1 PM — consider pushing it 30 minutes earlier to hit Space Mountain at peak low-wait window before your break.
+                Space Mountain wait times drop 40% between 1–3 PM while crowds eat lunch. Your itinerary has a rest break scheduled at 1 PM — consider pushing it 30 minutes earlier to hit Space Mountain at peak low-wait window before heading back to the hotel.
               </p>
               <button className="inline-flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
                 Adjust My Trip

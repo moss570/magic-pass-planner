@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 import { Castle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,11 +7,9 @@ import { Label } from "@/components/ui/label";
 
 const Signup = () => {
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}
-    >
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
+      <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md">
         <div className="rounded-xl bg-card gold-border p-8">
           <div className="flex items-center justify-center gap-2 mb-8">
             <Castle className="w-7 h-7 text-primary" />
@@ -73,7 +72,9 @@ const Signup = () => {
             7-day free trial included. No credit card required.
           </p>
         </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };
