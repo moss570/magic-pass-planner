@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
@@ -35,7 +37,24 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      supabase.from("users_profile").select("first_name").eq("id", user.id).single()
+        .then(({ data }) => {
+          if (data?.first_name) setFirstName(data.first_name);
+        });
+    }
+  }, [user]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -49,10 +68,12 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
         </div>
 
         <div className="px-3 lg:px-5 pb-6 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold shrink-0">B</div>
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold shrink-0">
+            {firstName ? firstName[0].toUpperCase() : (user?.email?.[0]?.toUpperCase() ?? "?")}
+          </div>
           <div className="hidden lg:block">
             <p className="text-xs text-muted-foreground">Welcome back,</p>
-            <p className="text-sm font-semibold text-foreground">Brandon</p>
+            <p className="text-sm font-semibold text-foreground">{firstName || user?.email?.split("@")[0] || "User"}</p>
           </div>
         </div>
 
@@ -92,7 +113,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
           </div>
           <div className="hidden lg:block">
             <Link to="/pricing" className="block text-xs font-medium text-secondary hover:underline mb-1">Upgrade Plan</Link>
-            <button className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <button onClick={handleLogout} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               <LogOut className="w-3 h-3" />
               Log Out
             </button>

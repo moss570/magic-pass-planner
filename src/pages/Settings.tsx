@@ -1,26 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, ClipboardCopy } from "lucide-react";
+import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, ClipboardCopy, Loader2 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Settings = () => {
-  const [apTier, setApTier] = useState("incredi-pass");
-  const [homePark, setHomePark] = useState("magic-kingdom");
+  const { user } = useAuth();
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [homeZip, setHomeZip] = useState("");
+
+  const [apTier, setApTier] = useState("None");
+  const [apExpiration, setApExpiration] = useState("");
+  const [homePark, setHomePark] = useState("Magic Kingdom");
   const [diningPlan, setDiningPlan] = useState("none");
   const [disneyPlus, setDisneyPlus] = useState(false);
-  const [disneyVisa, setDisneyVisa] = useState(true);
-  const [quietHours, setQuietHours] = useState(true);
+  const [disneyVisa, setDisneyVisa] = useState(false);
 
+  const [quietHours, setQuietHours] = useState(true);
   const [alerts, setAlerts] = useState({
     dining: true, giftCard: true, hotelDrop: true, apHotel: true, apMerch: true, waitTime: true, rideClosure: true, rain: true,
   });
   const [delivery, setDelivery] = useState({
     push: true, email: true, sms: false, weekly: true,
   });
+
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingDisney, setSavingDisney] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("users_profile").select("*").eq("id", user.id).single()
+      .then(({ data, error }) => {
+        if (data) {
+          setFirstName(data.first_name || "");
+          setLastName(data.last_name || "");
+          setEmail(data.email || user.email || "");
+          setPhone(data.phone || "");
+          setHomeZip(data.home_zip || "");
+          setApTier(data.ap_pass_tier || "None");
+          setApExpiration(data.ap_expiration || "");
+          setHomePark(data.home_park || "Magic Kingdom");
+          setDisneyPlus(data.disney_plus || false);
+          setDisneyVisa(data.disney_visa || false);
+        }
+        setLoadingProfile(false);
+      });
+  }, [user]);
+
+  const handleSaveAccount = async () => {
+    if (!user) return;
+    setSavingAccount(true);
+    const { error } = await supabase.from("users_profile").upsert({
+      id: user.id,
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      phone,
+      home_zip: homeZip,
+    });
+    setSavingAccount(false);
+    if (error) {
+      toast.error("❌ Save failed — please try again");
+    } else {
+      toast.success("✅ Saved successfully");
+    }
+  };
+
+  const handleSaveDisney = async () => {
+    if (!user) return;
+    setSavingDisney(true);
+    const { error } = await supabase.from("users_profile").upsert({
+      id: user.id,
+      ap_pass_tier: apTier,
+      ap_expiration: apExpiration || null,
+      home_park: homePark,
+      disney_visa: disneyVisa,
+      disney_plus: disneyPlus,
+    });
+    setSavingDisney(false);
+    if (error) {
+      toast.error("❌ Save failed — please try again");
+    } else {
+      toast.success("✅ Saved successfully");
+    }
+  };
 
   return (
     <DashboardLayout title="⚙️ Settings" subtitle="Manage your account, subscription, and notification preferences">
@@ -33,32 +107,37 @@ const Settings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">First Name</label>
-              <Input defaultValue="Brandon" className="bg-background/50 border-primary/20 text-sm" />
+              <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Last Name</label>
-              <Input defaultValue="Moss" className="bg-background/50 border-primary/20 text-sm" />
+              <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
             </div>
           </div>
           <div>
             <label className="text-xs text-muted-foreground mb-1 block">Email Address</label>
-            <Input defaultValue="brandon@discountmikeblinds.net" className="bg-background/50 border-primary/20 text-sm" />
+            <Input value={email} onChange={(e) => setEmail(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Phone Number <span className="text-muted-foreground/60">— Used for SMS alerts</span></label>
-              <Input defaultValue="+1 (407) 555-0192" className="bg-background/50 border-primary/20 text-sm" />
+              <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Home Zip Code <span className="text-muted-foreground/60">— Used for local deal targeting</span></label>
-              <Input defaultValue="34711" className="bg-background/50 border-primary/20 text-sm" />
+              <Input value={homeZip} onChange={(e) => setHomeZip(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg font-bold shrink-0">B</div>
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg font-bold shrink-0">
+              {firstName ? firstName[0].toUpperCase() : "?"}
+            </div>
             <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Upload className="w-3.5 h-3.5 mr-1" /> Upload Photo</Button>
           </div>
-          <Button className="text-xs">Save Account Changes</Button>
+          <Button className="text-xs" onClick={handleSaveAccount} disabled={savingAccount}>
+            {savingAccount ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+            Save Account Changes
+          </Button>
           <p className="text-[10px] text-muted-foreground">Your information is encrypted and never sold.</p>
         </CardContent>
       </Card>
@@ -82,8 +161,6 @@ const Settings = () => {
             <Button className="text-xs">⬆️ Upgrade to AP+ Plan</Button>
             <Button variant="outline" className="text-xs border-muted text-muted-foreground hover:text-foreground">Manage Billing →</Button>
           </div>
-
-          {/* Mini plan comparison */}
           <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 overflow-x-auto max-w-full">
             <table className="w-full text-xs min-w-[400px]">
               <thead>
@@ -113,8 +190,6 @@ const Settings = () => {
               </tbody>
             </table>
           </div>
-
-          {/* Cancel */}
           <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
             <p className="text-sm font-semibold text-destructive">Cancel Subscription</p>
             <p className="text-xs text-muted-foreground">You can cancel anytime. You'll keep access until the end of your billing period.</p>
@@ -136,28 +211,28 @@ const Settings = () => {
               <Select value={apTier} onValueChange={setApTier}>
                 <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="pixie-dust">Pixie Dust Pass</SelectItem>
-                  <SelectItem value="pirate">Pirate Pass</SelectItem>
-                  <SelectItem value="sorcerer">Sorcerer Pass</SelectItem>
-                  <SelectItem value="incredi-pass">Incredi-Pass</SelectItem>
+                  <SelectItem value="None">None</SelectItem>
+                  <SelectItem value="Pixie Dust">Pixie Dust Pass</SelectItem>
+                  <SelectItem value="Pirate">Pirate Pass</SelectItem>
+                  <SelectItem value="Sorcerer">Sorcerer Pass</SelectItem>
+                  <SelectItem value="Incredi-Pass">Incredi-Pass</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Pass Expiration Date</label>
-              <Input type="date" defaultValue="2026-11-14" className="bg-background/50 border-primary/20 text-sm" />
+              <Input type="date" value={apExpiration} onChange={(e) => setApExpiration(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Home Park</label>
               <Select value={homePark} onValueChange={setHomePark}>
                 <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="magic-kingdom">Magic Kingdom</SelectItem>
-                  <SelectItem value="epcot">EPCOT</SelectItem>
-                  <SelectItem value="hollywood-studios">Hollywood Studios</SelectItem>
-                  <SelectItem value="animal-kingdom">Animal Kingdom</SelectItem>
-                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="Magic Kingdom">Magic Kingdom</SelectItem>
+                  <SelectItem value="EPCOT">EPCOT</SelectItem>
+                  <SelectItem value="Hollywood Studios">Hollywood Studios</SelectItem>
+                  <SelectItem value="Animal Kingdom">Animal Kingdom</SelectItem>
+                  <SelectItem value="Any">Any</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -184,7 +259,10 @@ const Settings = () => {
               {disneyVisa && <span className="text-[10px] bg-green-500/20 text-green-400 font-semibold px-2 py-0.5 rounded-full">Extra savings unlocked</span>}
             </div>
           </div>
-          <Button className="text-xs">Save Disney Profile</Button>
+          <Button className="text-xs" onClick={handleSaveDisney} disabled={savingDisney}>
+            {savingDisney ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+            Save Disney Profile
+          </Button>
         </CardContent>
       </Card>
 
@@ -196,7 +274,6 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Alert Types */}
             <div className="space-y-3">
               <p className="text-xs font-semibold text-primary uppercase tracking-wider">Alert Types</p>
               {([
@@ -215,7 +292,6 @@ const Settings = () => {
                 </div>
               ))}
             </div>
-            {/* Delivery Methods */}
             <div className="space-y-3">
               <p className="text-xs font-semibold text-primary uppercase tracking-wider">Delivery Methods</p>
               {([
@@ -233,7 +309,6 @@ const Settings = () => {
                 </div>
               ))}
             </div>
-            {/* Quiet Hours */}
             <div className="space-y-3">
               <p className="text-xs font-semibold text-primary uppercase tracking-wider">Quiet Hours</p>
               <div className="flex items-center justify-between">
@@ -267,7 +342,6 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Active trip */}
             <div className="rounded-xl border border-primary/25 bg-[#0D1230]/60 p-4 space-y-2">
               <p className="text-sm font-bold text-foreground">🏰 Moss Family — May 2026</p>
               <p className="text-xs text-muted-foreground">Magic Kingdom · May 20–23 · Party of 5</p>
@@ -280,7 +354,6 @@ const Settings = () => {
                 <Button size="sm" className="text-xs">View Itinerary →</Button>
               </div>
             </div>
-            {/* Past trip */}
             <div className="rounded-xl border border-primary/10 bg-[#0D1230]/30 p-4 space-y-2 opacity-80">
               <p className="text-sm font-bold text-foreground">🌍 EPCOT Food & Wine — Oct 2025</p>
               <p className="text-xs text-muted-foreground">EPCOT · Oct 14–16 · Party of 2</p>

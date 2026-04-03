@@ -1,11 +1,63 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
-import { Castle } from "lucide-react";
+import { Castle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
+    setLoading(true);
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    setLoading(false);
+
+    if (signUpError) {
+      setError(signUpError.message);
+      return;
+    }
+
+    if (data.session) {
+      navigate("/dashboard");
+    } else {
+      setSuccess("Check your email to confirm your account.");
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    });
+    if (error) {
+      setError(error.message);
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -21,13 +73,27 @@ const Signup = () => {
             Start your 7-day free trial today
           </p>
 
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          {error && (
+            <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 rounded-lg bg-green-500/10 border border-green-500/30 px-4 py-3 text-sm text-green-400">
+              {success}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSignup}>
             <div>
               <Label htmlFor="email" className="text-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground rounded-lg"
               />
             </div>
@@ -37,11 +103,18 @@ const Signup = () => {
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
                 className="mt-1 bg-muted border-border text-foreground placeholder:text-muted-foreground rounded-lg"
               />
             </div>
-            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg h-11">
-              Create Account
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg h-11"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Account"}
             </Button>
           </form>
 
@@ -56,9 +129,11 @@ const Signup = () => {
 
           <Button
             variant="outline"
+            disabled={googleLoading}
+            onClick={handleGoogleSignup}
             className="w-full border-border text-foreground hover:bg-muted rounded-lg h-11 font-medium"
           >
-            Continue with Google
+            {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Continue with Google"}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
