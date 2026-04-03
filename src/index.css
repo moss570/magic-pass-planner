@@ -82,4 +82,12 @@
     0%, 100% { opacity: 0; }
     50% { opacity: 1; }
   }
+  @keyframes pulse-subtle {
+    0%, 100% { box-shadow: 0 0 12px 2px hsla(44, 90%, 61%, 0.2); }
+    50% { box-shadow: 0 0 20px 4px hsla(44, 90%, 61%, 0.35); }
+  }
+
+  .animate-pulse-subtle {
+    animation: pulse-subtle 3s ease-in-out infinite;
+  }
 }
