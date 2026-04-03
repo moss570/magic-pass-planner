@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Castle, Info } from "lucide-react";
+import CompassButton from "@/components/CompassButton";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

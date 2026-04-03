@@ -370,6 +370,9 @@ const Friends = () => {
                   <Button size="sm" className="flex-1 text-xs h-8">✅ I'm Going!</Button>
                   <Button variant="outline" size="sm" className="flex-1 border-primary/30 text-primary hover:bg-primary/10 text-xs h-8">🔔 Remind Me</Button>
                 </div>
+                <div className="flex justify-center">
+                  <CompassButton destination={evt.title} context={`Magic Pass Community Event · ${evt.date.split("·")[0].trim()}`} />
+                </div>
                 <p className="text-[10px] text-muted-foreground text-center">Free with any Magic Pass subscription</p>
               </div>
             ))}
