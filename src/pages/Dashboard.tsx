@@ -3,15 +3,15 @@ import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 
 const sidebarNav = [
-  { icon: Home, label: "Dashboard", active: true },
-  { icon: Map, label: "Trip Planner" },
-  { icon: UtensilsCrossed, label: "Dining Alerts" },
-  { icon: Gift, label: "Gift Card Tracker" },
-  { icon: Zap, label: "Live Park Mode" },
-  { icon: Ticket, label: "AP Command Center" },
-  { icon: Users, label: "Group Coordinator" },
-  { icon: Wallet, label: "Budget Manager" },
-  { icon: Settings, label: "Settings" },
+  { icon: Home, label: "Dashboard", active: true, path: "/dashboard" },
+  { icon: Map, label: "Trip Planner", path: "/trip-planner" },
+  { icon: UtensilsCrossed, label: "Dining Alerts", path: "#" },
+  { icon: Gift, label: "Gift Card Tracker", path: "#" },
+  { icon: Zap, label: "Live Park Mode", path: "#" },
+  { icon: Ticket, label: "AP Command Center", path: "#" },
+  { icon: Users, label: "Group Coordinator", path: "#" },
+  { icon: Wallet, label: "Budget Manager", path: "#" },
+  { icon: Settings, label: "Settings", path: "#" },
 ];
 
 const itinerary = [
@@ -63,8 +63,9 @@ const Dashboard = () => {
         {/* Nav */}
         <nav className="flex-1 px-3 space-y-1">
           {sidebarNav.map((item) => (
-            <button
+            <Link
               key={item.label}
+              to={item.path}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 item.active
                   ? "text-primary border-l-2 border-primary bg-primary/5"
@@ -73,7 +74,7 @@ const Dashboard = () => {
             >
               <item.icon className="w-4 h-4 shrink-0" />
               <span>{item.label}</span>
-            </button>
+            </Link>
           ))}
         </nav>
 
