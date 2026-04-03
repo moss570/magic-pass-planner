@@ -134,6 +134,130 @@ const Friends = () => {
         </CardContent>
       </Card>
 
+      {/* AP MEETUP BEACON SECTION */}
+      <Card className="relative mb-6 bg-card/80 overflow-hidden" style={{ border: '2px solid transparent', backgroundClip: 'padding-box', boxShadow: '0 0 20px 2px rgba(147, 51, 234, 0.15)' }}>
+        {/* Purple gradient border overlay */}
+        <div className="absolute inset-0 rounded-lg pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(147,51,234,0.4), rgba(192,132,252,0.2), rgba(147,51,234,0.4))', mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)', maskComposite: 'exclude', WebkitMaskComposite: 'xor', padding: '2px', borderRadius: 'inherit' }} />
+        {/* AP Exclusive badge */}
+        <div className="absolute top-3 right-3 z-10">
+          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">AP Exclusive</span>
+        </div>
+
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-base md:text-lg">🏰 AP Meetup Beacon</CardTitle>
+          <CardDescription className="text-xs mt-1">Meet fellow Annual Passholders in the park — no personal info shared until you both choose to connect</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 md:p-6 pt-0 space-y-6">
+          {/* TOP: Start Beacon + Active Beacons */}
+          <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-5">
+            {/* Start a Meetup */}
+            <div className="rounded-xl bg-[#0D1230]/80 border border-primary/10 p-4 space-y-4">
+              <p className="text-sm font-bold text-foreground">START A MEETUP</p>
+
+              {/* Field 1: Park */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Which park are you in?</label>
+                <div className="flex flex-wrap gap-2">
+                  {beaconParks.map(p => (
+                    <button key={p} onClick={() => setBeaconPark(p)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${beaconPark === p ? "bg-primary text-primary-foreground" : "border border-primary/20 text-muted-foreground hover:text-foreground"}`}>{p}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field 2: Meeting Spot */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Meeting spot</label>
+                <select value={beaconSpot} onChange={e => setBeaconSpot(e.target.value)} className="w-full h-9 rounded-md border border-primary/10 bg-background/40 px-3 text-sm text-foreground">
+                  <option value="">Pick a well-known landmark...</option>
+                  {(meetingSpots[beaconPark] || []).map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Field 3: Duration */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">How long will you be there?</label>
+                <div className="flex flex-wrap gap-2">
+                  {beaconDurations.map(d => (
+                    <button key={d} onClick={() => setBeaconDuration(d)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${beaconDuration === d ? "bg-primary text-primary-foreground" : "border border-primary/20 text-muted-foreground hover:text-foreground"}`}>{d}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Field 4: Vibe note */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Vibe note (optional)</label>
+                <Input value={beaconVibe} onChange={e => { if (e.target.value.length <= 60) setBeaconVibe(e.target.value); }} placeholder="e.g. Solo AP, love coasters, happy to ride together 🎢" className="bg-background/40 border-primary/10 text-sm h-9" />
+                <p className="text-[10px] text-muted-foreground text-right mt-0.5">{beaconVibe.length}/60</p>
+              </div>
+
+              {/* Field 5: Group type */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">I am:</label>
+                <div className="flex flex-wrap gap-2">
+                  {beaconGroupTypes.map(g => (
+                    <button key={g} onClick={() => setBeaconGroup(g)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${beaconGroup === g ? "bg-primary text-primary-foreground" : "border border-primary/20 text-muted-foreground hover:text-foreground"}`}>{g}</button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground">🔒 Your name, photo, and contact info are never shared. Only your park, meeting spot, pass tier, and vibe note are visible to other AP users.</p>
+
+              <Button className="w-full text-xs">📡 Start My Beacon</Button>
+              <p className="text-[10px] text-muted-foreground text-center">Your beacon will automatically expire when your time limit ends. Cancel anytime.</p>
+            </div>
+
+            {/* Active Beacons */}
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-bold text-foreground">📡 Active Meetup Beacons — Magic Kingdom</p>
+                <p className="text-xs text-muted-foreground mt-0.5">3 Annual Passholders hosting meetups right now</p>
+              </div>
+              {activeBeacons.map((b, i) => (
+                <div key={i} className="rounded-xl border border-primary/10 bg-[#0D1230]/60 p-4 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full ${b.color} flex items-center justify-center`}>
+                      <Castle className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">{b.pass}</span>
+                    </div>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{b.spot}</p>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className="text-primary font-semibold">Expires in {b.expires}</span>
+                    <span className="text-muted-foreground">· {b.group}</span>
+                  </div>
+                  <p className="text-xs italic text-foreground/70">{b.vibe}</p>
+                  <div className="flex gap-2">
+                    <Button size="sm" className="text-xs h-7">👋 I'm Heading Over</Button>
+                    <button className="text-xs text-muted-foreground hover:text-foreground">❌ Not Interested</button>
+                  </div>
+                </div>
+              ))}
+              <p className="text-[10px] text-muted-foreground text-center">Beacons refresh every 60 seconds · Only AP Command Center members can see and create beacons</p>
+            </div>
+          </div>
+
+          {/* Post-Meetup Connect Prompt */}
+          <div className="rounded-xl border-2 border-primary p-4 space-y-2 animate-pulse-subtle" style={{ boxShadow: '0 0 12px 2px hsla(var(--primary) / 0.25)' }}>
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🤝</span>
+              <div>
+                <p className="text-sm font-bold text-foreground">Did you meet up with the Incredi-Pass holder near Space Mountain?</p>
+                <p className="text-xs text-muted-foreground">They marked the meetup as successful. Would you like to add them as a Magic Pass friend?</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 ml-11">
+              <Button size="sm" className="text-xs h-8">✅ Yes — Add as Friend</Button>
+              <button className="text-xs text-muted-foreground hover:text-foreground">No thanks</button>
+            </div>
+            <p className="text-[10px] text-muted-foreground ml-11">Adding as a friend lets you message, coordinate park days, and share dining alerts. You can remove friends anytime.</p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* SECTION 3: Messages + Coordinate */}
       <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-6 mb-6">
         {/* Messages */}
