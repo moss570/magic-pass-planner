@@ -66,6 +66,7 @@ const features = [
   { icon: Zap, emoji: "⚡", title: "Live Wait Time Alerts", desc: "Real-time push when rides drop to short waits — act in seconds" },
   { icon: Ticket, emoji: "🎟️", title: "Annual Passholder Hub", desc: "Blockout calendar, AP discounts, renewal alerts — all in one place" },
   { icon: Users, emoji: "👨‍👩‍👧", title: "Group Coordinator", desc: "Shared itinerary, split expenses, and group dining alerts" },
+  { icon: Users, emoji: "🏰", title: "AP Meetup Beacon", desc: "Meet fellow Annual Passholders in the park — no personal info shared until you both choose to connect" },
 ];
 
 const stats = [
