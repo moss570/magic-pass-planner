@@ -42,6 +42,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
   const { user, signOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
   const [firstName, setFirstName] = useState("");
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     if (user) {
