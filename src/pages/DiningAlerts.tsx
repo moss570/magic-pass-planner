@@ -7,12 +7,31 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const restaurants = [
-  "Be Our Guest", "Cinderella's Royal Table", "Space 220", "Topolino's Terrace", "'Ohana",
-  "Skipper Canteen", "Oga's Cantina", "Steakhouse 71", "The BOATHOUSE", "Jiko",
-  "Yachtsman Steakhouse", "Boma", "Sanaa", "Tiffins", "Sci-Fi Dine-In Theater",
-  "50's Prime Time Café", "Hollywood & Vine", "Coral Reef", "Le Cellier",
-  "Akershus Royal Banquet Hall", "Via Napoli", "Spice Road Table",
+  { name: "Be Our Guest", location: "Magic Kingdom" },
+  { name: "Cinderella's Royal Table", location: "Magic Kingdom" },
+  { name: "Skipper Canteen", location: "Magic Kingdom" },
+  { name: "Steakhouse 71", location: "Resorts" },
+  { name: "Space 220", location: "EPCOT" },
+  { name: "Coral Reef", location: "EPCOT" },
+  { name: "Le Cellier", location: "EPCOT" },
+  { name: "Akershus Royal Banquet Hall", location: "EPCOT" },
+  { name: "Via Napoli", location: "EPCOT" },
+  { name: "Spice Road Table", location: "EPCOT" },
+  { name: "Sci-Fi Dine-In Theater", location: "Hollywood Studios" },
+  { name: "50's Prime Time Café", location: "Hollywood Studios" },
+  { name: "Hollywood & Vine", location: "Hollywood Studios" },
+  { name: "Oga's Cantina", location: "Hollywood Studios" },
+  { name: "Tiffins", location: "Animal Kingdom" },
+  { name: "Yachtsman Steakhouse", location: "Resorts" },
+  { name: "Topolino's Terrace", location: "Resorts" },
+  { name: "'Ohana", location: "Resorts" },
+  { name: "Boma", location: "Resorts" },
+  { name: "Sanaa", location: "Resorts" },
+  { name: "Jiko", location: "Resorts" },
+  { name: "The BOATHOUSE", location: "Disney Springs" },
 ];
+
+const locationFilters = ["All", "Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Resorts", "Disney Springs", "Water Parks"];
 
 const mealTimes = ["Breakfast", "Lunch", "Dinner", "Any"];
 
