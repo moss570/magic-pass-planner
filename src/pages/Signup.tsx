@@ -72,6 +72,7 @@ const Signup = () => {
             7-day free trial included. No credit card required.
           </p>
         </div>
+        </div>
       </div>
       <Footer />
     </div>
