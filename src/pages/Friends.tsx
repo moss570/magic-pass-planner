@@ -553,7 +553,7 @@ const Friends = () => {
             <div className="space-y-3">
               <p className="text-xs font-semibold text-foreground">Share Invite Link</p>
               <div className="flex gap-2">
-                <Input value="magicpass.app/invite/brandon-moss-friends" readOnly className="bg-background/40 border-primary/10 text-xs h-9 flex-1" />
+                <Input value="magicpassplus.com/invite/brandon-moss-friends" readOnly className="bg-background/40 border-primary/10 text-xs h-9 flex-1" />
                 <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs h-9 shrink-0">
                   <Copy className="w-3 h-3 mr-1" /> Copy Link
                 </Button>

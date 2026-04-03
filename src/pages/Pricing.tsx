@@ -86,6 +86,16 @@ const Pricing = () => {
 
       <section className="pt-32 md:pt-40 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
+          {/* Founding Member Banner */}
+          <div className="mb-8 rounded-xl p-4 text-center" style={{ background: '#F5C842' }}>
+            <p className="text-base md:text-lg font-extrabold" style={{ color: '#080E1E' }}>
+              🏆 Founding Member Offer: Lock in Magic Pass annual for $59.99/yr — forever. First 500 subscribers only.
+            </p>
+            <p className="text-xs md:text-sm mt-1 font-medium" style={{ color: '#080E1E', opacity: 0.8 }}>
+              Regular price $89.99/yr · Save $30/year for life · Cancel anytime
+            </p>
+          </div>
+
           <h1 className="text-3xl md:text-5xl font-extrabold text-foreground text-center mb-4">
             Choose Your <span className="text-primary">Magic Plan</span>
           </h1>

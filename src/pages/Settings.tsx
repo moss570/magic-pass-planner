@@ -302,7 +302,7 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="flex flex-col sm:flex-row gap-2">
-            <Input readOnly value="magicpass.app/ref/brandon-moss-x7k2" className="bg-background/50 border-primary/20 text-sm flex-1 font-mono" />
+            <Input readOnly value="magicpassplus.com/ref/brandon-moss-x7k2" className="bg-background/50 border-primary/20 text-sm flex-1 font-mono" />
             <Button size="sm" className="text-xs shrink-0"><Copy className="w-3.5 h-3.5 mr-1" /> Copy Link</Button>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
