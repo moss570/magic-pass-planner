@@ -13,6 +13,8 @@ import DiningAlerts from "./pages/DiningAlerts";
 import GiftCardTracker from "./pages/GiftCardTracker";
 import LivePark from "./pages/LivePark";
 import APCommandCenter from "./pages/APCommandCenter";
+import GroupCoordinator from "./pages/GroupCoordinator";
+import BudgetManager from "./pages/BudgetManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
           <Route path="/live-park" element={<LivePark />} />
           <Route path="/ap-command-center" element={<APCommandCenter />} />
+          <Route path="/group-coordinator" element={<GroupCoordinator />} />
+          <Route path="/budget-manager" element={<BudgetManager />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

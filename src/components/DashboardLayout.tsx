@@ -10,8 +10,8 @@ const sidebarNav = [
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
-  { icon: Users, label: "Group Coordinator", path: "#" },
-  { icon: Wallet, label: "Budget Manager", path: "#" },
+  { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
+  { icon: Wallet, label: "Budget Manager", path: "/budget-manager" },
   { icon: Settings, label: "Settings", path: "#" },
 ];
 
