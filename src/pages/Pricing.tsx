@@ -100,17 +100,25 @@ const Pricing = () => {
     setLoadingTier(tierName);
     try {
       const priceId = annual ? priceIds.annual : priceIds.monthly;
+      console.log("Starting checkout for:", tierName, priceId);
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: { priceId, planName: tierName },
       });
 
-      if (error) throw error;
+      console.log("Checkout response:", data, error);
+      if (error) {
+        toast.error("Checkout failed: " + (error.message || "Unknown error"));
+        throw error;
+      }
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        toast.error("No checkout URL returned. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Checkout error:", err);
+      toast.error(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoadingTier(null);
     }
