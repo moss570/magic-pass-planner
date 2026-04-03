@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar, Castle, RefreshCw } from "lucide-react";
+import CompassButton from "@/components/CompassButton";
 
 const beaconParks = ["MK", "EPCOT", "HS", "AK", "Typhoon Lagoon", "Blizzard Beach"];
 const beaconDurations = ["30 min", "1 hour", "2 hours", "Until park close"];
