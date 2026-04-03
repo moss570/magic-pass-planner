@@ -33,6 +33,7 @@ const App = () => (
           <Route path="/dining-alerts" element={<DiningAlerts />} />
           <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
           <Route path="/live-park" element={<LivePark />} />
+          <Route path="/ap-command-center" element={<APCommandCenter />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
