@@ -12,6 +12,7 @@ import TripPlanner from "./pages/TripPlanner";
 import DiningAlerts from "./pages/DiningAlerts";
 import GiftCardTracker from "./pages/GiftCardTracker";
 import LivePark from "./pages/LivePark";
+import APCommandCenter from "./pages/APCommandCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dining-alerts" element={<DiningAlerts />} />
           <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
           <Route path="/live-park" element={<LivePark />} />
+          <Route path="/ap-command-center" element={<APCommandCenter />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

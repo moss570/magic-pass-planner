@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import CompassModal from "@/components/CompassModal";
 
 const rides = [
   { name: "Tron Lightcycle Run", wait: 8, land: "Tomorrowland", ll: true, trend: "↓ dropping", closed: false },
@@ -39,8 +40,24 @@ const fireworksRides = [
   { ride: "Pirates of the Caribbean", wait: 10, duration: 9, lineBy: "8:41 PM", status: "🟢 Good View", statusColor: "text-green-400" },
 ];
 
+const compassDestinations: Record<string, { destination: string; land: string; walkTime: string; distance: string; directions: string[] }> = {
+  "Head There Now →": { destination: "Space Mountain", land: "Tomorrowland", walkTime: "4 min", distance: "0.2 miles", directions: ["Head down Main Street toward the castle", "Turn right at the hub toward Tomorrowland", "Space Mountain is on your right"] },
+  "Navigate →": { destination: "Pirates of the Caribbean", land: "Adventureland", walkTime: "6 min", distance: "0.3 miles", directions: ["Walk toward the hub from your current location", "Take the path to Adventureland on your left", "Pirates entrance is past the bridge on your right"] },
+  "View Spot →": { destination: "Cinderella Castle Fountain", land: "Main Street U.S.A.", walkTime: "2 min", distance: "0.1 miles", directions: ["Walk toward Cinderella Castle", "The fountain and PhotoPass photographer are on the right side", "Look for the camera setup near the garden"] },
+};
+
 const LivePark = () => {
   const [rideFilter, setRideFilter] = useState("All Rides");
+  const [compassOpen, setCompassOpen] = useState(false);
+  const [compassTarget, setCompassTarget] = useState(compassDestinations["Navigate →"]);
+
+  const openCompass = (action: string) => {
+    const target = compassDestinations[action];
+    if (target) {
+      setCompassTarget(target);
+      setCompassOpen(true);
+    }
+  };
 
   const filteredRides = rides.filter((r) => {
     if (rideFilter === "Under 15 min") return !r.closed && r.wait <= 15;
@@ -52,6 +69,7 @@ const LivePark = () => {
 
   return (
     <DashboardLayout title="⚡ Live Park Mode" subtitle="Real-time intelligence for every minute you're in the park">
+      <CompassModal open={compassOpen} onClose={() => setCompassOpen(false)} {...compassTarget} />
       <div className="space-y-6">
         {/* Status bar */}
         <div className="rounded-xl bg-card gold-border p-4 border-l-4 border-l-green-500 flex flex-wrap items-center justify-between gap-4">
@@ -174,7 +192,7 @@ const LivePark = () => {
                     </div>
                   </div>
                   {a.action && (
-                    <button className="mt-2 px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
+                    <button onClick={() => openCompass(a.action!)} className="mt-2 px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
                       {a.action}
                     </button>
                   )}
