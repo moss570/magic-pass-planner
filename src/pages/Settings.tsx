@@ -39,6 +39,7 @@ const Settings = () => {
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingDisney, setSavingDisney] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     if (!user) return;
