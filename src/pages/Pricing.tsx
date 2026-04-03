@@ -6,8 +6,25 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { PRICE_IDS } from "@/lib/stripe";
+
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
+const invokeCheckout = async (accessToken: string, body: { priceId: string; planName: string }) => {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+      "apikey": SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Checkout failed");
+  return data;
+};
 
 const tiers = [
   {
@@ -101,16 +118,9 @@ const Pricing = () => {
     try {
       const priceId = annual ? priceIds.annual : priceIds.monthly;
       console.log("Starting checkout for:", tierName, priceId);
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId, planName: tierName },
-      });
+      const data = await invokeCheckout(session.access_token, { priceId, planName: tierName });
 
-      console.log("Checkout response:", data, error);
-      if (error) {
-        toast.error("Checkout failed: " + (error.message || "Unknown error"));
-        throw error;
-      }
+      console.log("Checkout response:", data);
       if (data?.url) {
         window.location.href = data.url;
       } else {
@@ -132,15 +142,11 @@ const Pricing = () => {
 
     setLoadingTier("founder");
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId: PRICE_IDS["Magic Pass"].annual, planName: "Magic Pass" },
+      const data = await invokeCheckout(session.access_token, {
+        priceId: PRICE_IDS["Magic Pass"].annual,
+        planName: "Magic Pass",
       });
 
-      if (error) {
-        toast.error("Checkout failed: " + (error.message || "Unknown error"));
-        throw error;
-      }
       if (data?.url) {
         window.location.href = data.url;
       } else {
