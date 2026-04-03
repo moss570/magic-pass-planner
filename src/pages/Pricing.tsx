@@ -118,16 +118,9 @@ const Pricing = () => {
     try {
       const priceId = annual ? priceIds.annual : priceIds.monthly;
       console.log("Starting checkout for:", tierName, priceId);
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId, planName: tierName },
-      });
+      const data = await invokeCheckout(session.access_token, { priceId, planName: tierName });
 
-      console.log("Checkout response:", data, error);
-      if (error) {
-        toast.error("Checkout failed: " + (error.message || "Unknown error"));
-        throw error;
-      }
+      console.log("Checkout response:", data);
       if (data?.url) {
         window.location.href = data.url;
       } else {
