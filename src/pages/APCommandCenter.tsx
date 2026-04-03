@@ -172,7 +172,12 @@ const APCommandCenter = () => {
                 <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${d.badgeColor} mb-2 inline-block`}>{d.badge}</span>
                 <h3 className="text-sm font-bold text-foreground mb-1">{d.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{d.detail}</p>
-                <button className="text-xs font-semibold text-primary hover:underline">{d.btn}</button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button className="text-xs font-semibold text-primary hover:underline">{d.btn}</button>
+                  {d.cat === "Dining" && (
+                    <CompassButton destination={d.title} context={`${d.cat} Discount · Walt Disney World`} />
+                  )}
+                </div>
               </div>
             ))}
           </div>
