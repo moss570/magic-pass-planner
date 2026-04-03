@@ -191,7 +191,7 @@ const LivePark = () => {
                     </div>
                   </div>
                   {a.action && (
-                    <button className="mt-2 px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
+                    <button onClick={() => openCompass(a.action!)} className="mt-2 px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
                       {a.action}
                     </button>
                   )}
