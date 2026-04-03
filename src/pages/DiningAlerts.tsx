@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import CompassButton from "@/components/CompassButton";
 
 const restaurants = [
   { name: "Be Our Guest", location: "Magic Kingdom" },
@@ -34,6 +35,13 @@ const restaurants = [
 const locationFilters = ["All", "Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Resorts", "Disney Springs", "Water Parks"];
 
 const mealTimes = ["Breakfast", "Lunch", "Dinner", "Any"];
+
+const restaurantContexts: Record<string, string> = {
+  "Be Our Guest": "Fantasyland · Magic Kingdom",
+  "Cinderella's Royal Table": "Fantasyland · Magic Kingdom",
+  "Space 220": "Future World · EPCOT",
+  "Skipper Canteen": "Adventureland · Magic Kingdom",
+};
 
 const activeAlerts = [
   { restaurant: "Be Our Guest", date: "May 20, 2026", party: 4, meal: "Dinner", status: "watching", checks: "847", lastChecked: "12 seconds ago", channels: ["push", "email"] },
@@ -242,7 +250,13 @@ const DiningAlerts = () => {
                 </button>
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-bold text-foreground">{alert.restaurant}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold text-foreground">{alert.restaurant}</h3>
+                      <CompassButton
+                        destination={alert.restaurant}
+                        context={restaurantContexts[alert.restaurant] || alert.restaurant}
+                      />
+                    </div>
                     <p className="text-sm text-muted-foreground mt-1">{alert.date} · Party of {alert.party} · {alert.meal}</p>
                     <p className="text-xs text-muted-foreground mt-2">
                       {alert.checks && <>Checked {alert.checks} times · </>}{alert.lastChecked}
@@ -256,11 +270,18 @@ const DiningAlerts = () => {
                   <div className="shrink-0">{statusBadge(alert.status)}</div>
                 </div>
                 {alert.status === "available" && (
-                  <div className="mt-4">
+                  <div className="mt-4 space-y-2">
                     <button className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
                       🍽️ Book This Reservation →
                     </button>
-                    <p className="text-center text-[11px] text-muted-foreground mt-2">Opens Disney dining page directly · Availability may close in seconds</p>
+                    <div className="flex justify-center">
+                      <CompassButton
+                        destination={alert.restaurant}
+                        context={restaurantContexts[alert.restaurant] || alert.restaurant}
+                        size="card"
+                      />
+                    </div>
+                    <p className="text-center text-[11px] text-muted-foreground">Opens Disney dining page directly · Availability may close in seconds</p>
                   </div>
                 )}
               </div>

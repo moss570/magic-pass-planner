@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassModal from "@/components/CompassModal";
+import CompassButton from "@/components/CompassButton";
 
 const rides = [
   { name: "Tron Lightcycle Run", wait: 8, land: "Tomorrowland", ll: true, trend: "↓ dropping", closed: false },
@@ -24,26 +25,32 @@ const waitColor = (w: number, closed: boolean) => {
 const filters = ["All Rides", "Under 15 min", "Under 30 min", "Lightning Lane", "Closed"];
 
 const alerts = [
-  { icon: "🟢", text: "Space Mountain just dropped to 22 min — was 52 min 8 min ago", time: "2 min ago", action: "Head There Now →" },
-  { icon: "🌧️", text: "Rain radar: Storm arriving in ~34 minutes. Recommend moving to indoor attractions soon.", time: "5 min ago", action: null },
-  { icon: "⚡", text: "Lightning Lane tip: You can squeeze in Pirates (10 min wait) before your 2:30 PM LL return", time: "8 min ago", action: "Navigate →" },
-  { icon: "🎆", text: "Fireworks in 4h 12min. Best position: Liberty Square Riverboat — board at 8:45 PM", time: "11 min ago", action: null },
-  { icon: "📸", text: "PhotoPass photographer near Cinderella Castle fountain — 2 min walk from your location", time: "15 min ago", action: "View Spot →" },
-  { icon: "🔴", text: "Tron Lightcycle Run: Unexpected closure. Estimated reopening: 4:30 PM", time: "22 min ago", action: null },
+  { icon: "🟢", text: "Space Mountain just dropped to 22 min — was 52 min 8 min ago", time: "2 min ago", action: "Head There Now →", location: "Space Mountain", locationContext: "Tomorrowland · Magic Kingdom" },
+  { icon: "🌧️", text: "Rain radar: Storm arriving in ~34 minutes. Recommend moving to indoor attractions soon.", time: "5 min ago", action: null, location: null, locationContext: "" },
+  { icon: "⚡", text: "Lightning Lane tip: You can squeeze in Pirates (10 min wait) before your 2:30 PM LL return", time: "8 min ago", action: "Navigate →", location: "Pirates of the Caribbean", locationContext: "Adventureland · Magic Kingdom" },
+  { icon: "🎆", text: "Fireworks in 4h 12min. Best position: Liberty Square Riverboat — board at 8:45 PM", time: "11 min ago", action: null, location: "Liberty Square Riverboat", locationContext: "Liberty Square · Magic Kingdom" },
+  { icon: "📸", text: "PhotoPass photographer near Cinderella Castle fountain — 2 min walk from your location", time: "15 min ago", action: "View Spot →", location: "Cinderella Castle Fountain", locationContext: "Main Street U.S.A. · Magic Kingdom" },
+  { icon: "🔴", text: "Tron Lightcycle Run: Unexpected closure. Estimated reopening: 4:30 PM", time: "22 min ago", action: null, location: null, locationContext: "" },
 ];
 
 const fireworksRides = [
-  { ride: "Liberty Riverboat", wait: 0, duration: 17, lineBy: "8:43 PM", status: "🟢 Best View", statusColor: "text-green-400" },
-  { ride: "Big Thunder Mountain", wait: 18, duration: 4, lineBy: "8:38 PM", status: "🟢 Great Angle", statusColor: "text-green-400" },
-  { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟡 Good View", statusColor: "text-yellow-400" },
-  { ride: "Jungle Cruise", wait: 25, duration: 10, lineBy: "8:25 PM", status: "🟡 Partial View", statusColor: "text-yellow-400" },
-  { ride: "Pirates of the Caribbean", wait: 10, duration: 9, lineBy: "8:41 PM", status: "🟢 Good View", statusColor: "text-green-400" },
+  { ride: "Liberty Riverboat", wait: 0, duration: 17, lineBy: "8:43 PM", status: "🟢 Best View", statusColor: "text-green-400", land: "Liberty Square" },
+  { ride: "Big Thunder Mountain", wait: 18, duration: 4, lineBy: "8:38 PM", status: "🟢 Great Angle", statusColor: "text-green-400", land: "Frontierland" },
+  { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟡 Good View", statusColor: "text-yellow-400", land: "Frontierland" },
+  { ride: "Jungle Cruise", wait: 25, duration: 10, lineBy: "8:25 PM", status: "🟡 Partial View", statusColor: "text-yellow-400", land: "Adventureland" },
+  { ride: "Pirates of the Caribbean", wait: 10, duration: 9, lineBy: "8:41 PM", status: "🟢 Good View", statusColor: "text-green-400", land: "Adventureland" },
+];
+
+const gapFinderRides = [
+  { name: "Pirates of the Caribbean", detail: "10 min wait · 15 min ride · 8 min walk = 33 min total", icon: "✅", iconColor: "text-green-400", land: "Adventureland" },
+  { name: "Haunted Mansion", detail: "12 min wait · 9 min ride · 6 min walk = 27 min total", icon: "✅", iconColor: "text-green-400", land: "Liberty Square" },
+  { name: "Big Thunder Mountain", detail: "18 min wait · 4 min ride · 12 min walk = 34 min total (tight — recommend skipping)", icon: "⚠️", iconColor: "text-yellow-400", land: "Frontierland" },
 ];
 
 const compassDestinations: Record<string, { destination: string; land: string; walkTime: string; distance: string; directions: string[] }> = {
-  "Head There Now →": { destination: "Space Mountain", land: "Tomorrowland", walkTime: "4 min", distance: "0.2 miles", directions: ["Head down Main Street toward the castle", "Turn right at the hub toward Tomorrowland", "Space Mountain is on your right"] },
-  "Navigate →": { destination: "Pirates of the Caribbean", land: "Adventureland", walkTime: "6 min", distance: "0.3 miles", directions: ["Walk toward the hub from your current location", "Take the path to Adventureland on your left", "Pirates entrance is past the bridge on your right"] },
-  "View Spot →": { destination: "Cinderella Castle Fountain", land: "Main Street U.S.A.", walkTime: "2 min", distance: "0.1 miles", directions: ["Walk toward Cinderella Castle", "The fountain and PhotoPass photographer are on the right side", "Look for the camera setup near the garden"] },
+  "Head There Now →": { destination: "Space Mountain", land: "Tomorrowland · Magic Kingdom", walkTime: "4 min", distance: "0.2 miles", directions: ["Head down Main Street toward the castle", "Turn right at the hub toward Tomorrowland", "Space Mountain is on your right"] },
+  "Navigate →": { destination: "Pirates of the Caribbean", land: "Adventureland · Magic Kingdom", walkTime: "6 min", distance: "0.3 miles", directions: ["Walk toward the hub from your current location", "Take the path to Adventureland on your left", "Pirates entrance is past the bridge on your right"] },
+  "View Spot →": { destination: "Cinderella Castle Fountain", land: "Main Street U.S.A. · Magic Kingdom", walkTime: "2 min", distance: "0.1 miles", directions: ["Walk toward Cinderella Castle", "The fountain and PhotoPass photographer are on the right side", "Look for the camera setup near the garden"] },
 };
 
 const LivePark = () => {
@@ -118,6 +125,11 @@ const LivePark = () => {
                     <span className={`text-[10px] ${ride.trend.includes("↓") ? "text-green-400" : ride.trend.includes("↑") ? "text-destructive" : "text-muted-foreground"}`}>{ride.trend}</span>
                   )}
                 </div>
+                {!ride.closed && (
+                  <div className="mt-2">
+                    <CompassButton destination={ride.name} context={`${ride.land} · Magic Kingdom`} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -152,27 +164,18 @@ const LivePark = () => {
               <h3 className="text-sm font-bold text-foreground mb-1">You have 1h 15min before your 2:30 PM Lightning Lane</h3>
               <p className="text-xs text-muted-foreground mb-3">From Tomorrowland, here's what fits:</p>
               <div className="space-y-3">
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">✅</span>
-                  <div>
-                    <p className="text-sm text-foreground font-medium">Pirates of the Caribbean</p>
-                    <p className="text-xs text-muted-foreground">10 min wait · 15 min ride · 8 min walk = 33 min total</p>
+                {gapFinderRides.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className={`${r.iconColor} mt-0.5`}>{r.icon}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm text-foreground font-medium">{r.name}</p>
+                        <CompassButton destination={r.name} context={`${r.land} · Magic Kingdom`} />
+                      </div>
+                      <p className="text-xs text-muted-foreground">{r.detail}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">✅</span>
-                  <div>
-                    <p className="text-sm text-foreground font-medium">Haunted Mansion</p>
-                    <p className="text-xs text-muted-foreground">12 min wait · 9 min ride · 6 min walk = 27 min total</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-yellow-400 mt-0.5">⚠️</span>
-                  <div>
-                    <p className="text-sm text-foreground font-medium">Big Thunder Mountain</p>
-                    <p className="text-xs text-muted-foreground">18 min wait · 4 min ride · 12 min walk = 34 min total (tight — recommend skipping)</p>
-                  </div>
-                </div>
+                ))}
               </div>
               <p className="text-xs text-green-400 font-semibold mt-3">Total time used: 1h 14min — fits perfectly ✅</p>
             </div>
@@ -191,11 +194,16 @@ const LivePark = () => {
                       <p className="text-[11px] text-muted-foreground mt-1">{a.time}</p>
                     </div>
                   </div>
-                  {a.action && (
-                    <button onClick={() => openCompass(a.action!)} className="mt-2 px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
-                      {a.action}
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    {a.action && (
+                      <button onClick={() => openCompass(a.action!)} className="px-3 py-1.5 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/10 transition-colors">
+                        {a.action}
+                      </button>
+                    )}
+                    {a.location && (
+                      <CompassButton destination={a.location} context={a.locationContext} />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -209,10 +217,10 @@ const LivePark = () => {
           <p className="text-sm text-foreground font-semibold mb-4">Tonight: Happily Ever After · 9:00 PM</p>
 
           <div className="rounded-xl bg-muted/10 overflow-x-auto max-w-full">
-            <table className="w-full text-sm min-w-[500px]">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b border-primary/10">
-                  {["Ride", "Current Wait", "Ride Duration", "Get In Line By", "Status"].map((h) => (
+                  {["Ride", "Current Wait", "Ride Duration", "Get In Line By", "Status", ""].map((h) => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-primary uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
@@ -225,6 +233,9 @@ const LivePark = () => {
                     <td className="px-4 py-3 text-muted-foreground">{r.duration} min</td>
                     <td className="px-4 py-3 font-semibold text-foreground">{r.lineBy}</td>
                     <td className={`px-4 py-3 text-xs font-semibold ${r.statusColor}`}>{r.status}</td>
+                    <td className="px-4 py-3">
+                      <CompassButton destination={r.ride} context={`${r.land} · Magic Kingdom`} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -259,6 +270,10 @@ const LivePark = () => {
                 <p className="text-sm text-yellow-400 leading-relaxed">
                   Recommend heading to an indoor attraction by 5:20 PM. Post-storm crowds typically drop 30-40% — great time for outdoor rides after the storm passes.
                 </p>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <CompassButton destination="Haunted Mansion" context="Liberty Square · Magic Kingdom" />
+                  <CompassButton destination="Pirates of the Caribbean" context="Adventureland · Magic Kingdom" />
+                </div>
               </div>
               <div>
                 <p className="text-sm text-foreground font-semibold">Evening forecast</p>

@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Plus, Send, ChevronDown, ChevronUp } from "lucide-react";
+import CompassButton from "@/components/CompassButton";
 
 const members = [
   { initial: "B", name: "Brandon", role: "Trip Organizer", status: "Joined", pass: "Incredi-Pass", color: "bg-primary" },
@@ -16,12 +17,12 @@ const members = [
 ];
 
 const itinerary = [
-  { time: "8:00 AM", title: "Rope Drop: Tron Lightcycle Run", status: "all", label: "✅ All 5 members confirmed" },
-  { time: "9:30 AM", title: "Be Our Guest Breakfast", status: "partial", label: "⚠️ 4/5 confirmed · Jake hasn't responded", action: "Send Jake a Reminder" },
-  { time: "11:00 AM", title: "Space Mountain (Lightning Lane)", status: "all", label: "✅ All 5 members confirmed" },
-  { time: "1:00 PM", title: "Group Lunch — Columbia Harbour House", status: "vote", label: "🗳️ Vote in progress — see poll below" },
-  { time: "2:30 PM", title: "Festival of Fantasy Parade", status: "all", label: "✅ All 5 members confirmed" },
-  { time: "9:00 PM", title: "Happily Ever After Fireworks", status: "all", label: "✅ All 5 members confirmed" },
+  { time: "8:00 AM", title: "Rope Drop: Tron Lightcycle Run", status: "all", label: "✅ All 5 members confirmed", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
+  { time: "9:30 AM", title: "Be Our Guest Breakfast", status: "partial", label: "⚠️ 4/5 confirmed · Jake hasn't responded", action: "Send Jake a Reminder", location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
+  { time: "11:00 AM", title: "Space Mountain (Lightning Lane)", status: "all", label: "✅ All 5 members confirmed", location: "Space Mountain", land: "Tomorrowland · Magic Kingdom" },
+  { time: "1:00 PM", title: "Group Lunch — Columbia Harbour House", status: "vote", label: "🗳️ Vote in progress — see poll below", location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
+  { time: "2:30 PM", title: "Festival of Fantasy Parade", status: "all", label: "✅ All 5 members confirmed", location: null, land: "" },
+  { time: "9:00 PM", title: "Happily Ever After Fireworks", status: "all", label: "✅ All 5 members confirmed", location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
 ];
 
 const expenses = [
@@ -91,7 +92,12 @@ const GroupCoordinator = () => {
               <div key={i} className="flex gap-3 py-3 border-b border-primary/10 last:border-0">
                 <div className="w-16 md:w-20 shrink-0 text-xs md:text-sm font-mono text-primary font-semibold pt-0.5">{item.time}</div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    {item.location && (
+                      <CompassButton destination={item.location} context={item.land} />
+                    )}
+                  </div>
                   <p className={`text-xs mt-0.5 ${item.status === "partial" ? "text-yellow-400" : item.status === "vote" ? "text-blue-400" : "text-green-400"}`}>{item.label}</p>
                   {item.action && <Button size="sm" className="mt-1.5 h-7 text-[11px] bg-primary/20 text-primary hover:bg-primary/30 border-0">{item.action}</Button>}
                 </div>
@@ -239,7 +245,10 @@ const GroupCoordinator = () => {
             <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3">
               <p className="text-sm font-semibold text-foreground">Cinderella's Royal Table · May 22 · Party of 5 · Breakfast</p>
               <p className="text-xs text-green-400 mt-1 font-semibold">🟢 AVAILABLE — Book Now!</p>
-              <Button size="sm" className="mt-2 h-7 text-[11px]">Book Now</Button>
+              <div className="flex items-center gap-2 mt-2">
+                <Button size="sm" className="h-7 text-[11px]">Book Now</Button>
+                <CompassButton destination="Cinderella's Royal Table" context="Fantasyland · Magic Kingdom" />
+              </div>
             </div>
           </div>
           <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Plus className="w-3.5 h-3.5 mr-1" /> Add Group Dining Alert</Button>

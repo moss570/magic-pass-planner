@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Castle, Info } from "lucide-react";
+import CompassButton from "@/components/CompassButton";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -171,7 +172,12 @@ const APCommandCenter = () => {
                 <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${d.badgeColor} mb-2 inline-block`}>{d.badge}</span>
                 <h3 className="text-sm font-bold text-foreground mb-1">{d.title}</h3>
                 <p className="text-xs text-muted-foreground mb-3">{d.detail}</p>
-                <button className="text-xs font-semibold text-primary hover:underline">{d.btn}</button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button className="text-xs font-semibold text-primary hover:underline">{d.btn}</button>
+                  {d.cat === "Dining" && (
+                    <CompassButton destination={d.title} context={`${d.cat} Discount · Walt Disney World`} />
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -196,7 +202,10 @@ const APCommandCenter = () => {
                 <p className="text-xs font-bold text-green-400 mb-1">🟢 LIVE — Port Orleans Riverside</p>
                 <p className="text-sm text-foreground font-semibold">AP Rate: $189/night <span className="text-muted-foreground line-through text-xs">(reg $267)</span> — Save 29%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">May 13–16, 2026 · Limited rooms</p>
-                <button className="mt-2 px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90">Book Now →</button>
+                <div className="flex items-center gap-2 mt-2">
+                  <button className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90">Book Now →</button>
+                  <CompassButton destination="Port Orleans Riverside" context="Walt Disney World Resort" />
+                </div>
               </div>
               <div className="rounded-lg bg-muted/20 border border-primary/5 p-3 opacity-70">
                 <p className="text-xs font-bold text-muted-foreground mb-1">⏰ EXPIRED — Wilderness Lodge</p>

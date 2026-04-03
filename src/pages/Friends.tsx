@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar, Castle, RefreshCw } from "lucide-react";
+import CompassButton from "@/components/CompassButton";
 
 const beaconParks = ["MK", "EPCOT", "HS", "AK", "Typhoon Lagoon", "Blizzard Beach"];
 const beaconDurations = ["30 min", "1 hour", "2 hours", "Until park close"];
@@ -307,8 +308,9 @@ const Friends = () => {
                     <span className="text-muted-foreground">· {b.group}</span>
                   </div>
                   <p className="text-xs italic text-foreground/70">{b.vibe}</p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button size="sm" className="text-xs h-7">👋 I'm Heading Over</Button>
+                    <CompassButton destination={b.spot} context={`User-started beacon · Expires in ${b.expires}`} fineLocation={b.fineSpot || undefined} />
                     <button className="text-xs text-muted-foreground hover:text-foreground">❌ Not Interested</button>
                   </div>
                 </div>
@@ -367,6 +369,9 @@ const Friends = () => {
                 <div className="flex gap-2 mt-auto">
                   <Button size="sm" className="flex-1 text-xs h-8">✅ I'm Going!</Button>
                   <Button variant="outline" size="sm" className="flex-1 border-primary/30 text-primary hover:bg-primary/10 text-xs h-8">🔔 Remind Me</Button>
+                </div>
+                <div className="flex justify-center">
+                  <CompassButton destination={evt.title} context={`Magic Pass Community Event · ${evt.date.split("·")[0].trim()}`} />
                 </div>
                 <p className="text-[10px] text-muted-foreground text-center">Free with any Magic Pass subscription</p>
               </div>

@@ -2,16 +2,17 @@ import { Castle, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/DashboardLayout";
+import CompassButton from "@/components/CompassButton";
 
 const itinerary = [
-  { time: "8:00 AM", activity: "Arrive at park, rope drop Tron Lightcycle Run", badge: "wait: 12 min ✅", badgeColor: "text-green-400" },
-  { time: "9:30 AM", activity: "Breakfast: Be Our Guest", badge: "reservation confirmed 🍽️", badgeColor: "text-primary" },
-  { time: "11:00 AM", activity: "Space Mountain", badge: "Lightning Lane booked ⚡", badgeColor: "text-primary" },
-  { time: "1:00 PM", activity: "Columbia Harbour House lunch", badge: "quick service", badgeColor: "text-muted-foreground" },
-  { time: "2:30 PM", activity: "Festival of Fantasy Parade", badge: null, badgeColor: "" },
-  { time: "4:00 PM", activity: "Rest / pool time", badge: null, badgeColor: "" },
-  { time: "7:00 PM", activity: "Dinner: Cinderella's Royal Table", badge: null, badgeColor: "" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Liberty Riverboat 🎆", badgeColor: "text-primary" },
+  { time: "8:00 AM", activity: "Arrive at park, rope drop Tron Lightcycle Run", badge: "wait: 12 min ✅", badgeColor: "text-green-400", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
+  { time: "9:30 AM", activity: "Breakfast: Be Our Guest", badge: "reservation confirmed 🍽️", badgeColor: "text-primary", location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
+  { time: "11:00 AM", activity: "Space Mountain", badge: "Lightning Lane booked ⚡", badgeColor: "text-primary", location: "Space Mountain", land: "Tomorrowland · Magic Kingdom" },
+  { time: "1:00 PM", activity: "Columbia Harbour House lunch", badge: "quick service", badgeColor: "text-muted-foreground", location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
+  { time: "2:30 PM", activity: "Festival of Fantasy Parade", badge: null, badgeColor: "", location: null, land: "" },
+  { time: "4:00 PM", activity: "Rest / pool time", badge: null, badgeColor: "", location: null, land: "" },
+  { time: "7:00 PM", activity: "Dinner: Cinderella's Royal Table", badge: null, badgeColor: "", location: "Cinderella's Royal Table", land: "Fantasyland · Magic Kingdom" },
+  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Liberty Riverboat 🎆", badgeColor: "text-primary", location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
 ];
 
 const alerts = [
@@ -67,7 +68,12 @@ const Dashboard = () => {
                   </div>
                   <div className="pb-5">
                     <p className="text-xs font-semibold text-primary">{item.time}</p>
-                    <p className="text-sm text-foreground">{item.activity}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm text-foreground">{item.activity}</p>
+                      {item.location && (
+                        <CompassButton destination={item.location} context={item.land} />
+                      )}
+                    </div>
                     {item.badge && <p className={`text-xs mt-0.5 ${item.badgeColor}`}>{item.badge}</p>}
                   </div>
                 </div>

@@ -9,11 +9,12 @@ interface CompassModalProps {
   walkTime: string;
   distance: string;
   directions: string[];
+  fineLocation?: string;
 }
 
 const TARGET_HEADING = 247;
 
-const CompassModal = ({ open, onClose, destination, land, walkTime, distance, directions }: CompassModalProps) => {
+const CompassModal = ({ open, onClose, destination, land, walkTime, distance, directions, fineLocation }: CompassModalProps) => {
   const [heading, setHeading] = useState<number | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [sweepAngle, setSweepAngle] = useState(0);
@@ -88,11 +89,12 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
         <X className="w-6 h-6" />
       </button>
 
-      {/* Top Info */}
+      {/* Destination Header */}
       <div className="text-center mb-6 px-4">
-        <h2 className="text-xl md:text-2xl font-bold text-foreground">{destination}</h2>
-        <p className="text-primary font-semibold text-sm mt-1">Approx. {walkTime} walk · ~{distance}</p>
-        <p className="text-muted-foreground text-xs mt-0.5">{land}</p>
+        <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Navigating to</p>
+        <h2 className="text-xl md:text-2xl font-bold text-primary">{destination}</h2>
+        {land && <p className="text-xs text-muted-foreground mt-1">{land}</p>}
+        <p className="text-primary/80 font-semibold text-sm mt-1">Approx. {walkTime} walk · ~{distance}</p>
       </div>
 
       {/* Compass */}
@@ -178,7 +180,7 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
 
       {/* Directions */}
       <div className="mt-6 px-6 max-w-sm text-center">
-        <p className="text-xs text-muted-foreground mb-3">Walk toward {land} via suggested route:</p>
+        <p className="text-xs text-muted-foreground mb-3">Walk toward {land || destination} via suggested route:</p>
         <div className="space-y-1.5">
           {directions.map((step, i) => (
             <p key={i} className="text-xs text-foreground">{i + 1}. {step}</p>
@@ -186,8 +188,15 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
         </div>
       </div>
 
+      {/* Fine Location Note */}
+      {fineLocation && (
+        <div className="mt-5 mx-6 max-w-sm rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+          <p className="text-xs text-primary">📍 Fine location note: <span className="italic text-foreground">{fineLocation}</span></p>
+        </div>
+      )}
+
       {/* Check-in button */}
-      <button onClick={onClose} className="mt-8 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+      <button onClick={onClose} className="mt-6 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
         I'm Here — Check Me In ✓
       </button>
       <p className="text-[11px] text-muted-foreground mt-2">Tap when you arrive to mark as reached</p>
