@@ -6,8 +6,25 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { PRICE_IDS } from "@/lib/stripe";
+
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
+const invokeCheckout = async (accessToken: string, body: { priceId: string; planName: string }) => {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+      "apikey": SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Checkout failed");
+  return data;
+};
 
 const tiers = [
   {
