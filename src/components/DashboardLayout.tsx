@@ -68,10 +68,12 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
         </div>
 
         <div className="px-3 lg:px-5 pb-6 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold shrink-0">B</div>
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold shrink-0">
+            {firstName ? firstName[0].toUpperCase() : (user?.email?.[0]?.toUpperCase() ?? "?")}
+          </div>
           <div className="hidden lg:block">
             <p className="text-xs text-muted-foreground">Welcome back,</p>
-            <p className="text-sm font-semibold text-foreground">Brandon</p>
+            <p className="text-sm font-semibold text-foreground">{firstName || user?.email?.split("@")[0] || "User"}</p>
           </div>
         </div>
 
