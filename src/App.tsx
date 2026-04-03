@@ -36,6 +36,8 @@ const App = () => (
           <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
           <Route path="/live-park" element={<LivePark />} />
           <Route path="/ap-command-center" element={<APCommandCenter />} />
+          <Route path="/group-coordinator" element={<GroupCoordinator />} />
+          <Route path="/budget-manager" element={<BudgetManager />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
