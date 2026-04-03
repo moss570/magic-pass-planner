@@ -15,6 +15,7 @@ import LivePark from "./pages/LivePark";
 import APCommandCenter from "./pages/APCommandCenter";
 import GroupCoordinator from "./pages/GroupCoordinator";
 import BudgetManager from "./pages/BudgetManager";
+import Friends from "./pages/Friends";
 import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/ap-command-center" element={<APCommandCenter />} />
           <Route path="/group-coordinator" element={<GroupCoordinator />} />
           <Route path="/budget-manager" element={<BudgetManager />} />
+          <Route path="/friends" element={<Friends />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

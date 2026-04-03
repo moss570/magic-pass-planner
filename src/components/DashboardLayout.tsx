@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, Wallet, Settings, Bell, LogOut, Menu, X } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -11,6 +11,7 @@ const sidebarNav = [
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
+  { icon: UserPlus, label: "Friends", path: "/friends" },
   { icon: Wallet, label: "Budget Manager", path: "/budget-manager" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];

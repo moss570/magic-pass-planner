@@ -69,8 +69,11 @@ const GroupCoordinator = () => {
             </div>
           </div>
           <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Send className="w-3.5 h-3.5 mr-1" /> Send Group Invite Link</Button>
-            <span className="text-xs text-muted-foreground">Share a link — anyone with it can join this group trip</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Send className="w-3.5 h-3.5 mr-1" /> Invite to Group — They Get $1 First Month</Button>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">Non-members get a special discount offer</span>
+            </div>
+            <span className="text-xs text-muted-foreground">Magic Pass members are added instantly. Non-members receive a $1 first-month offer.</span>
           </div>
         </CardContent>
       </Card>
