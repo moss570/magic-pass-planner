@@ -113,7 +113,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
           </div>
           <div className="hidden lg:block">
             <Link to="/pricing" className="block text-xs font-medium text-secondary hover:underline mb-1">Upgrade Plan</Link>
-            <button className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            <button onClick={handleLogout} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               <LogOut className="w-3 h-3" />
               Log Out
             </button>
