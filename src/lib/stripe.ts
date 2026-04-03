@@ -1,9 +1,4 @@
-import { loadStripe } from "@stripe/stripe-js";
-
-const STRIPE_PUBLISHABLE_KEY = "pk_test_51TIFOFHGyELqjZIImhG0cCMHqXhuqX4riZiYXgBk3wc6Hs8wu795iEs0dYtRf9LxQTsxeZoC5rZIBMNQwUf5D1Nf00mSuzKng3";
-
-export const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-
+// Price IDs for all subscription tiers
 export const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
   "Pre-Trip Planner": {
     monthly: "price_1TIFQjHGyELqjZIIWYcXXufY",
