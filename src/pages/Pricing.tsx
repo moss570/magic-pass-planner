@@ -2,9 +2,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, Shield, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PRICE_IDS } from "@/lib/stripe";
 
@@ -104,21 +104,38 @@ const Pricing = () => {
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const { user, session } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const resumedCheckoutRef = useRef(false);
 
-  const handleCheckout = async (tierName: string) => {
-    if (!user || !session) {
-      navigate("/signup", { state: { returnTo: "/pricing" } });
-      return;
+  const redirectToSignup = useCallback((tierName: string, period: "monthly" | "annual", offer?: "founder") => {
+    const params = new URLSearchParams({
+      returnTo: "/pricing",
+      tier: tierName,
+      period,
+    });
+
+    if (offer) {
+      params.set("offer", offer);
     }
 
-    const priceIds = PRICE_IDS[tierName];
-    if (!priceIds) return;
+    navigate(`/signup?${params.toString()}`);
+  }, [navigate]);
 
-    setLoadingTier(tierName);
+  const startCheckout = useCallback(async ({
+    priceId,
+    planName,
+    loadingKey,
+  }: {
+    priceId: string;
+    planName: string;
+    loadingKey: string;
+  }) => {
+    if (!session?.access_token) return;
+
+    setLoadingTier(loadingKey);
     try {
-      const priceId = annual ? priceIds.annual : priceIds.monthly;
-      console.log("Starting checkout for:", tierName, priceId);
-      const data = await invokeCheckout(session.access_token, { priceId, planName: tierName });
+      console.log("Starting checkout for:", planName, priceId);
+      const data = await invokeCheckout(session.access_token, { priceId, planName });
 
       console.log("Checkout response:", data);
       if (data?.url) {
@@ -132,32 +149,63 @@ const Pricing = () => {
     } finally {
       setLoadingTier(null);
     }
+  }, [session?.access_token]);
+
+  useEffect(() => {
+    const period = new URLSearchParams(location.search).get("period");
+    if (period === "annual") {
+      setAnnual(true);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!user || !session || resumedCheckoutRef.current) return;
+
+    const params = new URLSearchParams(location.search);
+    const tierName = params.get("tier");
+    const period = params.get("period");
+
+    if (!tierName || (period !== "monthly" && period !== "annual")) return;
+
+    const priceIds = PRICE_IDS[tierName];
+    if (!priceIds) return;
+
+    resumedCheckoutRef.current = true;
+
+    void startCheckout({
+      priceId: period === "annual" ? priceIds.annual : priceIds.monthly,
+      planName: tierName,
+      loadingKey: params.get("offer") === "founder" ? "founder" : tierName,
+    });
+  }, [location.search, session, startCheckout, user]);
+
+  const handleCheckout = async (tierName: string) => {
+    if (!user || !session) {
+      redirectToSignup(tierName, annual ? "annual" : "monthly");
+      return;
+    }
+
+    const priceIds = PRICE_IDS[tierName];
+    if (!priceIds) return;
+
+    await startCheckout({
+      priceId: annual ? priceIds.annual : priceIds.monthly,
+      planName: tierName,
+      loadingKey: tierName,
+    });
   };
 
   const handleFounderCheckout = async () => {
     if (!user || !session) {
-      navigate("/signup", { state: { returnTo: "/pricing" } });
+      redirectToSignup("Magic Pass", "annual", "founder");
       return;
     }
 
-    setLoadingTier("founder");
-    try {
-      const data = await invokeCheckout(session.access_token, {
-        priceId: PRICE_IDS["Magic Pass"].annual,
-        planName: "Magic Pass",
-      });
-
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error("No checkout URL returned. Please try again.");
-      }
-    } catch (err: any) {
-      console.error("Founder checkout error:", err);
-      toast.error(err?.message || "Something went wrong. Please try again.");
-    } finally {
-      setLoadingTier(null);
-    }
+    await startCheckout({
+      priceId: PRICE_IDS["Magic Pass"].annual,
+      planName: "Magic Pass",
+      loadingKey: "founder",
+    });
   };
 
   return (
