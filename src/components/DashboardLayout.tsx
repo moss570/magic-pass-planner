@@ -12,7 +12,7 @@ const sidebarNav = [
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
   { icon: Wallet, label: "Budget Manager", path: "/budget-manager" },
-  { icon: Settings, label: "Settings", path: "#" },
+  { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
 const bottomNavItems = [
