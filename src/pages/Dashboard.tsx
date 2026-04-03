@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Castle, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const itinerary = [
   { time: "8:00 AM", activity: "Arrive at park, rope drop Tron Lightcycle Run", badge: "wait: 12 min ✅", badgeColor: "text-green-400", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
@@ -34,6 +35,7 @@ const upcomingDates = [
 const Dashboard = () => {
   const { user } = useAuth();
   const [firstName, setFirstName] = useState("there");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     if (user) {
@@ -43,6 +45,16 @@ const Dashboard = () => {
         });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (searchParams.get("checkout") === "success") {
+      toast.success("🎉 Welcome to Magic Pass Plus! Your 7-day free trial has started.", {
+        duration: 6000,
+        style: { background: "#F5C842", color: "#080E1E", border: "none", fontWeight: 600 },
+      });
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";

@@ -9,6 +9,8 @@ import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, Clipboard
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Link } from "react-router-dom";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -37,6 +39,7 @@ const Settings = () => {
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingDisney, setSavingDisney] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const { subscription } = useSubscription();
 
   useEffect(() => {
     if (!user) return;
@@ -148,15 +151,43 @@ const Settings = () => {
           <CardTitle className="text-base md:text-lg">💳 My Subscription</CardTitle>
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 bg-primary/15 text-primary text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
-              <Castle className="w-3 h-3" /> Magic Pass Plan
-            </span>
-            <div>
-              <p className="text-sm text-foreground font-medium">$12.99/month · Next billing date: May 3, 2026</p>
-              <p className="text-xs text-green-400 font-medium">🟢 Active · 7-day free trial active (4 days remaining)</p>
-            </div>
-          </div>
+          {(() => {
+            if (!subscription) {
+              return (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <p className="text-sm text-muted-foreground">No active plan · Free trial available</p>
+                  <Link to="/pricing">
+                    <Button className="text-xs" style={{ background: "#F5C842", color: "#080E1E" }}>Choose a Plan →</Button>
+                  </Link>
+                </div>
+              );
+            }
+            const status = subscription.status;
+            const trialEnd = subscription.trial_end ? new Date(subscription.trial_end) : null;
+            const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+            const daysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000)) : 0;
+
+            return (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 bg-primary/15 text-primary text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
+                    <Castle className="w-3 h-3" /> {subscription.plan_name || "Magic Pass Plan"}
+                  </span>
+                  <div>
+                    {status === "trialing" && (
+                      <p className="text-xs text-green-400 font-medium">🟢 Free trial · {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining</p>
+                    )}
+                    {status === "active" && periodEnd && (
+                      <p className="text-sm text-foreground font-medium">🟢 Active · Next billing: {periodEnd.toLocaleDateString()}</p>
+                    )}
+                    {status === "canceled" && periodEnd && (
+                      <p className="text-sm text-destructive font-medium">Canceled · Access until {periodEnd.toLocaleDateString()}</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            );
+          })()}
           <div className="flex flex-col sm:flex-row gap-2">
             <Button className="text-xs">⬆️ Upgrade to AP+ Plan</Button>
             <Button variant="outline" className="text-xs border-muted text-muted-foreground hover:text-foreground">Manage Billing →</Button>

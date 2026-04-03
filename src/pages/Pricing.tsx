@@ -1,9 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Check, Shield } from "lucide-react";
+import { Check, Shield, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { stripePromise, PRICE_IDS } from "@/lib/stripe";
 
 const tiers = [
   {
@@ -80,6 +82,60 @@ const tiers = [
 
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCheckout = async (tierName: string) => {
+    if (!user) {
+      navigate("/signup", { state: { returnTo: "/pricing" } });
+      return;
+    }
+
+    const priceIds = PRICE_IDS[tierName];
+    if (!priceIds) return;
+
+    setLoadingTier(tierName);
+    try {
+      const stripe = await stripePromise;
+      if (!stripe) return;
+
+      await stripe.redirectToCheckout({
+        lineItems: [{ price: annual ? priceIds.annual : priceIds.monthly, quantity: 1 }],
+        mode: "subscription",
+        successUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/dashboard?checkout=success",
+        cancelUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/pricing",
+      });
+    } catch (err) {
+      console.error("Stripe checkout error:", err);
+    } finally {
+      setLoadingTier(null);
+    }
+  };
+
+  const handleFounderCheckout = async () => {
+    if (!user) {
+      navigate("/signup", { state: { returnTo: "/pricing" } });
+      return;
+    }
+
+    setLoadingTier("founder");
+    try {
+      const stripe = await stripePromise;
+      if (!stripe) return;
+
+      await stripe.redirectToCheckout({
+        lineItems: [{ price: PRICE_IDS["Magic Pass"].annual, quantity: 1 }],
+        mode: "subscription",
+        successUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/dashboard?checkout=success",
+        cancelUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/pricing",
+      });
+    } catch (err) {
+      console.error("Stripe checkout error:", err);
+    } finally {
+      setLoadingTier(null);
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
@@ -88,13 +144,16 @@ const Pricing = () => {
       <section className="pt-32 md:pt-40 pb-20 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Founding Member Banner */}
-          <div className="mb-8 rounded-xl p-4 text-center" style={{ background: '#F5C842' }}>
+          <div className="mb-8 rounded-xl p-4 text-center cursor-pointer" style={{ background: '#F5C842' }} onClick={handleFounderCheckout}>
             <p className="text-base md:text-lg font-extrabold" style={{ color: '#080E1E' }}>
               🏆 Founding Member Offer: Lock in Magic Pass annual for $59.99/yr — forever. First 500 subscribers only.
             </p>
             <p className="text-xs md:text-sm mt-1 font-medium" style={{ color: '#080E1E', opacity: 0.8 }}>
               Regular price $89.99/yr · Save $30/year for life · Cancel anytime
             </p>
+            {loadingTier === "founder" && (
+              <Loader2 className="w-5 h-5 animate-spin mx-auto mt-2" style={{ color: '#080E1E' }} />
+            )}
           </div>
 
           <h1 className="text-3xl md:text-5xl font-extrabold text-foreground text-center mb-4">
@@ -167,13 +226,16 @@ const Pricing = () => {
                   ))}
                 </ul>
 
-                <Link to="/signup">
-                  <Button
-                    className="w-full font-semibold rounded-lg h-11 bg-primary text-primary-foreground hover:bg-primary/90"
-                  >
-                    Start Free Trial
-                  </Button>
-                </Link>
+                <Button
+                  onClick={() => handleCheckout(tier.name)}
+                  disabled={loadingTier === tier.name}
+                  className="w-full font-semibold rounded-lg h-11 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {loadingTier === tier.name ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : null}
+                  Start Free Trial
+                </Button>
               </div>
             ))}
           </div>
