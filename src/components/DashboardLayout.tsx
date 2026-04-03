@@ -126,8 +126,8 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
         </div>
         {/* Mobile title below top bar */}
         <div className="md:hidden px-4 pb-3 border-b border-primary/10">
-          <h1 className="text-lg font-bold text-foreground">{title}</h1>
-          {subtitle && <p className="text-muted-foreground text-xs mt-0.5">{subtitle}</p>}
+          <h1 className="text-lg font-bold text-foreground" style={{ fontSize: '22px' }}>{title}</h1>
+          {subtitle && <p className="text-muted-foreground mt-0.5" style={{ fontSize: '13px' }}>{subtitle}</p>}
         </div>
         <div className="px-4 md:px-8 py-4 md:pb-8 md:pt-2">
           {children}
