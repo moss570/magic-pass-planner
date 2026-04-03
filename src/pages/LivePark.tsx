@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import CompassModal from "@/components/CompassModal";
 
 const rides = [
   { name: "Tron Lightcycle Run", wait: 8, land: "Tomorrowland", ll: true, trend: "↓ dropping", closed: false },
