@@ -250,7 +250,7 @@ const APCommandCenter = () => {
         {/* Section 5: Stacking Calculator */}
         <div className="rounded-xl bg-card gold-border p-4 md:p-6">
           <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧮 AP Discount Stacking Calculator</h2>
-          <p className="text-xs text-muted-foreground mb-5">Does your AP dining discount stack with Tables in Wonderland? Find out instantly.</p>
+          <p className="text-xs text-muted-foreground mb-5">Can you combine AP dining discounts with Disney Visa? Find out instantly.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
