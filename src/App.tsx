@@ -13,6 +13,8 @@ import DiningAlerts from "./pages/DiningAlerts";
 import GiftCardTracker from "./pages/GiftCardTracker";
 import LivePark from "./pages/LivePark";
 import APCommandCenter from "./pages/APCommandCenter";
+import GroupCoordinator from "./pages/GroupCoordinator";
+import BudgetManager from "./pages/BudgetManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
