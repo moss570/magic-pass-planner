@@ -28,15 +28,15 @@ const alerts = [
   { icon: "🟢", text: "Space Mountain just dropped to 22 min — was 52 min 8 min ago", time: "2 min ago", action: "Head There Now →", location: "Space Mountain", locationContext: "Tomorrowland · Magic Kingdom" },
   { icon: "🌧️", text: "Rain radar: Storm arriving in ~34 minutes. Recommend moving to indoor attractions soon.", time: "5 min ago", action: null, location: null, locationContext: "" },
   { icon: "⚡", text: "Lightning Lane tip: You can squeeze in Pirates (10 min wait) before your 2:30 PM LL return", time: "8 min ago", action: "Navigate →", location: "Pirates of the Caribbean", locationContext: "Adventureland · Magic Kingdom" },
-  { icon: "🎆", text: "Fireworks in 4h 12min. Best position: Liberty Square Riverboat — board at 8:45 PM", time: "11 min ago", action: null, location: "Liberty Square Riverboat", locationContext: "Liberty Square · Magic Kingdom" },
+  { icon: "🎆", text: "Fireworks in 4h 12min. Best fireworks position: Tiana's Bayou Adventure exit bridge or Main Street Hub center — be in position by 8:45 PM", time: "11 min ago", action: null, location: "Main Street Hub", locationContext: "Main Street U.S.A. · Magic Kingdom" },
   { icon: "📸", text: "PhotoPass photographer near Cinderella Castle fountain — 2 min walk from your location", time: "15 min ago", action: "View Spot →", location: "Cinderella Castle Fountain", locationContext: "Main Street U.S.A. · Magic Kingdom" },
   { icon: "🔴", text: "Tron Lightcycle Run: Unexpected closure. Estimated reopening: 4:30 PM", time: "22 min ago", action: null, location: null, locationContext: "" },
 ];
 
 const fireworksRides = [
-  { ride: "Liberty Riverboat", wait: 0, duration: 17, lineBy: "8:43 PM", status: "🟢 Best View", statusColor: "text-green-400", land: "Liberty Square" },
+  { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟢 Great View", statusColor: "text-green-400", land: "Frontierland" },
   { ride: "Big Thunder Mountain", wait: 18, duration: 4, lineBy: "8:38 PM", status: "🟢 Great Angle", statusColor: "text-green-400", land: "Frontierland" },
-  { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟡 Good View", statusColor: "text-yellow-400", land: "Frontierland" },
+  { ride: "Haunted Mansion", wait: 12, duration: 9, lineBy: "8:39 PM", status: "🟡 Good View", statusColor: "text-yellow-400", land: "Liberty Square" },
   { ride: "Jungle Cruise", wait: 25, duration: 10, lineBy: "8:25 PM", status: "🟡 Partial View", statusColor: "text-yellow-400", land: "Adventureland" },
   { ride: "Pirates of the Caribbean", wait: 10, duration: 9, lineBy: "8:41 PM", status: "🟢 Good View", statusColor: "text-green-400", land: "Adventureland" },
 ];

@@ -12,7 +12,7 @@ const itinerary = [
   { time: "2:30 PM", activity: "Festival of Fantasy Parade", badge: null, badgeColor: "", location: null, land: "" },
   { time: "4:00 PM", activity: "Rest / pool time", badge: null, badgeColor: "", location: null, land: "" },
   { time: "7:00 PM", activity: "Dinner: Cinderella's Royal Table", badge: null, badgeColor: "", location: "Cinderella's Royal Table", land: "Fantasyland · Magic Kingdom" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Liberty Riverboat 🎆", badgeColor: "text-primary", location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
+  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Main Street Hub · arrive by 8:45 PM 🎆", badgeColor: "text-primary", location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
 ];
 
 const alerts = [
@@ -111,7 +111,7 @@ const Dashboard = () => {
             <div className="rounded-xl bg-card gold-border p-4 md:p-5 border-l-4 border-l-primary">
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">💡 Clark's Recommendation</h3>
               <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                Based on current crowd forecasts, arriving Tuesday instead of Wednesday for your May trip saves an estimated 38 minutes of wait time and $0 in ticket cost. Crowds drop significantly mid-week.
+                Space Mountain wait times drop 40% between 1–3 PM while crowds eat lunch. Your itinerary has a rest break scheduled at 1 PM — consider pushing it 30 minutes earlier to hit Space Mountain at peak low-wait window before your break.
               </p>
               <button className="inline-flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
                 Adjust My Trip

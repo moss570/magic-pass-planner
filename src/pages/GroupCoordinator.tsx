@@ -22,7 +22,7 @@ const itinerary = [
   { time: "11:00 AM", title: "Space Mountain (Lightning Lane)", status: "all", label: "✅ All 5 members confirmed", location: "Space Mountain", land: "Tomorrowland · Magic Kingdom" },
   { time: "1:00 PM", title: "Group Lunch — Columbia Harbour House", status: "vote", label: "🗳️ Vote in progress — see poll below", location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
   { time: "2:30 PM", title: "Festival of Fantasy Parade", status: "all", label: "✅ All 5 members confirmed", location: null, land: "" },
-  { time: "9:00 PM", title: "Happily Ever After Fireworks", status: "all", label: "✅ All 5 members confirmed", location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
+  { time: "9:00 PM", title: "Happily Ever After Fireworks", status: "all", label: "✅ All 5 members confirmed", location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
 ];
 
 const expenses = [

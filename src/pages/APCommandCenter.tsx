@@ -11,7 +11,7 @@ const discounts = [
   { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "10% off dining at select restaurants", detail: "Valid at 100+ locations · Show AP card at checkout", btn: "View Eligible Restaurants →" },
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "20% off select merchandise", detail: "Valid at most park gift shops · Exclusions apply", btn: "View Exclusions →" },
   { cat: "Hotels", badge: "🏨 Hotel", badgeColor: "bg-blue-500/15 text-blue-400", title: "Up to 25% off resort stays", detail: "Valid for select dates · Book by May 31", btn: "Book Now →" },
-  { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "Tables in Wonderland — 20% off dining", detail: "Separate annual membership · $175/year — pays for itself in 2 visits", btn: "Learn More →" },
+  { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "Disney Visa Dining Discount", detail: "10% off dining at select WDW table-service restaurants · Disney Visa cardholders only", btn: "View Eligible Restaurants →" },
   { cat: "Experiences", badge: "🎭 Experience", badgeColor: "bg-purple-500/15 text-purple-400", title: "15% off Disney After Hours tickets", detail: "AP exclusive pricing · Limited availability", btn: "View Dates →" },
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "AP Exclusive MagicBand+ discount", detail: "$34.99 (reg $44.99) · AP holders only", btn: "Shop Now →" },
 ];
@@ -34,14 +34,13 @@ const APCommandCenter = () => {
   const [merchAlert, setMerchAlert] = useState(true);
   const [billAmount, setBillAmount] = useState("120");
   const [hasAP, setHasAP] = useState(true);
-  const [hasTIW, setHasTIW] = useState(false);
   const [hasVisa, setHasVisa] = useState(true);
   const [hasRedCard, setHasRedCard] = useState(true);
 
   const bill = parseFloat(billAmount) || 120;
-  const tiwSavings = hasTIW ? bill * 0.2 : 0;
   const apSavings = hasAP ? bill * 0.1 : 0;
-  const bestDining = Math.max(tiwSavings, apSavings);
+  const visaSavings = hasVisa ? bill * 0.1 : 0;
+  const bestDining = Math.max(apSavings, visaSavings);
   const giftCardSavings = hasRedCard ? bill * 0.015 : 0;
   const totalDiscount = bestDining + giftCardSavings;
   const youPay = (bill - totalDiscount).toFixed(2);
@@ -251,7 +250,7 @@ const APCommandCenter = () => {
         {/* Section 5: Stacking Calculator */}
         <div className="rounded-xl bg-card gold-border p-4 md:p-6">
           <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧮 AP Discount Stacking Calculator</h2>
-          <p className="text-xs text-muted-foreground mb-5">Does your AP dining discount stack with Tables in Wonderland? Find out instantly.</p>
+          <p className="text-xs text-muted-foreground mb-5">Can you combine AP dining discounts with Disney Visa? Find out instantly.</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
@@ -272,8 +271,7 @@ const APCommandCenter = () => {
           <div className="flex flex-wrap gap-3 mb-5">
             {[
               { label: "I have an Annual Pass (10% dining)", val: hasAP, set: setHasAP },
-              { label: "I have Tables in Wonderland membership (20% dining)", val: hasTIW, set: setHasTIW },
-              { label: "I have a Disney Visa Card (10% on select dining)", val: hasVisa, set: setHasVisa },
+              { label: "I have a Disney Visa Card (10% at select restaurants)", val: hasVisa, set: setHasVisa },
               { label: "Target RedCard (5% on gift card purchases used for this meal)", val: hasRedCard, set: setHasRedCard },
             ].map((cb) => (
               <label key={cb.label} className="flex items-start gap-2 cursor-pointer">
@@ -293,23 +291,17 @@ const APCommandCenter = () => {
               {hasAP && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">AP Discount (10%)</span>
-                  {hasTIW ? (
-                    <span className="text-muted-foreground line-through">-${apSavings.toFixed(2)}</span>
-                  ) : (
-                    <span className="text-green-400 font-semibold">-${apSavings.toFixed(2)}</span>
-                  )}
+                  <span className={`font-semibold ${hasVisa ? "text-muted-foreground" : "text-green-400"}`}>
+                    {hasVisa ? `Use whichever is higher` : `-$${apSavings.toFixed(2)}`}
+                  </span>
                 </div>
               )}
               {hasVisa && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Disney Visa (10% — does NOT stack with AP on this restaurant)</span>
-                  <span className="text-red-400">❌ Cannot combine</span>
-                </div>
-              )}
-              {hasTIW && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tables in Wonderland (20% — REPLACES AP discount, better deal)</span>
-                  <span className="text-green-400 font-semibold">✅ Use this: -${tiwSavings.toFixed(2)}</span>
+                  <span className="text-muted-foreground">Disney Visa Card (10%)</span>
+                  <span className={`font-semibold ${hasAP ? "text-muted-foreground" : "text-green-400"}`}>
+                    {hasAP ? `Does not stack with AP` : `-$${visaSavings.toFixed(2)}`}
+                  </span>
                 </div>
               )}
               {hasRedCard && (
@@ -327,8 +319,8 @@ const APCommandCenter = () => {
               <span className="text-sm font-bold text-foreground">You pay</span>
               <span className="text-xl md:text-2xl font-extrabold text-green-400">${youPay}</span>
             </div>
-            {hasTIW && hasAP && (
-              <p className="text-xs text-primary mt-2 font-semibold">Recommendation: Use Tables in Wonderland over your AP discount here — you save ${(tiwSavings - apSavings).toFixed(0)} more.</p>
+            {hasAP && hasVisa && (
+              <p className="text-xs text-primary mt-2 font-semibold">Disney Visa and AP discounts typically cannot be combined — use whichever is higher for your bill.</p>
             )}
           </div>
         </div>

@@ -66,12 +66,14 @@ const features = [
   { icon: Zap, emoji: "⚡", title: "Live Wait Time Alerts", desc: "Real-time push when rides drop to short waits — act in seconds" },
   { icon: Ticket, emoji: "🎟️", title: "Annual Passholder Hub", desc: "Blockout calendar, AP discounts, renewal alerts — all in one place" },
   { icon: Users, emoji: "👨‍👩‍👧", title: "Group Coordinator", desc: "Shared itinerary, split expenses, and group dining alerts" },
+  { icon: Users, emoji: "🏰", title: "AP Meetup Beacon", desc: "Meet fellow Annual Passholders in the park — no personal info shared until you both choose to connect" },
 ];
 
 const stats = [
-  { icon: Users, value: "1,200+", label: "Active Members" },
-  { icon: DollarSign, value: "$480", label: "Avg. Trip Savings" },
+  { icon: Users, value: "2,400+", label: "Active Members" },
+  { icon: DollarSign, value: "$520", label: "Avg. Trip Savings" },
   { icon: Star, value: "4.9★", label: "Rating" },
+  { icon: Users, value: "340+", label: "🏰 AP Meetup Connections" },
 ];
 
 const Index = () => {
@@ -126,10 +128,10 @@ const Index = () => {
             Everything You Need for the <span className="text-primary">Perfect Trip</span>
           </h2>
           <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
-            Six powerful tools designed for Disney families and Annual Passholders.
+            Seven powerful tools designed for Disney families and Annual Passholders.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:nth-child(7)]:md:col-start-1 [&>*:nth-child(7)]:lg:col-start-2">
             {features.map((f) => (
               <div
                 key={f.title}

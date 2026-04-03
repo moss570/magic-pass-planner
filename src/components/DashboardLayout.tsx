@@ -126,8 +126,8 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
         </div>
         {/* Mobile title below top bar */}
         <div className="md:hidden px-4 pb-3 border-b border-primary/10">
-          <h1 className="text-lg font-bold text-foreground">{title}</h1>
-          {subtitle && <p className="text-muted-foreground text-xs mt-0.5">{subtitle}</p>}
+          <h1 className="text-lg font-bold text-foreground" style={{ fontSize: '22px' }}>{title}</h1>
+          {subtitle && <p className="text-muted-foreground mt-0.5" style={{ fontSize: '13px' }}>{subtitle}</p>}
         </div>
         <div className="px-4 md:px-8 py-4 md:pb-8 md:pt-2">
           {children}
@@ -135,7 +135,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       </main>
 
       {/* Bottom Nav — mobile only */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around h-16 border-t" style={{ background: "#0D1230", borderColor: "rgba(245,200,66,0.15)" }}>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around border-t" style={{ background: "#0D1230", borderColor: "rgba(245,200,66,0.15)", height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {bottomNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

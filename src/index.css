@@ -91,3 +91,28 @@
     animation: pulse-subtle 3s ease-in-out infinite;
   }
 }
+
+/* FIX 3: WDW Railroad partial service note */
+/* FIX 4: Global mobile polish */
+@media (max-width: 767px) {
+  button.bg-primary,
+  a > button.bg-primary,
+  [class*="bg-primary"][class*="text-primary-foreground"] {
+    min-height: 48px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="time"],
+  textarea,
+  select,
+  [role="combobox"] {
+    min-height: 44px;
+  }
+
+  .flex-wrap {
+    flex-wrap: wrap;
+  }
+}
