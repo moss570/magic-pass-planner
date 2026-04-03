@@ -158,11 +158,7 @@ const Pricing = () => {
 
                 <Link to="/signup">
                   <Button
-                    className={`w-full font-semibold rounded-lg h-11 ${
-                      tier.popular
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "bg-muted text-foreground hover:bg-muted/80"
-                    }`}
+                    className="w-full font-semibold rounded-lg h-11 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
                     Start Free Trial
                   </Button>
