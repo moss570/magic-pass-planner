@@ -110,8 +110,9 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
 
         <div className="px-3 lg:px-5 pb-6 space-y-3">
           {(() => {
+            const hasSub = subscription?.subscribed;
             const status = subscription?.status;
-            const label = !subscription ? "No Plan" : status === "trialing" ? "Free Trial" : (subscription.plan_name || "Magic Pass Plan");
+            const label = !hasSub ? "No Plan" : status === "trialing" ? "Free Trial" : (subscription?.plan_name || "Magic Pass Plan");
             const isActive = status === "active";
             return (
               <div className={`hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${

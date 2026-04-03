@@ -152,7 +152,7 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           {(() => {
-            if (!subscription) {
+            if (!subscription?.subscribed) {
               return (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <p className="text-sm text-muted-foreground">No active plan · Free trial available</p>
