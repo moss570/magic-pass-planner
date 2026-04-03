@@ -55,28 +55,26 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
           </div>
         </div>
 
-        <nav className="flex-1 px-2 lg:px-3 space-y-1">
+        <nav className="flex-1 px-2 lg:px-3 space-y-1 overflow-y-auto">
           {sidebarNav.map((item) => {
             const isActive = location.pathname === item.path;
-            const link = (
+            const linkEl = (
               <Link
-                key={item.label}
                 to={item.path}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
                   isActive
-                    ? "text-primary border-l-2 border-primary bg-primary/5"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                    ? "text-primary border-l-[3px] border-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-[#1a2235]"
                 } lg:justify-start justify-center`}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
                 <span className="hidden lg:inline">{item.label}</span>
               </Link>
             );
-            // On tablet (md but not lg), wrap in tooltip
             return (
               <Tooltip key={item.label}>
-                <TooltipTrigger asChild className="lg:hidden">
-                  {link}
+                <TooltipTrigger asChild>
+                  {linkEl}
                 </TooltipTrigger>
                 <TooltipContent side="right" className="lg:hidden">
                   {item.label}
