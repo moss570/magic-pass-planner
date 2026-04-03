@@ -142,15 +142,11 @@ const Pricing = () => {
 
     setLoadingTier("founder");
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: { priceId: PRICE_IDS["Magic Pass"].annual, planName: "Magic Pass" },
+      const data = await invokeCheckout(session.access_token, {
+        priceId: PRICE_IDS["Magic Pass"].annual,
+        planName: "Magic Pass",
       });
 
-      if (error) {
-        toast.error("Checkout failed: " + (error.message || "Unknown error"));
-        throw error;
-      }
       if (data?.url) {
         window.location.href = data.url;
       } else {
