@@ -63,8 +63,9 @@ const Dashboard = () => {
         {/* Nav */}
         <nav className="flex-1 px-3 space-y-1">
           {sidebarNav.map((item) => (
-            <button
+            <Link
               key={item.label}
+              to={item.path}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 item.active
                   ? "text-primary border-l-2 border-primary bg-primary/5"
@@ -73,7 +74,7 @@ const Dashboard = () => {
             >
               <item.icon className="w-4 h-4 shrink-0" />
               <span>{item.label}</span>
-            </button>
+            </Link>
           ))}
         </nav>
 
