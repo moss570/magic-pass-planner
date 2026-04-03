@@ -37,7 +37,24 @@ interface DashboardLayoutProps {
 
 const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      supabase.from("users_profile").select("first_name").eq("id", user.id).single()
+        .then(({ data }) => {
+          if (data?.first_name) setFirstName(data.first_name);
+        });
+    }
+  }, [user]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <div className="flex min-h-screen">
