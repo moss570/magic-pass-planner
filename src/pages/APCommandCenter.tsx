@@ -11,7 +11,7 @@ const discounts = [
   { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "10% off dining at select restaurants", detail: "Valid at 100+ locations · Show AP card at checkout", btn: "View Eligible Restaurants →" },
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "20% off select merchandise", detail: "Valid at most park gift shops · Exclusions apply", btn: "View Exclusions →" },
   { cat: "Hotels", badge: "🏨 Hotel", badgeColor: "bg-blue-500/15 text-blue-400", title: "Up to 25% off resort stays", detail: "Valid for select dates · Book by May 31", btn: "Book Now →" },
-  { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "Tables in Wonderland — 20% off dining", detail: "Separate annual membership · $175/year — pays for itself in 2 visits", btn: "Learn More →" },
+  { cat: "Dining", badge: "🍽️ Dining", badgeColor: "bg-orange-500/15 text-orange-400", title: "Disney Visa Dining Discount", detail: "10% off dining at select WDW table-service restaurants · Disney Visa cardholders only", btn: "View Eligible Restaurants →" },
   { cat: "Experiences", badge: "🎭 Experience", badgeColor: "bg-purple-500/15 text-purple-400", title: "15% off Disney After Hours tickets", detail: "AP exclusive pricing · Limited availability", btn: "View Dates →" },
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "AP Exclusive MagicBand+ discount", detail: "$34.99 (reg $44.99) · AP holders only", btn: "Shop Now →" },
 ];
