@@ -137,12 +137,18 @@ const Pricing = () => {
         body: { priceId: PRICE_IDS["Magic Pass"].annual, planName: "Magic Pass" },
       });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Checkout failed: " + (error.message || "Unknown error"));
+        throw error;
+      }
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        toast.error("No checkout URL returned. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Founder checkout error:", err);
+      toast.error(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoadingTier(null);
     }
