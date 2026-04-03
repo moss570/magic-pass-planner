@@ -69,6 +69,7 @@ const LivePark = () => {
 
   return (
     <DashboardLayout title="⚡ Live Park Mode" subtitle="Real-time intelligence for every minute you're in the park">
+      <CompassModal open={compassOpen} onClose={() => setCompassOpen(false)} {...compassTarget} />
       <div className="space-y-6">
         {/* Status bar */}
         <div className="rounded-xl bg-card gold-border p-4 border-l-4 border-l-green-500 flex flex-wrap items-center justify-between gap-4">
