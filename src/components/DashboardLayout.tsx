@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, Wallet, Settings, Bell, LogOut, Menu, X } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 

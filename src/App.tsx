@@ -40,6 +40,7 @@ const App = () => (
           <Route path="/ap-command-center" element={<APCommandCenter />} />
           <Route path="/group-coordinator" element={<GroupCoordinator />} />
           <Route path="/budget-manager" element={<BudgetManager />} />
+          <Route path="/friends" element={<Friends />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
