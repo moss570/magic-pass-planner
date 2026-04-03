@@ -78,7 +78,8 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
   }
 
   const displayHeading = heading != null ? `${Math.round(heading)}°` : "---°";
-  const compassSize = typeof window !== "undefined" && window.innerWidth < 768 ? 280 : 320;
+  const vw80 = typeof window !== "undefined" ? window.innerWidth * 0.8 : 320;
+  const compassSize = typeof window !== "undefined" && window.innerWidth < 768 ? Math.min(280, vw80) : 320;
   const r = compassSize / 2;
 
   return (
