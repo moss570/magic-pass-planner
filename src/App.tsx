@@ -15,6 +15,7 @@ import LivePark from "./pages/LivePark";
 import APCommandCenter from "./pages/APCommandCenter";
 import GroupCoordinator from "./pages/GroupCoordinator";
 import BudgetManager from "./pages/BudgetManager";
+import SettingsPage from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
