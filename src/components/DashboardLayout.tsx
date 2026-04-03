@@ -135,7 +135,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       </main>
 
       {/* Bottom Nav — mobile only */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around h-16 border-t" style={{ background: "#0D1230", borderColor: "rgba(245,200,66,0.15)" }}>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around border-t" style={{ background: "#0D1230", borderColor: "rgba(245,200,66,0.15)", height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {bottomNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

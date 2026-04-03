@@ -131,7 +131,7 @@ const Index = () => {
             Seven powerful tools designed for Disney families and Annual Passholders.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:nth-child(7)]:md:col-start-1 [&>*:nth-child(7)]:lg:col-start-2">
             {features.map((f) => (
               <div
                 key={f.title}
