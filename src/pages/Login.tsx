@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { Castle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,10 +17,23 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const getPostAuthRedirect = () => {
+    const params = new URLSearchParams(location.search);
+    const returnTo = params.get("returnTo") || "/dashboard";
+    params.delete("returnTo");
+
+    const nextSearch = params.toString();
+    if (!nextSearch) return returnTo;
+
+    const separator = returnTo.includes("?") ? "&" : "?";
+    return `${returnTo}${separator}${nextSearch}`;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    const postAuthRedirect = getPostAuthRedirect();
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
@@ -27,14 +41,15 @@ const Login = () => {
       setError(signInError.message);
       return;
     }
-    navigate("/dashboard");
+    navigate(postAuthRedirect);
   };
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
+    const postAuthRedirect = getPostAuthRedirect();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/dashboard` },
+      options: { redirectTo: `${window.location.origin}${postAuthRedirect}` },
     });
     if (error) {
       setError(error.message);
@@ -49,7 +64,7 @@ const Login = () => {
     }
     setError("");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`,
+      redirectTo: `${window.location.origin}/login${location.search}`,
     });
     if (error) {
       setError(error.message);
@@ -141,7 +156,7 @@ const Login = () => {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline font-medium">
+            <Link to={`/signup${location.search}`} className="text-primary hover:underline font-medium">
               Start free trial
             </Link>
           </p>
