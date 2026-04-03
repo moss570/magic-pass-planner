@@ -3,26 +3,19 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar, Castle } from "lucide-react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar, Castle, RefreshCw } from "lucide-react";
 
 const beaconParks = ["MK", "EPCOT", "HS", "AK", "Typhoon Lagoon", "Blizzard Beach"];
 const beaconDurations = ["30 min", "1 hour", "2 hours", "Until park close"];
 const beaconGroupTypes = ["Solo", "With a partner", "Small group", "Large group"];
 
-const meetingSpots: Record<string, string[]> = {
-  MK: ["Main Street Flagpole", "Cinderella Castle Steps", "Space Mountain Entrance", "Tomorrowland Terrace", "Fantasyland Carousel", "Big Thunder Mountain Entrance", "Haunted Mansion Queue", "Pirates Entrance", "Adventureland Bridge", "Tiana's Bayou Entrance", "Crystal Palace Front"],
-  EPCOT: ["Spaceship Earth Entrance", "World Showcase Plaza", "Test Track Entrance", "Guardians of the Galaxy Entrance"],
-  HS: ["Hollywood Blvd Arch", "Tower of Terror Entrance", "Toy Story Land Entrance", "Galaxy's Edge Entrance"],
-  AK: ["Tree of Life", "Pandora Entrance", "Kilimanjaro Safaris Entrance", "Expedition Everest Entrance"],
-  "Typhoon Lagoon": ["Main Entrance", "Surf Pool", "Lazy River Start"],
-  "Blizzard Beach": ["Main Entrance", "Summit Plummet Base", "Melt Away Bay"],
-};
-
 const activeBeacons = [
-  { pass: "Incredi-Pass", spot: "Near Space Mountain Entrance", expires: "42 min", group: "Solo AP", vibe: "Love coasters, happy to ride Tron together 🎢", color: "bg-amber-600" },
-  { pass: "Sorcerer Pass", spot: "Fantasyland Carousel", expires: "1h 18min", group: "Small group (3)", vibe: "Family of Disney adults, first timers welcome 🏰", color: "bg-violet-600" },
-  { pass: "Incredi-Pass", spot: "Tomorrowland Terrace", expires: "28 min", group: "With a partner", vibe: "EPCOT regulars doing MK today, say hi! ☕", color: "bg-sky-600" },
+  { pass: "Incredi-Pass", spot: "Tomorrowland — near Space Mountain", fineSpot: "Third bench on the left, wearing a Haunted Mansion shirt 👻", expires: "42 min", group: "Solo AP", vibe: "Love coasters, happy to ride Tron together 🎢", color: "bg-amber-600" },
+  { pass: "Sorcerer Pass", spot: "Fantasyland — near Carousel", fineSpot: "", expires: "1h 18min", group: "Small group (3)", vibe: "Family of Disney adults, first timers welcome 🏰", color: "bg-violet-600" },
+  { pass: "Incredi-Pass", spot: "Tomorrowland — near Tomorrowland Terrace", fineSpot: "By the blue trash can near the railing ☕", expires: "28 min", group: "With a partner", vibe: "EPCOT regulars doing MK today, say hi! ☕", color: "bg-sky-600" },
 ];
 
 const friends = [
@@ -40,6 +33,39 @@ const threads = [
 
 const parks = ["MK", "EPCOT", "HS", "AK"];
 
+const upcomingEvents = [
+  {
+    badge: "🃏 Trading Event", badgeColor: "bg-purple-500/20 text-purple-400",
+    title: "Lorcana Card Trading Meetup",
+    park: "EPCOT · CommuniCore Plaza",
+    date: "May 20, 2026 · 12:00 PM – 2:00 PM",
+    description: "Bring your Lorcana decks and trades! Meet fellow Disney adults for an afternoon of trading and playing in the park. All experience levels welcome.",
+    rsvp: 47, countdown: "Starts in 17 days",
+  },
+  {
+    badge: "🎢 Ride Marathon", badgeColor: "bg-red-500/20 text-red-400",
+    title: "Space Mountain Ride Marathon",
+    park: "Magic Kingdom · Tomorrowland",
+    date: "June 7, 2026 · 9:00 AM – 12:00 PM",
+    description: "How many times can we ride Space Mountain in 3 hours? Join the challenge — we'll track group rides and crown the marathon champion. Lightning Lane strategies welcome.",
+    rsvp: 31, countdown: "Starts in 35 days",
+  },
+  {
+    badge: "🍰 Foodie Trail", badgeColor: "bg-primary/20 text-primary",
+    title: "Monorail Dessert Trail",
+    park: "Magic Kingdom Resort Loop · Monorail",
+    date: "June 14, 2026 · 6:00 PM – 9:00 PM",
+    description: "Ride the resort monorail and hit dessert stops at the Contemporary, Polynesian, and Grand Floridian. We'll share our picks and vote on the best dessert of the night.",
+    rsvp: 62, countdown: "Starts in 42 days",
+  },
+];
+
+const pastEvents = [
+  { title: "Pin Trading Meet-Up", park: "EPCOT", date: "Mar 15, 2026", attended: 38 },
+  { title: "Haunted Mansion After-Dark Walk", park: "Magic Kingdom", date: "Feb 28, 2026", attended: 25 },
+  { title: "EPCOT International Festival of the Arts Social", park: "EPCOT", date: "Jan 22, 2026", attended: 54 },
+];
+
 const Friends = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
@@ -47,13 +73,25 @@ const Friends = () => {
   const [inviteFriends, setInviteFriends] = useState<string[]>([]);
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(true);
   const [beaconPark, setBeaconPark] = useState("MK");
-  const [beaconSpot, setBeaconSpot] = useState("");
   const [beaconDuration, setBeaconDuration] = useState("1 hour");
   const [beaconVibe, setBeaconVibe] = useState("");
   const [beaconGroup, setBeaconGroup] = useState("Solo");
+  const [fineLocation, setFineLocation] = useState("");
+  const [gpsEnabled, setGpsEnabled] = useState(true);
+  const [pastEventsOpen, setPastEventsOpen] = useState(false);
+  const [eventIdea, setEventIdea] = useState("");
 
   const toggleInviteFriend = (name: string) => {
     setInviteFriends(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
+  };
+
+  const gpsLocations: Record<string, string> = {
+    MK: "Tomorrowland — near Space Mountain",
+    EPCOT: "World Showcase — near Japan Pavilion",
+    HS: "Toy Story Land — near Slinky Dog Dash",
+    AK: "Pandora — near Flight of Passage",
+    "Typhoon Lagoon": "Main Entrance — near Surf Pool",
+    "Blizzard Beach": "Summit Area — near Summit Plummet",
   };
 
   return (
@@ -169,15 +207,46 @@ const Friends = () => {
                 </div>
               </div>
 
-              {/* Field 2: Meeting Spot */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Meeting spot</label>
-                <select value={beaconSpot} onChange={e => setBeaconSpot(e.target.value)} className="w-full h-9 rounded-md border border-primary/10 bg-background/40 px-3 text-sm text-foreground">
-                  <option value="">Pick a well-known landmark...</option>
-                  {(meetingSpots[beaconPark] || []).map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
+              {/* Field 2: GPS Auto-Detect + Fine Location */}
+              <div className="space-y-3">
+                {/* Part A: GPS Auto-Detect */}
+                {gpsEnabled ? (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1.5 block">Your location</label>
+                    <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 px-3 py-2.5 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-xs text-muted-foreground shrink-0">Detected location:</span>
+                      <span className="text-xs font-semibold text-primary flex-1 min-w-0 truncate">{gpsLocations[beaconPark]}</span>
+                      <button className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 shrink-0">
+                        <RefreshCw className="w-3 h-3" /> Refresh
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">📍 Location detected via GPS · Updates automatically</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/5 px-3 py-2.5 flex items-center gap-2 flex-wrap">
+                    <MapPin className="w-4 h-4 text-yellow-400 shrink-0" />
+                    <span className="text-xs text-yellow-400 flex-1">📍 Enable location access to auto-detect your spot</span>
+                    <Button size="sm" variant="outline" className="text-xs h-7 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10" onClick={() => setGpsEnabled(true)}>
+                      Enable GPS →
+                    </Button>
+                  </div>
+                )}
+
+                {/* Part B: Fine Location */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1.5 block">Exact spot (optional)</label>
+                  <Input
+                    value={fineLocation}
+                    onChange={e => { if (e.target.value.length <= 80) setFineLocation(e.target.value); }}
+                    placeholder="e.g. Third bench from the right · Near the lamp post · By the blue trash can"
+                    className="bg-background/40 border-primary/10 text-sm h-9"
+                  />
+                  <div className="flex items-center justify-between mt-0.5">
+                    <p className="text-[10px] text-muted-foreground">Help people find you with a specific detail GPS can't capture</p>
+                    <p className="text-[10px] text-muted-foreground">{fineLocation.length}/80</p>
+                  </div>
+                </div>
               </div>
 
               {/* Field 3: Duration */}
@@ -230,6 +299,9 @@ const Friends = () => {
                     </div>
                   </div>
                   <p className="text-sm font-bold text-foreground">{b.spot}</p>
+                  {b.fineSpot && (
+                    <p className="text-xs italic text-primary/80">{b.fineSpot}</p>
+                  )}
                   <div className="flex items-center gap-3 text-xs">
                     <span className="text-primary font-semibold">Expires in {b.expires}</span>
                     <span className="text-muted-foreground">· {b.group}</span>
@@ -259,6 +331,87 @@ const Friends = () => {
               <button className="text-xs text-muted-foreground hover:text-foreground">No thanks</button>
             </div>
             <p className="text-[10px] text-muted-foreground ml-11">Adding as a friend lets you message, coordinate park days, and share dining alerts. You can remove friends anytime.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* MAGIC MEET-UP EVENTS SECTION */}
+      {/*
+        NOTIFICATION LOGIC (future backend):
+        When a new event is created by admin, all Magic Pass users receive a push/email notification
+        14 days before and again 24 hours before the event. AP Command Center users get early access
+        RSVP 48 hours before general notification.
+      */}
+      <Card className="border-primary/20 bg-card/80 mb-6">
+        <CardHeader className="p-4 md:p-6 relative">
+          <div className="absolute top-3 right-3">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary text-primary-foreground">Hosted by Magic Pass</span>
+          </div>
+          <CardTitle className="text-base md:text-lg">🎪 Magic Meet-Up Events</CardTitle>
+          <CardDescription className="text-xs mt-1">Official events planned by Magic Pass — open to all members. Join the community.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 md:p-6 pt-0 space-y-6">
+          {/* Upcoming Events */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {upcomingEvents.map((evt, i) => (
+              <div key={i} className="rounded-xl border border-primary/10 bg-[#0D1230]/60 p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${evt.badgeColor}`}>{evt.badge}</span>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">{evt.countdown}</span>
+                </div>
+                <h3 className="text-sm font-bold text-foreground leading-tight">{evt.title}</h3>
+                <p className="text-xs font-semibold text-primary">{evt.park}</p>
+                <p className="text-xs text-foreground">{evt.date}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{evt.description}</p>
+                <p className="text-xs text-green-400">{evt.rsvp} members going</p>
+                <div className="flex gap-2 mt-auto">
+                  <Button size="sm" className="flex-1 text-xs h-8">✅ I'm Going!</Button>
+                  <Button variant="outline" size="sm" className="flex-1 border-primary/30 text-primary hover:bg-primary/10 text-xs h-8">🔔 Remind Me</Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground text-center">Free with any Magic Pass subscription</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Past Events (collapsible) */}
+          <Collapsible open={pastEventsOpen} onOpenChange={setPastEventsOpen}>
+            <CollapsibleTrigger className="text-sm text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-1">
+              <span>{pastEventsOpen ? "▼" : "▶"}</span> View Past Events ({pastEvents.length})
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="space-y-2 mt-3">
+                {pastEvents.map((evt, i) => (
+                  <div key={i} className="rounded-lg border border-primary/10 bg-[#0D1230]/40 px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-sm font-semibold text-foreground">{evt.title}</span>
+                      <span className="text-xs text-muted-foreground">· {evt.park}</span>
+                      <span className="text-xs text-muted-foreground">· {evt.date}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{evt.attended} members attended</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">✅ Completed</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Host Your Own Event */}
+          <div className="rounded-xl border-2 border-purple-500/30 bg-[#0D1230]/60 p-4 space-y-3">
+            <p className="text-sm font-bold text-foreground">🙋 Suggest a Community Event</p>
+            <p className="text-xs text-muted-foreground">Have an idea for a meetup? We review all suggestions — the best ones become official Magic Pass events.</p>
+            <div className="space-y-3">
+              <Textarea
+                value={eventIdea}
+                onChange={e => setEventIdea(e.target.value)}
+                placeholder="e.g. EPCOT Food & Wine progressive dinner starting at Morocco pavilion..."
+                className="bg-background/40 border-primary/10 text-sm min-h-[70px]"
+              />
+              <Input placeholder="Your name (optional)" className="bg-background/40 border-primary/10 text-sm h-9" />
+              <Button className="text-xs">Submit Idea →</Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Clark reviews all submissions. Popular ideas get scheduled within 30 days.</p>
           </div>
         </CardContent>
       </Card>
