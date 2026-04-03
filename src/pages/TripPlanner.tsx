@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Castle, RefreshCw, Calendar, FileText, Users, Minus, Plus } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Slider } from "@/components/ui/slider";
+import CompassButton from "@/components/CompassButton";
 
 const parks = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Disney Springs", "🌊 Typhoon Lagoon", "❄️ Blizzard Beach"];
 
@@ -19,18 +20,18 @@ const llOptions = [
 ];
 
 const itineraryItems = [
-  { time: "7:45 AM", activity: "Arrive at park entrance", badge: "Rope Drop", badgeColor: "bg-primary/20 text-primary", tip: "Arrive 15 min before park open — rope drop gives you 45 min of low crowds", wait: null },
-  { time: "8:00 AM", activity: "Tron Lightcycle Run", badge: "Lightning Lane", badgeColor: "bg-yellow-500/20 text-yellow-400", tip: "Book this LL first — it sells out by 7:02 AM on busy days", wait: 8, waitColor: "text-green-400" },
-  { time: "9:15 AM", activity: "Seven Dwarfs Mine Train", badge: null, badgeColor: "", tip: "Best window is right after Tron while crowds are still moving to Fantasyland", wait: 22, waitColor: "text-yellow-400" },
-  { time: "10:00 AM", activity: "Meet Mickey at Town Square", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Great photo op — lines stay short until 11 AM", wait: null },
-  { time: "11:30 AM", activity: "Be Our Guest Restaurant", badge: "Dining", badgeColor: "bg-orange-500/20 text-orange-400", tip: "Reservation confirmed ✅ — arrive 5 min early, ask for a window table", wait: null },
-  { time: "1:00 PM", activity: "Rest break / hotel return", badge: "Break", badgeColor: "bg-muted text-muted-foreground", tip: "Crowds peak 1-3 PM — this is the smartest time to leave and return refreshed", wait: null },
-  { time: "3:30 PM", activity: "Return to park for afternoon", badge: null, badgeColor: "", tip: "Crowds drop significantly after 3 PM — ideal for Fantasyland rides", wait: null },
-  { time: "4:00 PM", activity: "Haunted Mansion", badge: null, badgeColor: "", tip: "Consistent low waits mid-afternoon", wait: 18, waitColor: "text-green-400" },
-  { time: "5:00 PM", activity: "Pirates of the Caribbean", badge: null, badgeColor: "", tip: "One of the best waits of the day at this time", wait: 12, waitColor: "text-green-400" },
-  { time: "6:30 PM", activity: "Columbia Harbour House dinner", badge: "Quick Service", badgeColor: "bg-blue-500/20 text-blue-400", tip: "Best quick service in Magic Kingdom — second floor has great views", wait: null },
-  { time: "8:00 PM", activity: "Get in position for Happily Ever After Fireworks", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Liberty Square near the Riverboat — center view, less crowded than Main Street", wait: null },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks 🎆", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Formula: Show starts 9 PM. Board Liberty Riverboat at 8:45 for perfect elevation view", wait: null },
+  { time: "7:45 AM", activity: "Arrive at park entrance", badge: "Rope Drop", badgeColor: "bg-primary/20 text-primary", tip: "Arrive 15 min before park open — rope drop gives you 45 min of low crowds", wait: null, location: null, land: "" },
+  { time: "8:00 AM", activity: "Tron Lightcycle Run", badge: "Lightning Lane", badgeColor: "bg-yellow-500/20 text-yellow-400", tip: "Book this LL first — it sells out by 7:02 AM on busy days", wait: 8, waitColor: "text-green-400", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
+  { time: "9:15 AM", activity: "Seven Dwarfs Mine Train", badge: null, badgeColor: "", tip: "Best window is right after Tron while crowds are still moving to Fantasyland", wait: 22, waitColor: "text-yellow-400", location: "Seven Dwarfs Mine Train", land: "Fantasyland · Magic Kingdom" },
+  { time: "10:00 AM", activity: "Meet Mickey at Town Square", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Great photo op — lines stay short until 11 AM", wait: null, location: "Town Square", land: "Main Street U.S.A. · Magic Kingdom" },
+  { time: "11:30 AM", activity: "Be Our Guest Restaurant", badge: "Dining", badgeColor: "bg-orange-500/20 text-orange-400", tip: "Reservation confirmed ✅ — arrive 5 min early, ask for a window table", wait: null, location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
+  { time: "1:00 PM", activity: "Rest break / hotel return", badge: "Break", badgeColor: "bg-muted text-muted-foreground", tip: "Crowds peak 1-3 PM — this is the smartest time to leave and return refreshed", wait: null, location: null, land: "" },
+  { time: "3:30 PM", activity: "Return to park for afternoon", badge: null, badgeColor: "", tip: "Crowds drop significantly after 3 PM — ideal for Fantasyland rides", wait: null, location: null, land: "" },
+  { time: "4:00 PM", activity: "Haunted Mansion", badge: null, badgeColor: "", tip: "Consistent low waits mid-afternoon", wait: 18, waitColor: "text-green-400", location: "Haunted Mansion", land: "Liberty Square · Magic Kingdom" },
+  { time: "5:00 PM", activity: "Pirates of the Caribbean", badge: null, badgeColor: "", tip: "One of the best waits of the day at this time", wait: 12, waitColor: "text-green-400", location: "Pirates of the Caribbean", land: "Adventureland · Magic Kingdom" },
+  { time: "6:30 PM", activity: "Columbia Harbour House dinner", badge: "Quick Service", badgeColor: "bg-blue-500/20 text-blue-400", tip: "Best quick service in Magic Kingdom — second floor has great views", wait: null, location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
+  { time: "8:00 PM", activity: "Get in position for Happily Ever After Fireworks", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Liberty Square near the Riverboat — center view, less crowded than Main Street", wait: null, location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
+  { time: "9:00 PM", activity: "Happily Ever After Fireworks 🎆", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Formula: Show starts 9 PM. Board Liberty Riverboat at 8:45 for perfect elevation view", wait: null, location: null, land: "" },
 ];
 
 const TripPlanner = () => {
@@ -208,7 +209,6 @@ const TripPlanner = () => {
         {/* RIGHT — Itinerary (3/5) */}
         <div className="lg:col-span-3">
           {!generated ? (
-            /* Empty state */
             <div className="rounded-xl border-2 border-dashed border-primary/30 p-12 flex flex-col items-center justify-center text-center min-h-[500px]">
               <Castle className="w-16 h-16 text-primary/50 mb-4" />
               <h3 className="text-lg font-bold text-foreground mb-2">Your personalized itinerary will appear here</h3>
@@ -216,7 +216,6 @@ const TripPlanner = () => {
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Itinerary card */}
               <div className="rounded-xl bg-card gold-border p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -249,7 +248,12 @@ const TripPlanner = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm font-medium text-foreground mt-0.5">{item.activity}</p>
+                        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                          <p className="text-sm font-medium text-foreground">{item.activity}</p>
+                          {item.location && (
+                            <CompassButton destination={item.location} context={item.land} />
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground italic mt-0.5">{item.tip}</p>
                       </div>
                     </div>
