@@ -46,6 +46,11 @@ const Friends = () => {
   const [selectedPark, setSelectedPark] = useState("MK");
   const [inviteFriends, setInviteFriends] = useState<string[]>([]);
   const [emailPreviewOpen, setEmailPreviewOpen] = useState(true);
+  const [beaconPark, setBeaconPark] = useState("MK");
+  const [beaconSpot, setBeaconSpot] = useState("");
+  const [beaconDuration, setBeaconDuration] = useState("1 hour");
+  const [beaconVibe, setBeaconVibe] = useState("");
+  const [beaconGroup, setBeaconGroup] = useState("Solo");
 
   const toggleInviteFriend = (name: string) => {
     setInviteFriends(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
