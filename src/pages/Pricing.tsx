@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, Shield, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,17 +100,25 @@ const Pricing = () => {
     setLoadingTier(tierName);
     try {
       const priceId = annual ? priceIds.annual : priceIds.monthly;
+      console.log("Starting checkout for:", tierName, priceId);
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: { priceId, planName: tierName },
       });
 
-      if (error) throw error;
+      console.log("Checkout response:", data, error);
+      if (error) {
+        toast.error("Checkout failed: " + (error.message || "Unknown error"));
+        throw error;
+      }
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        toast.error("No checkout URL returned. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Checkout error:", err);
+      toast.error(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoadingTier(null);
     }
@@ -128,12 +137,18 @@ const Pricing = () => {
         body: { priceId: PRICE_IDS["Magic Pass"].annual, planName: "Magic Pass" },
       });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Checkout failed: " + (error.message || "Unknown error"));
+        throw error;
+      }
       if (data?.url) {
         window.location.href = data.url;
+      } else {
+        toast.error("No checkout URL returned. Please try again.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Founder checkout error:", err);
+      toast.error(err?.message || "Something went wrong. Please try again.");
     } finally {
       setLoadingTier(null);
     }
