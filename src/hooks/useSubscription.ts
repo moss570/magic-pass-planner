@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
 export interface Subscription {
   subscribed: boolean;
   status?: string;
@@ -24,12 +27,20 @@ export function useSubscription() {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription", {
-        headers: { Authorization: `Bearer ${session.access_token}` },
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": SUPABASE_ANON_KEY,
+        },
       });
 
-      if (error) {
-        console.error("check-subscription error:", error);
+      if (res.ok) {
+        const data = await res.json();
+        setSubscription(data as Subscription);
+      } else {
+        console.error("check-subscription failed:", res.status);
         // Fallback to local table
         const { data: localSub } = await supabase
           .from("subscriptions")
@@ -48,8 +59,6 @@ export function useSubscription() {
         } else {
           setSubscription(null);
         }
-      } else {
-        setSubscription(data as Subscription);
       }
     } catch (err) {
       console.error("useSubscription error:", err);
