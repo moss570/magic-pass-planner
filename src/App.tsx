@@ -12,6 +12,7 @@ import TripPlanner from "./pages/TripPlanner";
 import DiningAlerts from "./pages/DiningAlerts";
 import GiftCardTracker from "./pages/GiftCardTracker";
 import LivePark from "./pages/LivePark";
+import APCommandCenter from "./pages/APCommandCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
