@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import TripPlanner from "./pages/TripPlanner";
 import DiningAlerts from "./pages/DiningAlerts";
+import GiftCardTracker from "./pages/GiftCardTracker";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
