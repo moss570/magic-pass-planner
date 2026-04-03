@@ -308,8 +308,9 @@ const Friends = () => {
                     <span className="text-muted-foreground">· {b.group}</span>
                   </div>
                   <p className="text-xs italic text-foreground/70">{b.vibe}</p>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button size="sm" className="text-xs h-7">👋 I'm Heading Over</Button>
+                    <CompassButton destination={b.spot} context={`User-started beacon · Expires in ${b.expires}`} fineLocation={b.fineSpot || undefined} />
                     <button className="text-xs text-muted-foreground hover:text-foreground">❌ Not Interested</button>
                   </div>
                 </div>
