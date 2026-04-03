@@ -1,0 +1,266 @@
+import { useState } from "react";
+import { Search, Bell, Mail, MessageSquare, X, Eye } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const restaurants = [
+  "Be Our Guest", "Cinderella's Royal Table", "Space 220", "Topolino's Terrace", "'Ohana",
+  "Skipper Canteen", "Oga's Cantina", "Steakhouse 71", "The BOATHOUSE", "Jiko",
+  "Yachtsman Steakhouse", "Boma", "Sanaa", "Tiffins", "Sci-Fi Dine-In Theater",
+  "50's Prime Time Café", "Hollywood & Vine", "Coral Reef", "Le Cellier",
+  "Akershus Royal Banquet Hall", "Via Napoli", "Spice Road Table",
+];
+
+const mealTimes = ["Breakfast", "Lunch", "Dinner", "Any"];
+
+const activeAlerts = [
+  { restaurant: "Be Our Guest", date: "May 20, 2026", party: 4, meal: "Dinner", status: "watching", checks: "847", lastChecked: "12 seconds ago", channels: ["push", "email"] },
+  { restaurant: "Cinderella's Royal Table", date: "May 21, 2026", party: 4, meal: "Breakfast", status: "booked-full", checks: "1,203", lastChecked: "No availability in last 48 hours", channels: ["push", "email"] },
+  { restaurant: "Space 220", date: "May 22, 2026", party: 2, meal: "Lunch", status: "available", checks: "", lastChecked: "Opening detected 3 minutes ago", channels: ["push", "email", "sms"] },
+];
+
+const historyRows = [
+  { restaurant: "Topolino's Terrace", date: "Apr 15", party: 4, status: "booked", alertedAt: "Apr 8, 9:42 AM" },
+  { restaurant: "'Ohana", date: "Apr 10", party: 6, status: "booked", alertedAt: "Apr 3, 2:17 PM" },
+  { restaurant: "Oga's Cantina", date: "Mar 28", party: 2, status: "expired", alertedAt: "Mar 20, —" },
+  { restaurant: "Le Cellier", date: "Mar 15", party: 4, status: "cancelled", alertedAt: "—" },
+];
+
+const DiningAlerts = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedRestaurant, setSelectedRestaurant] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [date, setDate] = useState<Date>();
+  const [partySize, setPartySize] = useState(4);
+  const [selectedMeals, setSelectedMeals] = useState<string[]>(["Dinner"]);
+  const [pushOn, setPushOn] = useState(true);
+  const [emailOn, setEmailOn] = useState(true);
+  const [smsOn, setSmsOn] = useState(false);
+
+  const filteredRestaurants = restaurants.filter((r) =>
+    r.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const toggleMeal = (meal: string) => {
+    setSelectedMeals((prev) =>
+      prev.includes(meal) ? prev.filter((m) => m !== meal) : [...prev, meal]
+    );
+  };
+
+  const statusBadge = (status: string) => {
+    switch (status) {
+      case "watching":
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-500/15 text-yellow-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 live-pulse" />
+            Watching...
+          </span>
+        );
+      case "booked-full":
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-destructive/15 text-red-400">
+            🔴 Fully Booked
+          </span>
+        );
+      case "available":
+        return (
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-green-500/20 text-green-400 shadow-[0_0_12px_rgba(34,197,94,0.3)]">
+            🟢 AVAILABLE — Book Now!
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const historyStatus = (status: string) => {
+    switch (status) {
+      case "booked": return <span className="text-green-400">✅ Booked</span>;
+      case "expired": return <span className="text-yellow-400">⏰ Expired</span>;
+      case "cancelled": return <span className="text-red-400">❌ Cancelled</span>;
+      default: return null;
+    }
+  };
+
+  return (
+    <DashboardLayout title="🍽️ Dining Reservation Alerts" subtitle="We watch 24/7 and alert you the instant your table opens up">
+      <div className="space-y-6">
+        {/* Add New Alert */}
+        <div className="rounded-xl bg-card gold-border p-6 border-t-2 border-t-primary">
+          <h2 className="text-base font-bold text-foreground mb-5">Set a New Alert</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Restaurant search */}
+            <div className="relative">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Restaurant</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search restaurants..."
+                  value={selectedRestaurant || searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setSelectedRestaurant(""); setShowDropdown(true); }}
+                  onFocus={() => setShowDropdown(true)}
+                  className="w-full bg-muted/30 border border-primary/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              {showDropdown && !selectedRestaurant && (
+                <div className="absolute z-50 top-full mt-1 w-full bg-card border border-primary/20 rounded-lg max-h-48 overflow-y-auto shadow-xl">
+                  {filteredRestaurants.map((r) => (
+                    <button key={r} onClick={() => { setSelectedRestaurant(r); setShowDropdown(false); setSearchQuery(""); }} className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors">
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Date picker */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className={cn("w-full flex items-center gap-2 bg-muted/30 border border-primary/10 rounded-lg px-3 py-2.5 text-sm text-left", date ? "text-foreground" : "text-muted-foreground")}>
+                    📅 {date ? format(date, "PPP") : "Pick a date"}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={date} onSelect={setDate} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Party size */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Party Size</label>
+              <div className="flex items-center gap-3 bg-muted/30 border border-primary/10 rounded-lg px-3 py-2">
+                <button onClick={() => setPartySize(Math.max(1, partySize - 1))} className="w-7 h-7 rounded-md bg-muted flex items-center justify-center text-foreground hover:bg-muted/80 text-sm font-bold">−</button>
+                <span className="text-sm font-bold text-primary w-4 text-center">{partySize}</span>
+                <button onClick={() => setPartySize(Math.min(12, partySize + 1))} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/90 text-sm font-bold">+</button>
+              </div>
+            </div>
+
+            {/* Meal time */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Meal Time</label>
+              <div className="flex flex-wrap gap-2">
+                {mealTimes.map((meal) => (
+                  <button
+                    key={meal}
+                    onClick={() => toggleMeal(meal)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
+                      selectedMeals.includes(meal)
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
+                    }`}
+                  >
+                    {meal}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Alert channels */}
+          <div className="mt-4">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 block">Alert me via</label>
+            <div className="flex flex-wrap gap-4">
+              {[
+                { icon: Bell, label: "Push Notification", on: pushOn, set: setPushOn, locked: false },
+                { icon: Mail, label: "Email", on: emailOn, set: setEmailOn, locked: false },
+                { icon: MessageSquare, label: "SMS Text", on: smsOn, set: setSmsOn, locked: true },
+              ].map((ch) => (
+                <button
+                  key={ch.label}
+                  onClick={() => ch.set(!ch.on)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border transition-colors ${
+                    ch.on ? "bg-primary/15 border-primary text-primary" : "border-primary/20 text-muted-foreground"
+                  }`}
+                >
+                  <ch.icon className="w-3.5 h-3.5" />
+                  {ch.label}
+                  {ch.locked && !ch.on && <span className="text-[10px] text-muted-foreground ml-1">Upgrade to enable</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button className="w-full mt-5 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+            🔔 Start Watching This Restaurant
+          </button>
+        </div>
+
+        {/* Active Alerts */}
+        <div>
+          <h2 className="text-base font-bold text-foreground mb-4">Your Active Alerts (3)</h2>
+          <div className="space-y-4">
+            {activeAlerts.map((alert) => (
+              <div key={alert.restaurant} className="rounded-xl bg-card gold-border p-5 relative">
+                <button className="absolute top-4 right-4 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 font-medium">
+                  <X className="w-3 h-3" /> Cancel Alert
+                </button>
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-foreground">{alert.restaurant}</h3>
+                    <p className="text-sm text-muted-foreground mt-1">{alert.date} · Party of {alert.party} · {alert.meal}</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {alert.checks && <>Checked {alert.checks} times · </>}{alert.lastChecked}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      {alert.channels.includes("push") && <Bell className="w-3.5 h-3.5 text-muted-foreground" />}
+                      {alert.channels.includes("email") && <Mail className="w-3.5 h-3.5 text-muted-foreground" />}
+                      {alert.channels.includes("sms") && <MessageSquare className="w-3.5 h-3.5 text-muted-foreground" />}
+                    </div>
+                  </div>
+                  <div className="shrink-0">{statusBadge(alert.status)}</div>
+                </div>
+                {alert.status === "available" && (
+                  <div className="mt-4">
+                    <button className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
+                      🍽️ Book This Reservation →
+                    </button>
+                    <p className="text-center text-[11px] text-muted-foreground mt-2">Opens Disney dining page directly · Availability may close in seconds</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Alert History */}
+        <div>
+          <h2 className="text-base font-bold text-foreground mb-4">Recent Alert History</h2>
+          <div className="rounded-xl bg-card gold-border overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-primary/10">
+                  {["Restaurant", "Date", "Party", "Status", "Alerted At", "Action"].map((h) => (
+                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-primary uppercase tracking-wide">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {historyRows.map((row, i) => (
+                  <tr key={i} className="border-b border-primary/5 last:border-0">
+                    <td className="px-5 py-3 font-medium text-foreground">{row.restaurant}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{row.date}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{row.party}</td>
+                    <td className="px-5 py-3">{historyStatus(row.status)}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{row.alertedAt}</td>
+                    <td className="px-5 py-3">
+                      <button className="text-xs text-primary hover:underline flex items-center gap-1"><Eye className="w-3 h-3" /> View</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default DiningAlerts;

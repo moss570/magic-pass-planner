@@ -3,7 +3,7 @@ import { Castle, RefreshCw, Calendar, FileText, Users, Minus, Plus } from "lucid
 import DashboardLayout from "@/components/DashboardLayout";
 import { Slider } from "@/components/ui/slider";
 
-const parks = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Disney Springs"];
+const parks = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Disney Springs", "🌊 Typhoon Lagoon", "❄️ Blizzard Beach"];
 
 const ridePreferences = [
   { label: "🎢 Thrill Seeker", value: "thrill" },

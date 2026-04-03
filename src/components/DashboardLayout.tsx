@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
   { icon: Map, label: "Trip Planner", path: "/trip-planner" },
-  { icon: UtensilsCrossed, label: "Dining Alerts", path: "#" },
+  { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "#" },
   { icon: Zap, label: "Live Park Mode", path: "#" },
   { icon: Ticket, label: "AP Command Center", path: "#" },
