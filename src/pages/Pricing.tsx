@@ -3,9 +3,10 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, Shield, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { stripePromise, PRICE_IDS } from "@/lib/stripe";
+import { supabase } from "@/integrations/supabase/client";
+import { PRICE_IDS } from "@/lib/stripe";
 
 const tiers = [
   {
@@ -83,11 +84,11 @@ const tiers = [
 const Pricing = () => {
   const [annual, setAnnual] = useState(false);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
 
   const handleCheckout = async (tierName: string) => {
-    if (!user) {
+    if (!user || !session) {
       navigate("/signup", { state: { returnTo: "/pricing" } });
       return;
     }
@@ -97,41 +98,42 @@ const Pricing = () => {
 
     setLoadingTier(tierName);
     try {
-      const stripe = await stripePromise;
-      if (!stripe) return;
-
-      await stripe.redirectToCheckout({
-        lineItems: [{ price: annual ? priceIds.annual : priceIds.monthly, quantity: 1 }],
-        mode: "subscription",
-        successUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/dashboard?checkout=success",
-        cancelUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/pricing",
+      const priceId = annual ? priceIds.annual : priceIds.monthly;
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { priceId, planName: tierName },
       });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
-      console.error("Stripe checkout error:", err);
+      console.error("Checkout error:", err);
     } finally {
       setLoadingTier(null);
     }
   };
 
   const handleFounderCheckout = async () => {
-    if (!user) {
+    if (!user || !session) {
       navigate("/signup", { state: { returnTo: "/pricing" } });
       return;
     }
 
     setLoadingTier("founder");
     try {
-      const stripe = await stripePromise;
-      if (!stripe) return;
-
-      await stripe.redirectToCheckout({
-        lineItems: [{ price: PRICE_IDS["Magic Pass"].annual, quantity: 1 }],
-        mode: "subscription",
-        successUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/dashboard?checkout=success",
-        cancelUrl: "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app/pricing",
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body: { priceId: PRICE_IDS["Magic Pass"].annual, planName: "Magic Pass" },
       });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
-      console.error("Stripe checkout error:", err);
+      console.error("Founder checkout error:", err);
     } finally {
       setLoadingTier(null);
     }
