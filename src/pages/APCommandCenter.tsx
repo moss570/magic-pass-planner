@@ -34,14 +34,13 @@ const APCommandCenter = () => {
   const [merchAlert, setMerchAlert] = useState(true);
   const [billAmount, setBillAmount] = useState("120");
   const [hasAP, setHasAP] = useState(true);
-  const [hasTIW, setHasTIW] = useState(false);
   const [hasVisa, setHasVisa] = useState(true);
   const [hasRedCard, setHasRedCard] = useState(true);
 
   const bill = parseFloat(billAmount) || 120;
-  const tiwSavings = hasTIW ? bill * 0.2 : 0;
   const apSavings = hasAP ? bill * 0.1 : 0;
-  const bestDining = Math.max(tiwSavings, apSavings);
+  const visaSavings = hasVisa ? bill * 0.1 : 0;
+  const bestDining = Math.max(apSavings, visaSavings);
   const giftCardSavings = hasRedCard ? bill * 0.015 : 0;
   const totalDiscount = bestDining + giftCardSavings;
   const youPay = (bill - totalDiscount).toFixed(2);
