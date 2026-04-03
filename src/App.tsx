@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Pricing from "./pages/Pricing";
 import Signup from "./pages/Signup";
@@ -23,29 +25,31 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/trip-planner" element={<TripPlanner />} />
-          <Route path="/dining-alerts" element={<DiningAlerts />} />
-          <Route path="/gift-card-tracker" element={<GiftCardTracker />} />
-          <Route path="/live-park" element={<LivePark />} />
-          <Route path="/ap-command-center" element={<APCommandCenter />} />
-          <Route path="/group-coordinator" element={<GroupCoordinator />} />
-          <Route path="/budget-manager" element={<BudgetManager />} />
-          <Route path="/friends" element={<Friends />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/trip-planner" element={<ProtectedRoute><TripPlanner /></ProtectedRoute>} />
+            <Route path="/dining-alerts" element={<ProtectedRoute><DiningAlerts /></ProtectedRoute>} />
+            <Route path="/gift-card-tracker" element={<ProtectedRoute><GiftCardTracker /></ProtectedRoute>} />
+            <Route path="/live-park" element={<ProtectedRoute><LivePark /></ProtectedRoute>} />
+            <Route path="/ap-command-center" element={<ProtectedRoute><APCommandCenter /></ProtectedRoute>} />
+            <Route path="/group-coordinator" element={<ProtectedRoute><GroupCoordinator /></ProtectedRoute>} />
+            <Route path="/budget-manager" element={<ProtectedRoute><BudgetManager /></ProtectedRoute>} />
+            <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
