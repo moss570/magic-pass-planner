@@ -5,7 +5,7 @@ const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
   { icon: Map, label: "Trip Planner", path: "/trip-planner" },
   { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },
-  { icon: Gift, label: "Gift Card Tracker", path: "#" },
+  { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Zap, label: "Live Park Mode", path: "#" },
   { icon: Ticket, label: "AP Command Center", path: "#" },
   { icon: Users, label: "Group Coordinator", path: "#" },
