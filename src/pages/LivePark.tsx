@@ -208,8 +208,8 @@ const LivePark = () => {
           <p className="text-sm text-muted-foreground mb-1">Get on a ride AND see the fireworks — perfectly timed</p>
           <p className="text-sm text-foreground font-semibold mb-4">Tonight: Happily Ever After · 9:00 PM</p>
 
-          <div className="rounded-xl bg-muted/10 overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="rounded-xl bg-muted/10 overflow-x-auto max-w-full">
+            <table className="w-full text-sm min-w-[500px]">
               <thead>
                 <tr className="border-b border-primary/10">
                   {["Ride", "Current Wait", "Ride Duration", "Get In Line By", "Status"].map((h) => (

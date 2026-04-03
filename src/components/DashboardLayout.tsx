@@ -102,7 +102,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       </aside>
 
       {/* Main */}
-      <main className="md:ml-16 lg:ml-60 flex-1 min-h-screen pb-20 md:pb-0" style={{ background: "#080E1E" }}>
+      <main className="md:ml-16 lg:ml-60 flex-1 min-h-screen pb-20 md:pb-0 w-full max-w-full overflow-x-hidden" style={{ background: "#080E1E" }}>
         {/* Top bar */}
         <div className="px-4 md:px-8 pt-4 md:pt-8 pb-4 md:pb-6 flex items-start justify-between">
           <div className="flex items-center gap-3 md:block">

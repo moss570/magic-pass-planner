@@ -271,8 +271,8 @@ const DiningAlerts = () => {
         {/* Alert History */}
         <div>
           <h2 className="text-base font-bold text-foreground mb-4">Recent Alert History</h2>
-          <div className="rounded-xl bg-card gold-border overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="rounded-xl bg-card gold-border overflow-x-auto max-w-full">
+            <table className="w-full text-sm min-w-[500px]">
               <thead>
                 <tr className="border-b border-primary/10">
                   {["Restaurant", "Date", "Party", "Status", "Alerted At", "Action"].map((h) => (

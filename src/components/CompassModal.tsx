@@ -83,7 +83,7 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
   const r = compassSize / 2;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center" style={{ background: "rgba(8,14,30,0.97)" }}>
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{ background: "rgba(8,14,30,0.97)", width: "100vw", maxWidth: "100vw" }}>
       <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10">
         <X className="w-6 h-6" />
       </button>
