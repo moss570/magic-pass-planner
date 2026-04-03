@@ -4,7 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar } from "lucide-react";
+import { MessageSquare, Plus, Send, Search, X, Copy, Mail, MapPin, Calendar, Castle } from "lucide-react";
+
+const beaconParks = ["MK", "EPCOT", "HS", "AK", "Typhoon Lagoon", "Blizzard Beach"];
+const beaconDurations = ["30 min", "1 hour", "2 hours", "Until park close"];
+const beaconGroupTypes = ["Solo", "With a partner", "Small group", "Large group"];
+
+const meetingSpots: Record<string, string[]> = {
+  MK: ["Main Street Flagpole", "Cinderella Castle Steps", "Space Mountain Entrance", "Tomorrowland Terrace", "Fantasyland Carousel", "Big Thunder Mountain Entrance", "Haunted Mansion Queue", "Pirates Entrance", "Adventureland Bridge", "Tiana's Bayou Entrance", "Crystal Palace Front"],
+  EPCOT: ["Spaceship Earth Entrance", "World Showcase Plaza", "Test Track Entrance", "Guardians of the Galaxy Entrance"],
+  HS: ["Hollywood Blvd Arch", "Tower of Terror Entrance", "Toy Story Land Entrance", "Galaxy's Edge Entrance"],
+  AK: ["Tree of Life", "Pandora Entrance", "Kilimanjaro Safaris Entrance", "Expedition Everest Entrance"],
+  "Typhoon Lagoon": ["Main Entrance", "Surf Pool", "Lazy River Start"],
+  "Blizzard Beach": ["Main Entrance", "Summit Plummet Base", "Melt Away Bay"],
+};
+
+const activeBeacons = [
+  { pass: "Incredi-Pass", spot: "Near Space Mountain Entrance", expires: "42 min", group: "Solo AP", vibe: "Love coasters, happy to ride Tron together 🎢", color: "bg-amber-600" },
+  { pass: "Sorcerer Pass", spot: "Fantasyland Carousel", expires: "1h 18min", group: "Small group (3)", vibe: "Family of Disney adults, first timers welcome 🏰", color: "bg-violet-600" },
+  { pass: "Incredi-Pass", spot: "Tomorrowland Terrace", expires: "28 min", group: "With a partner", vibe: "EPCOT regulars doing MK today, say hi! ☕", color: "bg-sky-600" },
+];
 
 const friends = [
   { initials: "MR", name: "Mike R.", pass: "Incredi-Pass", online: true, location: "At Hollywood Studios today", home: "Hollywood Studios", color: "bg-teal-500" },
