@@ -52,6 +52,7 @@ const DiningAlerts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRestaurant, setSelectedRestaurant] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [locationFilter, setLocationFilter] = useState("All");
   const [date, setDate] = useState<Date>();
   const [partySize, setPartySize] = useState(4);
   const [selectedMeals, setSelectedMeals] = useState<string[]>(["Dinner"]);
@@ -59,9 +60,11 @@ const DiningAlerts = () => {
   const [emailOn, setEmailOn] = useState(true);
   const [smsOn, setSmsOn] = useState(false);
 
-  const filteredRestaurants = restaurants.filter((r) =>
-    r.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRestaurants = restaurants.filter((r) => {
+    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLocation = locationFilter === "All" || r.location === locationFilter;
+    return matchesSearch && matchesLocation;
+  });
 
   const toggleMeal = (meal: string) => {
     setSelectedMeals((prev) =>
