@@ -34,7 +34,7 @@ const alerts = [
 ];
 
 const fireworksRides = [
-  { ride: "Liberty Riverboat", wait: 0, duration: 17, lineBy: "8:43 PM", status: "🟢 Best View", statusColor: "text-green-400", land: "Liberty Square" },
+  { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟢 Great View", statusColor: "text-green-400", land: "Frontierland" },
   { ride: "Big Thunder Mountain", wait: 18, duration: 4, lineBy: "8:38 PM", status: "🟢 Great Angle", statusColor: "text-green-400", land: "Frontierland" },
   { ride: "Tiana's Bayou Adventure", wait: 22, duration: 11, lineBy: "8:27 PM", status: "🟡 Good View", statusColor: "text-yellow-400", land: "Frontierland" },
   { ride: "Jungle Cruise", wait: 25, duration: 10, lineBy: "8:25 PM", status: "🟡 Partial View", statusColor: "text-yellow-400", land: "Adventureland" },
