@@ -121,18 +121,35 @@ const DiningAlerts = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search restaurants..."
+                  placeholder="Search any Disney restaurant or resort dining..."
                   value={selectedRestaurant || searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setSelectedRestaurant(""); setShowDropdown(true); }}
                   onFocus={() => setShowDropdown(true)}
                   className="w-full bg-muted/30 border border-primary/10 rounded-lg pl-9 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
                 />
               </div>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {locationFilters.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => { setLocationFilter(loc); setShowDropdown(true); setSelectedRestaurant(""); }}
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-colors border ${
+                      locationFilter === loc
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-primary/20 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">150+ Disney World restaurants · Updated automatically</p>
               {showDropdown && !selectedRestaurant && (
                 <div className="absolute z-50 top-full mt-1 w-full bg-card border border-primary/20 rounded-lg max-h-48 overflow-y-auto shadow-xl">
                   {filteredRestaurants.map((r) => (
-                    <button key={r} onClick={() => { setSelectedRestaurant(r); setShowDropdown(false); setSearchQuery(""); }} className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors">
-                      {r}
+                    <button key={r.name} onClick={() => { setSelectedRestaurant(r.name); setShowDropdown(false); setSearchQuery(""); }} className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-primary/10 transition-colors flex items-center justify-between">
+                      <span>{r.name}</span>
+                      <span className="text-[10px] text-muted-foreground">{r.location}</span>
                     </button>
                   ))}
                 </div>
