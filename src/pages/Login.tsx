@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Footer from "@/components/Footer";
 import { Castle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
