@@ -9,6 +9,8 @@ import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, Clipboard
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSubscription } from "@/hooks/useSubscription";
+import { Link } from "react-router-dom";
 
 const Settings = () => {
   const { user } = useAuth();
