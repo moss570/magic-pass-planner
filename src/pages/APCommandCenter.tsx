@@ -271,8 +271,7 @@ const APCommandCenter = () => {
           <div className="flex flex-wrap gap-3 mb-5">
             {[
               { label: "I have an Annual Pass (10% dining)", val: hasAP, set: setHasAP },
-              { label: "I have Tables in Wonderland membership (20% dining)", val: hasTIW, set: setHasTIW },
-              { label: "I have a Disney Visa Card (10% on select dining)", val: hasVisa, set: setHasVisa },
+              { label: "I have a Disney Visa Card (10% at select restaurants)", val: hasVisa, set: setHasVisa },
               { label: "Target RedCard (5% on gift card purchases used for this meal)", val: hasRedCard, set: setHasRedCard },
             ].map((cb) => (
               <label key={cb.label} className="flex items-start gap-2 cursor-pointer">
