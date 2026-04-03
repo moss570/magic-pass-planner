@@ -291,23 +291,17 @@ const APCommandCenter = () => {
               {hasAP && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">AP Discount (10%)</span>
-                  {hasTIW ? (
-                    <span className="text-muted-foreground line-through">-${apSavings.toFixed(2)}</span>
-                  ) : (
-                    <span className="text-green-400 font-semibold">-${apSavings.toFixed(2)}</span>
-                  )}
+                  <span className={`font-semibold ${hasVisa ? "text-muted-foreground" : "text-green-400"}`}>
+                    {hasVisa ? `Use whichever is higher` : `-$${apSavings.toFixed(2)}`}
+                  </span>
                 </div>
               )}
               {hasVisa && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Disney Visa (10% — does NOT stack with AP on this restaurant)</span>
-                  <span className="text-red-400">❌ Cannot combine</span>
-                </div>
-              )}
-              {hasTIW && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Tables in Wonderland (20% — REPLACES AP discount, better deal)</span>
-                  <span className="text-green-400 font-semibold">✅ Use this: -${tiwSavings.toFixed(2)}</span>
+                  <span className="text-muted-foreground">Disney Visa Card (10%)</span>
+                  <span className={`font-semibold ${hasAP ? "text-muted-foreground" : "text-green-400"}`}>
+                    {hasAP ? `Does not stack with AP` : `-$${visaSavings.toFixed(2)}`}
+                  </span>
                 </div>
               )}
               {hasRedCard && (
@@ -325,8 +319,8 @@ const APCommandCenter = () => {
               <span className="text-sm font-bold text-foreground">You pay</span>
               <span className="text-xl md:text-2xl font-extrabold text-green-400">${youPay}</span>
             </div>
-            {hasTIW && hasAP && (
-              <p className="text-xs text-primary mt-2 font-semibold">Recommendation: Use Tables in Wonderland over your AP discount here — you save ${(tiwSavings - apSavings).toFixed(0)} more.</p>
+            {hasAP && hasVisa && (
+              <p className="text-xs text-primary mt-2 font-semibold">Disney Visa and AP discounts typically cannot be combined — use whichever is higher for your bill.</p>
             )}
           </div>
         </div>

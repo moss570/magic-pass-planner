@@ -12,7 +12,7 @@ const itinerary = [
   { time: "2:30 PM", activity: "Festival of Fantasy Parade", badge: null, badgeColor: "", location: null, land: "" },
   { time: "4:00 PM", activity: "Rest / pool time", badge: null, badgeColor: "", location: null, land: "" },
   { time: "7:00 PM", activity: "Dinner: Cinderella's Royal Table", badge: null, badgeColor: "", location: "Cinderella's Royal Table", land: "Fantasyland · Magic Kingdom" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Liberty Riverboat 🎆", badgeColor: "text-primary", location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
+  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Main Street Hub · arrive by 8:45 PM 🎆", badgeColor: "text-primary", location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
 ];
 
 const alerts = [

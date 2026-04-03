@@ -30,8 +30,8 @@ const itineraryItems = [
   { time: "4:00 PM", activity: "Haunted Mansion", badge: null, badgeColor: "", tip: "Consistent low waits mid-afternoon", wait: 18, waitColor: "text-green-400", location: "Haunted Mansion", land: "Liberty Square · Magic Kingdom" },
   { time: "5:00 PM", activity: "Pirates of the Caribbean", badge: null, badgeColor: "", tip: "One of the best waits of the day at this time", wait: 12, waitColor: "text-green-400", location: "Pirates of the Caribbean", land: "Adventureland · Magic Kingdom" },
   { time: "6:30 PM", activity: "Columbia Harbour House dinner", badge: "Quick Service", badgeColor: "bg-blue-500/20 text-blue-400", tip: "Best quick service in Magic Kingdom — second floor has great views", wait: null, location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
-  { time: "8:00 PM", activity: "Get in position for Happily Ever After Fireworks", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Liberty Square near the Riverboat — center view, less crowded than Main Street", wait: null, location: "Liberty Square Riverboat", land: "Liberty Square · Magic Kingdom" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks 🎆", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Formula: Show starts 9 PM. Board Liberty Riverboat at 8:45 for perfect elevation view", wait: null, location: null, land: "" },
+  { time: "8:00 PM", activity: "Get in position for Happily Ever After Fireworks", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Main Street Hub center — arrive by 8:45 PM for prime position", wait: null, location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
+  { time: "9:00 PM", activity: "Happily Ever After Fireworks 🎆", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Main Street Hub center — arrive by 8:45 PM for prime position", wait: null, location: null, land: "" },
 ];
 
 const TripPlanner = () => {
