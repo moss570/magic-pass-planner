@@ -32,8 +32,23 @@ const upcomingDates = [
 ];
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [firstName, setFirstName] = useState("there");
+
+  useEffect(() => {
+    if (user) {
+      supabase.from("users_profile").select("first_name").eq("id", user.id).single()
+        .then(({ data }) => {
+          if (data?.first_name) setFirstName(data.first_name);
+        });
+    }
+  }, [user]);
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
-    <DashboardLayout title="Good morning, Brandon 👋" subtitle="Your next Disney trip is 47 days away">
+    <DashboardLayout title={`${greeting}, ${firstName} 👋`} subtitle="Your next Disney trip is 47 days away">
       <div className="space-y-6">
         {/* ROW 1 — Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
