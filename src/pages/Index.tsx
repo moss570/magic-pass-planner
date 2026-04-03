@@ -70,9 +70,10 @@ const features = [
 ];
 
 const stats = [
-  { icon: Users, value: "1,200+", label: "Active Members" },
-  { icon: DollarSign, value: "$480", label: "Avg. Trip Savings" },
+  { icon: Users, value: "2,400+", label: "Active Members" },
+  { icon: DollarSign, value: "$520", label: "Avg. Trip Savings" },
   { icon: Star, value: "4.9★", label: "Rating" },
+  { icon: Users, value: "340+", label: "🏰 AP Meetup Connections" },
 ];
 
 const Index = () => {
