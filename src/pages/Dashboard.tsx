@@ -3,15 +3,15 @@ import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 
 const sidebarNav = [
-  { icon: Home, label: "Dashboard", active: true },
-  { icon: Map, label: "Trip Planner" },
-  { icon: UtensilsCrossed, label: "Dining Alerts" },
-  { icon: Gift, label: "Gift Card Tracker" },
-  { icon: Zap, label: "Live Park Mode" },
-  { icon: Ticket, label: "AP Command Center" },
-  { icon: Users, label: "Group Coordinator" },
-  { icon: Wallet, label: "Budget Manager" },
-  { icon: Settings, label: "Settings" },
+  { icon: Home, label: "Dashboard", active: true, path: "/dashboard" },
+  { icon: Map, label: "Trip Planner", path: "/trip-planner" },
+  { icon: UtensilsCrossed, label: "Dining Alerts", path: "#" },
+  { icon: Gift, label: "Gift Card Tracker", path: "#" },
+  { icon: Zap, label: "Live Park Mode", path: "#" },
+  { icon: Ticket, label: "AP Command Center", path: "#" },
+  { icon: Users, label: "Group Coordinator", path: "#" },
+  { icon: Wallet, label: "Budget Manager", path: "#" },
+  { icon: Settings, label: "Settings", path: "#" },
 ];
 
 const itinerary = [
