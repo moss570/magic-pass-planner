@@ -1,0 +1,1 @@
+TRUNCATE public.subscriptions, public.users_profile CASCADE;
