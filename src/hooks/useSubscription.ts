@@ -30,10 +30,15 @@ export function useSubscription() {
       const { data: { session: latestSession } } = await supabase.auth.getSession();
       const authToken = latestSession?.access_token ?? session.access_token;
 
+      if (!authToken) {
+        throw new Error("Your session expired. Please log in again.");
+      }
+
       const res = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`,
           "x-client-authorization": `Bearer ${authToken}`,
           "apikey": SUPABASE_ANON_KEY,
         },
