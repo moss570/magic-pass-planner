@@ -25,6 +25,13 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    if (req.method !== "POST") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 405,
+      });
+    }
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
@@ -38,7 +45,21 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId, planName } = await req.json();
+    const rawBody = await req.text();
+    logStep("Raw request body", { length: rawBody.length, body: rawBody.substring(0, 200) });
+
+    if (!rawBody || rawBody.trim().length === 0) {
+      throw new Error("Request body is empty. Expected JSON with priceId.");
+    }
+
+    let parsed: { priceId?: string; planName?: string };
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      throw new Error(`Invalid JSON in request body: ${rawBody.substring(0, 100)}`);
+    }
+
+    const { priceId, planName } = parsed;
     if (!priceId) throw new Error("priceId is required");
     logStep("Checkout request", { priceId, planName });
 
@@ -52,7 +73,7 @@ serve(async (req) => {
       logStep("Existing Stripe customer found", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app";
+    const origin = req.headers.get("origin") || "https://magic-pass-planner.lovable.app";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
