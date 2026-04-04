@@ -41,7 +41,11 @@ const Dashboard = () => {
     if (user) {
       supabase.from("users_profile").select("first_name").eq("id", user.id).single()
         .then(({ data }) => {
-          if (data?.first_name) setFirstName(data.first_name);
+          if (data?.first_name && data.first_name.trim()) {
+            setFirstName(data.first_name);
+          } else {
+            setFirstName("there");
+          }
         });
     }
   }, [user]);
