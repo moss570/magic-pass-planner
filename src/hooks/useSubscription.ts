@@ -31,9 +31,11 @@ export function useSubscription() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "Authorization": `Bearer ${session.access_token}`,
+          "x-client-authorization": `Bearer ${session.access_token}`,
           "apikey": SUPABASE_ANON_KEY,
         },
+        body: JSON.stringify({}),
       });
 
       if (res.ok) {
