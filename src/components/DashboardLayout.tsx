@@ -125,11 +125,18 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
           })()}
           <div className="hidden lg:block">
             <Link to="/pricing" className="block text-xs font-medium text-secondary hover:underline mb-1">Upgrade Plan</Link>
-            <button onClick={handleLogout} className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              <LogOut className="w-3 h-3" />
-              Log Out
-            </button>
           </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium text-muted-foreground hover:text-foreground hover:bg-[#1a2235] transition-colors lg:justify-start justify-center">
+                <LogOut className="w-4 h-4 shrink-0" />
+                <span className="hidden lg:inline">Log Out</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="lg:hidden">
+              Log Out
+            </TooltipContent>
+          </Tooltip>
         </div>
       </aside>
 
