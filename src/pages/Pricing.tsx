@@ -11,7 +11,7 @@ import { PRICE_IDS } from "@/lib/stripe";
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const invokeCheckout = async (accessToken: string, body: { priceId: string; planName: string }) => {
+const invokeCheckout = async (accessToken: string, body: { priceId: string; planName: string; userEmail: string }) => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
     method: "POST",
     headers: {
@@ -125,17 +125,22 @@ const Pricing = () => {
     priceId,
     planName,
     loadingKey,
+    userEmail,
   }: {
     priceId: string;
     planName: string;
     loadingKey: string;
+    userEmail: string;
   }) => {
-    if (!session?.access_token) return;
+    if (!session?.access_token || !userEmail) {
+      toast.error("Unable to start checkout. Please log in again.");
+      return;
+    }
 
     setLoadingTier(loadingKey);
     try {
-      console.log("Starting checkout for:", planName, priceId);
-      const data = await invokeCheckout(session.access_token, { priceId, planName });
+      console.log("Starting checkout for:", planName, priceId, userEmail);
+      const data = await invokeCheckout(session.access_token, { priceId, planName, userEmail });
 
       console.log("Checkout response:", data);
       if (data?.url) {
@@ -164,8 +169,9 @@ const Pricing = () => {
     const params = new URLSearchParams(location.search);
     const tierName = params.get("tier");
     const period = params.get("period");
+    const userEmail = user.email;
 
-    if (!tierName || (period !== "monthly" && period !== "annual")) return;
+    if (!tierName || (period !== "monthly" && period !== "annual") || !userEmail) return;
 
     const priceIds = PRICE_IDS[tierName];
     if (!priceIds) return;
@@ -176,12 +182,18 @@ const Pricing = () => {
       priceId: period === "annual" ? priceIds.annual : priceIds.monthly,
       planName: tierName,
       loadingKey: params.get("offer") === "founder" ? "founder" : tierName,
+      userEmail,
     });
   }, [location.search, session, startCheckout, user]);
 
   const handleCheckout = async (tierName: string) => {
     if (!user || !session) {
       redirectToSignup(tierName, annual ? "annual" : "monthly");
+      return;
+    }
+
+    if (!user.email) {
+      toast.error("Unable to start checkout. Please log in again.");
       return;
     }
 
@@ -192,6 +204,7 @@ const Pricing = () => {
       priceId: annual ? priceIds.annual : priceIds.monthly,
       planName: tierName,
       loadingKey: tierName,
+      userEmail: user.email,
     });
   };
 
@@ -201,10 +214,16 @@ const Pricing = () => {
       return;
     }
 
+    if (!user.email) {
+      toast.error("Unable to start checkout. Please log in again.");
+      return;
+    }
+
     await startCheckout({
       priceId: PRICE_IDS["Magic Pass"].annual,
       planName: "Magic Pass",
       loadingKey: "founder",
+      userEmail: user.email,
     });
   };
 
