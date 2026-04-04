@@ -97,9 +97,9 @@ const Index = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/signup">
+            <Link to={user ? "/dashboard" : "/signup"}>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-12 text-base">
-                Start Free Trial
+                {user ? "Go to Dashboard" : "Start Free Trial"}
               </Button>
             </Link>
             <Link to="/#features">
