@@ -17,23 +17,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isActive = true;
 
-    if (!user) {
-      setOnboardingComplete(null);
-      setLastCheckedState({ path: location.pathname, userId: null });
-      setCheckingOnboarding(false);
-      return () => {
-        isActive = false;
-      };
-    }
+    const checkOnboarding = async () => {
+      if (!user) {
+        setOnboardingComplete(null);
+        setLastCheckedState({ path: location.pathname, userId: null });
+        setCheckingOnboarding(false);
+        return;
+      }
 
-    setCheckingOnboarding(true);
+      setCheckingOnboarding(true);
 
-    supabase
-      .from("users_profile")
-      .select("onboarding_complete")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
+      try {
+        const { data, error } = await supabase
+          .from("users_profile")
+          .select("onboarding_complete")
+          .eq("id", user.id)
+          .maybeSingle();
+
         if (!isActive) return;
 
         if (error) {
@@ -42,18 +42,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         } else {
           setOnboardingComplete(data?.onboarding_complete ?? false);
         }
-
-        setLastCheckedState({ path: location.pathname, userId: user.id });
-        setCheckingOnboarding(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         if (!isActive) return;
 
         console.error("Error checking onboarding status", error);
         setOnboardingComplete(false);
+      } finally {
+        if (!isActive || !user) return;
+
         setLastCheckedState({ path: location.pathname, userId: user.id });
         setCheckingOnboarding(false);
-      });
+      }
+    };
+
+    void checkOnboarding();
 
     return () => {
       isActive = false;
