@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { buildPostAuthRedirect, clearStoredPostAuthRedirect, preparePostAuthRedirect } from "@/lib/authRedirect";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -16,18 +17,6 @@ const Signup = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const getPostAuthRedirect = () => {
-    const params = new URLSearchParams(location.search);
-    const returnTo = params.get("returnTo") || "/dashboard";
-    params.delete("returnTo");
-
-    const nextSearch = params.toString();
-    if (!nextSearch) return returnTo;
-
-    const separator = returnTo.includes("?") ? "&" : "?";
-    return `${returnTo}${separator}${nextSearch}`;
-  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +29,7 @@ const Signup = () => {
     }
 
     setLoading(true);
-    const postAuthRedirect = getPostAuthRedirect();
+    const postAuthRedirect = buildPostAuthRedirect(location.search);
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
@@ -61,13 +50,15 @@ const Signup = () => {
   };
 
   const handleGoogleSignup = async () => {
+    setError("");
     setGoogleLoading(true);
-    const postAuthRedirect = getPostAuthRedirect();
+    const postAuthRedirect = preparePostAuthRedirect(location.search);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}${postAuthRedirect}` },
     });
     if (error) {
+      clearStoredPostAuthRedirect();
       setError(error.message);
       setGoogleLoading(false);
     }
