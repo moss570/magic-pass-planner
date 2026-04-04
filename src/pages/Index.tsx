@@ -7,6 +7,7 @@ import {
   Clock, DollarSign, Star
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const StarField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,6 +79,7 @@ const stats = [
 ];
 
 const Index = () => {
+  const { user, loading } = useAuth();
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
       <Header />
@@ -95,9 +97,9 @@ const Index = () => {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/signup">
+            <Link to={user ? "/dashboard" : "/signup"}>
               <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-12 text-base">
-                Start Free Trial
+                {user ? "Go to Dashboard" : "Start Free Trial"}
               </Button>
             </Link>
             <Link to="/#features">
@@ -169,10 +171,12 @@ const Index = () => {
       {/* Footer CTA */}
       <section className="py-20 px-4 text-center">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Ready to plan your perfect Disney trip?</h2>
-        <p className="text-muted-foreground mb-8">Start your 7-day free trial — no credit card required.</p>
-        <Link to="/signup">
+        <p className="text-muted-foreground mb-8">
+          {user ? "Head to your dashboard to get started." : "Start your 7-day free trial — no credit card required."}
+        </p>
+        <Link to={user ? "/dashboard" : "/signup"}>
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-10 h-12 text-base">
-            Get Started Free
+            {user ? "Go to Dashboard" : "Get Started Free"}
           </Button>
         </Link>
       </section>
