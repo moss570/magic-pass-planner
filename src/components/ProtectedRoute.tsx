@@ -9,25 +9,62 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [checkingOnboarding, setCheckingOnboarding] = useState(true);
   const [onboardingComplete, setOnboardingComplete] = useState<boolean | null>(null);
+  const [lastCheckedState, setLastCheckedState] = useState<{
+    path: string | null;
+    userId: string | null;
+  }>({ path: null, userId: null });
 
   useEffect(() => {
+    let isActive = true;
+
     if (!user) {
+      setOnboardingComplete(null);
+      setLastCheckedState({ path: location.pathname, userId: null });
       setCheckingOnboarding(false);
-      return;
+      return () => {
+        isActive = false;
+      };
     }
+
+    setCheckingOnboarding(true);
 
     supabase
       .from("users_profile")
       .select("onboarding_complete")
       .eq("id", user.id)
-      .single()
-      .then(({ data }) => {
-        setOnboardingComplete(data?.onboarding_complete ?? false);
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!isActive) return;
+
+        if (error) {
+          console.error("Error checking onboarding status", error);
+          setOnboardingComplete(false);
+        } else {
+          setOnboardingComplete(data?.onboarding_complete ?? false);
+        }
+
+        setLastCheckedState({ path: location.pathname, userId: user.id });
+        setCheckingOnboarding(false);
+      })
+      .catch((error) => {
+        if (!isActive) return;
+
+        console.error("Error checking onboarding status", error);
+        setOnboardingComplete(false);
+        setLastCheckedState({ path: location.pathname, userId: user.id });
         setCheckingOnboarding(false);
       });
-  }, [user]);
 
-  if (loading || checkingOnboarding) {
+    return () => {
+      isActive = false;
+    };
+  }, [location.pathname, user?.id]);
+
+  const routeCheckStale =
+    lastCheckedState.path !== location.pathname ||
+    lastCheckedState.userId !== (user?.id ?? null);
+
+  if (loading || checkingOnboarding || routeCheckStale) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#080E1E" }}>
         <div className="flex flex-col items-center gap-4">
@@ -42,7 +79,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If onboarding not complete and not already on onboarding page, redirect
+  if (onboardingComplete && location.pathname === "/onboarding") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   if (!onboardingComplete && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
