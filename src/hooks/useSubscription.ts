@@ -27,11 +27,14 @@ export function useSubscription() {
     }
 
     try {
+      const { data: { session: latestSession } } = await supabase.auth.getSession();
+      const authToken = latestSession?.access_token ?? session.access_token;
+
       const res = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
+          "x-client-authorization": `Bearer ${authToken}`,
           "apikey": SUPABASE_ANON_KEY,
         },
       });
