@@ -20,6 +20,7 @@ import GroupCoordinator from "./pages/GroupCoordinator";
 import BudgetManager from "./pages/BudgetManager";
 import Friends from "./pages/Friends";
 import SettingsPage from "./pages/Settings";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
