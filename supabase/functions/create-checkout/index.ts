@@ -73,7 +73,7 @@ serve(async (req) => {
       logStep("Existing Stripe customer found", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "https://id-preview--2febd70b-a24d-4037-b2ce-eb98d5ee6fea.lovable.app";
+    const origin = req.headers.get("origin") || "https://magic-pass-planner.lovable.app";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
