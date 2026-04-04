@@ -20,26 +20,18 @@ export function useSubscription() {
   const [loading, setLoading] = useState(true);
 
   const checkSubscription = useCallback(async () => {
-    if (!session?.access_token || !user) {
+    if (!session || !user) {
       setSubscription(null);
       setLoading(false);
       return;
     }
 
     try {
-      const { data: { session: latestSession } } = await supabase.auth.getSession();
-      const authToken = latestSession?.access_token ?? session.access_token;
-
-      if (!authToken) {
-        throw new Error("Your session expired. Please log in again.");
-      }
-
       const res = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${authToken}`,
-          "x-client-authorization": `Bearer ${authToken}`,
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           "apikey": SUPABASE_ANON_KEY,
         },
       });
@@ -74,7 +66,7 @@ export function useSubscription() {
     } finally {
       setLoading(false);
     }
-  }, [session?.access_token, user]);
+  }, [session, user]);
 
   useEffect(() => {
     checkSubscription();
