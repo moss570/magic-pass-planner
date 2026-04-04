@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Castle, Menu, X } from "lucide-react";
+import { Castle, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user, loading, signOut } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -14,11 +16,10 @@ const Header = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
+  const publicLinks = [
     { label: "Features", href: "/#features" },
     { label: "Pricing", href: "/pricing" },
     { label: "For Annual Passholders", href: "/pricing" },
-    { label: "Login", href: "/login" },
   ];
 
   return (
@@ -35,7 +36,7 @@ const Header = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {publicLinks.map((link) => (
               <Link
                 key={link.label}
                 to={link.href}
@@ -44,14 +45,40 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {!loading && !user && (
+              <Link
+                to="/login"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Login
+              </Link>
+            )}
           </nav>
 
-          <div className="hidden md:block">
-            <Link to="/signup">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-6">
-                Start Free Trial
-              </Button>
-            </Link>
+          <div className="hidden md:flex items-center gap-3">
+            {loading ? null : user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-5">
+                    <User className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={signOut}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/signup">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-6">
+                  Start Free Trial
+                </Button>
+              </Link>
+            )}
           </div>
 
           <button
@@ -66,7 +93,7 @@ const Header = () => {
       {mobileOpen && (
         <div className="md:hidden bg-card/95 backdrop-blur-xl border-t border-border">
           <div className="px-4 py-4 space-y-3">
-            {navLinks.map((link) => (
+            {publicLinks.map((link) => (
               <Link
                 key={link.label}
                 to={link.href}
@@ -76,11 +103,37 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
-            <Link to="/signup" onClick={() => setMobileOpen(false)}>
-              <Button className="w-full bg-primary text-primary-foreground font-semibold rounded-lg mt-2">
-                Start Free Trial
-              </Button>
-            </Link>
+            {!loading && !user && (
+              <Link
+                to="/login"
+                className="block text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                Login
+              </Link>
+            )}
+            {!loading && user ? (
+              <>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <Button className="w-full bg-primary text-primary-foreground font-semibold rounded-lg mt-2">
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  onClick={() => { signOut(); setMobileOpen(false); }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground mt-1"
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : !loading ? (
+              <Link to="/signup" onClick={() => setMobileOpen(false)}>
+                <Button className="w-full bg-primary text-primary-foreground font-semibold rounded-lg mt-2">
+                  Start Free Trial
+                </Button>
+              </Link>
+            ) : null}
           </div>
         </div>
       )}

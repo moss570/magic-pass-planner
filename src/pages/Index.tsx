@@ -7,6 +7,7 @@ import {
   Clock, DollarSign, Star
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const StarField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
