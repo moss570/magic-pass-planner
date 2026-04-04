@@ -20,6 +20,7 @@ import GroupCoordinator from "./pages/GroupCoordinator";
 import BudgetManager from "./pages/BudgetManager";
 import Friends from "./pages/Friends";
 import SettingsPage from "./pages/Settings";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/trip-planner" element={<ProtectedRoute><TripPlanner /></ProtectedRoute>} />
             <Route path="/dining-alerts" element={<ProtectedRoute><DiningAlerts /></ProtectedRoute>} />
