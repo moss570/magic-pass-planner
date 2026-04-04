@@ -7,25 +7,16 @@ import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PRICE_IDS } from "@/lib/stripe";
-import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const invokeCheckout = async (accessToken: string, body: { priceId: string; planName: string; userEmail: string }) => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const authToken = session?.access_token ?? accessToken;
-
-  if (!authToken) {
-    throw new Error("Your session expired. Please log in again.");
-  }
-
+const invokeCheckout = async (body: { priceId: string; planName: string; userEmail: string }) => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${authToken}`,
-      "x-client-authorization": `Bearer ${authToken}`,
+      "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
       "apikey": SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),
@@ -158,7 +149,7 @@ const Pricing = () => {
     setLoadingTier(loadingKey);
     try {
       console.log("Starting checkout for:", planName, priceId, userEmail);
-      const data = await invokeCheckout(session.access_token, { priceId, planName, userEmail });
+      const data = await invokeCheckout({ priceId, planName, userEmail });
 
       console.log("Checkout response:", data);
       if (data?.url) {
