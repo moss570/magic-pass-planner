@@ -25,6 +25,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const redirectHandledRef = useRef(false);
 
   useEffect(() => {
+    // Detect if we're returning from an OAuth callback (hash contains tokens)
+    const isOAuthCallback =
+      typeof window !== "undefined" &&
+      (window.location.hash.includes("access_token") ||
+        window.location.hash.includes("refresh_token"));
+
     const handlePostAuthRedirect = (event: string, nextSession: Session | null) => {
       if (!nextSession || redirectHandledRef.current || typeof window === "undefined") return;
       if (event !== "SIGNED_IN" && event !== "INITIAL_SESSION") return;
@@ -49,11 +55,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       handlePostAuthRedirect(event, nextSession);
     });
 
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setLoading(false);
-      handlePostAuthRedirect("INITIAL_SESSION", currentSession);
-    });
+    // If this is an OAuth callback, let onAuthStateChange handle everything
+    // (getSession may resolve with null before the token exchange completes)
+    if (!isOAuthCallback) {
+      supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+        setSession(currentSession);
+        setLoading(false);
+        handlePostAuthRedirect("INITIAL_SESSION", currentSession);
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
