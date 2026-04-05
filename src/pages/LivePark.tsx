@@ -27,6 +27,7 @@ const PARK_BOUNDS: Record<string, { lat: [number, number]; lng: [number, number]
   "animal-kingdom": { lat: [28.355, 28.365], lng: [-81.594, -81.582] },
   "typhoon-lagoon": { lat: [28.369, 28.376], lng: [-81.530, -81.523] },
   "blizzard-beach": { lat: [28.354, 28.360], lng: [-81.577, -81.568] },
+};
 
 // Navigate-To locations by park
 const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "restaurant" | "shop" | "restroom" | "area"; area: string }>> = {
@@ -41,7 +42,7 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
     { name: "Pirates of the Caribbean", type: "ride", area: "Adventureland" },
     { name: "Jungle Cruise", type: "ride", area: "Adventureland" },
     { name: "Peter Pan's Flight", type: "ride", area: "Fantasyland" },
-    { name: ""it's a small world"", type: "ride", area: "Fantasyland" },
+    { name: "it's a small world", type: "ride", area: "Fantasyland" },
     { name: "Mad Tea Party", type: "ride", area: "Fantasyland" },
     { name: "Dumbo the Flying Elephant", type: "ride", area: "Fantasyland" },
     { name: "The Barnstormer", type: "ride", area: "Fantasyland" },
@@ -123,7 +124,6 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
   ],
 };
 
-};
 
 // LINE GAMES — mini games to play while waiting
 const LINE_GAMES = [

@@ -486,7 +486,7 @@ const Settings = () => {
 // Disney Account Connect Component
 function DisneyConnectSection() {
   const { session } = useAuth();
-  const { toast } = useToast();
+  const toastFn = (opts: { title: string; description?: string; variant?: string }) => toast(opts.title, { description: opts.description });
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
@@ -521,7 +521,7 @@ function DisneyConnectSection() {
       );
 
       if (!popup) {
-        toast({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
+        toastFn({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
         setConnecting(false);
         return;
       }
@@ -537,7 +537,7 @@ function DisneyConnectSection() {
         try {
           // Try to get the token from the popup's page
           const popupDoc = popup.document;
-          const tokenResult = await popup.eval(\`
+          const tokenResult = await (popup as any).eval(`
             (async () => {
               try {
                 const resp = await fetch('/profile-api/authentication/get-client-token', {
@@ -550,14 +550,14 @@ function DisneyConnectSection() {
               } catch(e) {}
               return null;
             })()
-          \`).catch(() => null);
+          `).catch(() => null);
           
           if (tokenResult) {
             clearInterval(checkPopup);
             popup.close();
             
             // Save token to backend
-            const saveResp = await fetch(\`\${SUPABASE_URL}/functions/v1/disney-auth?action=save\`, {
+            const saveResp = await fetch(`\${SUPABASE_URL}/functions/v1/disney-auth?action=save`, {
               method: "POST",
               headers: getHeaders(),
               body: JSON.stringify({ access_token: tokenResult }),
@@ -566,7 +566,7 @@ function DisneyConnectSection() {
             
             if (saveData.success) {
               setConnected(true);
-              toast({ 
+              toastFn({ 
                 title: saveData.hasFullScope ? "✅ Disney account connected!" : "⚠️ Connected (limited scope)",
                 description: saveData.hasFullScope 
                   ? "Real-time dining alerts are now active" 
@@ -588,7 +588,7 @@ function DisneyConnectSection() {
       }, 300000);
 
     } catch (err) {
-      toast({ title: "Connection failed", variant: "destructive" });
+      toastFn({ title: "Connection failed", variant: "destructive" });
       setConnecting(false);
     }
   };
@@ -598,7 +598,7 @@ function DisneyConnectSection() {
       method: "POST", headers: getHeaders(),
     });
     setConnected(false);
-    toast({ title: "Disney account disconnected" });
+    toastFn({ title: "Disney account disconnected" });
   };
 
   if (loading) return <div className="h-8 bg-muted/20 rounded animate-pulse" />;

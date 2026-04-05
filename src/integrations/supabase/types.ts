@@ -24,6 +24,7 @@ export type Database = {
           availability_url: string | null
           check_count: number | null
           created_at: string | null
+          group_recipient_ids: string[] | null
           id: string
           last_checked_at: string | null
           meal_periods: string[] | null
@@ -43,6 +44,7 @@ export type Database = {
           availability_url?: string | null
           check_count?: number | null
           created_at?: string | null
+          group_recipient_ids?: string[] | null
           id?: string
           last_checked_at?: string | null
           meal_periods?: string[] | null
@@ -62,6 +64,7 @@ export type Database = {
           availability_url?: string | null
           check_count?: number | null
           created_at?: string | null
+          group_recipient_ids?: string[] | null
           id?: string
           last_checked_at?: string | null
           meal_periods?: string[] | null
@@ -126,6 +129,42 @@ export type Database = {
           },
         ]
       }
+      disney_sessions: {
+        Row: {
+          access_token: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_refreshed: string | null
+          swid: string | null
+          token_expiry: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_refreshed?: string | null
+          swid?: string | null
+          token_expiry?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_refreshed?: string | null
+          swid?: string | null
+          token_expiry?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       restaurants: {
         Row: {
           accepts_walk_ins: boolean | null
@@ -133,6 +172,7 @@ export type Database = {
           created_at: string | null
           cuisine: string | null
           dining_plan: boolean | null
+          disney_entity_id: string | null
           disney_url: string | null
           id: string
           is_active: boolean | null
@@ -151,6 +191,7 @@ export type Database = {
           created_at?: string | null
           cuisine?: string | null
           dining_plan?: boolean | null
+          disney_entity_id?: string | null
           disney_url?: string | null
           id?: string
           is_active?: boolean | null
@@ -169,6 +210,7 @@ export type Database = {
           created_at?: string | null
           cuisine?: string | null
           dining_plan?: boolean | null
+          disney_entity_id?: string | null
           disney_url?: string | null
           id?: string
           is_active?: boolean | null
@@ -270,6 +312,54 @@ export type Database = {
           last_name?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
+        }
+        Relationships: []
+      }
+      vip_accounts: {
+        Row: {
+          created_at: string | null
+          email: string
+          first_name: string | null
+          id: string
+          invite_accepted_at: string | null
+          invite_sent_at: string | null
+          invited_by: string | null
+          last_name: string | null
+          notes: string | null
+          reason: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          first_name?: string | null
+          id?: string
+          invite_accepted_at?: string | null
+          invite_sent_at?: string | null
+          invited_by?: string | null
+          last_name?: string | null
+          notes?: string | null
+          reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          first_name?: string | null
+          id?: string
+          invite_accepted_at?: string | null
+          invite_sent_at?: string | null
+          invited_by?: string | null
+          last_name?: string | null
+          notes?: string | null
+          reason?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
