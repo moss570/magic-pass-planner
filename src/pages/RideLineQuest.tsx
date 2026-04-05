@@ -93,7 +93,7 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
     const emojis = type === "artifact" ? t.artifacts : t.obstacles;
     return {
       id: crypto.randomUUID(), emoji: emojis[Math.floor(rng() * emojis.length)],
-      x, y, vx, vy, size: type === "dodge" ? 60 : 44, type,
+      x, y, vx, vy, size: type === "dodge" ? 60 : 44, type: type as Obstacle["type"],
     };
   }, [selectedTheme]);
 
