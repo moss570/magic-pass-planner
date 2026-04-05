@@ -1,261 +1,373 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  Users, Map, Bell, DollarSign, Vote, Plus, Check, X, Calendar,
+  Clock, MapPin, ChevronDown, ChevronUp, UserPlus, Send
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pencil, Plus, Send, ChevronDown, ChevronUp } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import CompassButton from "@/components/CompassButton";
 
-const members = [
-  { initial: "B", name: "Brandon", role: "Trip Organizer", status: "Joined", pass: "Incredi-Pass", color: "bg-primary" },
-  { initial: "S", name: "Sarah", role: "Member", status: "Joined", pass: "Incredi-Pass", color: "bg-blue-500" },
-  { initial: "E", name: "Emma", role: "Member", status: "Joined", pass: "Day Ticket", color: "bg-pink-500" },
-  { initial: "J", name: "Jake", role: "Member", status: "Joined", pass: "Day Ticket", color: "bg-green-500" },
-];
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const itinerary = [
-  { time: "8:00 AM", title: "Rope Drop: Tron Lightcycle Run", status: "all", label: "✅ All 5 members confirmed", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
-  { time: "9:30 AM", title: "Be Our Guest Breakfast", status: "partial", label: "⚠️ 4/5 confirmed · Jake hasn't responded", action: "Send Jake a Reminder", location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
-  { time: "11:00 AM", title: "Space Mountain (Lightning Lane)", status: "all", label: "✅ All 5 members confirmed", location: "Space Mountain", land: "Tomorrowland · Magic Kingdom" },
-  { time: "1:00 PM", title: "Group Lunch — Columbia Harbour House", status: "vote", label: "🗳️ Vote in progress — see poll below", location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
-  { time: "2:30 PM", title: "Festival of Fantasy Parade", status: "all", label: "✅ All 5 members confirmed", location: null, land: "" },
-  { time: "9:00 PM", title: "Happily Ever After Fireworks", status: "all", label: "✅ All 5 members confirmed", location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
-];
+export default function GroupCoordinator() {
+  const { session } = useAuth();
+  const { toast } = useToast();
+  const [trips, setTrips] = useState<any[]>([]);
+  const [selectedTrip, setSelectedTrip] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [itinerary, setItinerary] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [settleUp, setSettleUp] = useState<any[]>([]);
+  const [diningAlerts, setDiningAlerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<"itinerary" | "expenses" | "dining" | "members">("itinerary");
 
-const expenses = [
-  { desc: "Park tickets (4 day tickets)", amount: "$1,200.00", paidBy: "Brandon", split: "All 5", date: "May 1" },
-  { desc: "Be Our Guest breakfast", amount: "$187.50", paidBy: "Sarah", split: "All 5", date: "May 20" },
-  { desc: "Souvenir run — gift shop", amount: "$94.00", paidBy: "Brandon", split: "All 5", date: "May 20" },
-  { desc: "Jake's Lightning Lane (individual)", amount: "$22.00", paidBy: "Jake", split: "Jake only", date: "May 20" },
-  { desc: "Columbia Harbour House lunch", amount: "$143.00", paidBy: "Emma", split: "All 5", date: "May 20" },
-  { desc: "Mickey ears (kids)", amount: "$68.00", paidBy: "Brandon", split: "Emma, Jake", date: "May 20" },
-];
+  // Poll state
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [showPollForm, setShowPollForm] = useState(false);
+  const [polls, setPolls] = useState<any[]>([]);
 
-const GroupCoordinator = () => {
-  const [expenseOpen, setExpenseOpen] = useState(true);
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${session?.access_token}`,
+    "x-client-authorization": `Bearer ${session?.access_token}`,
+    "apikey": SUPABASE_ANON,
+  });
 
-  return (
-    <DashboardLayout title="👨‍👩‍👧 Group Coordinator" subtitle="Plan together, stay in sync — shared itinerary, expenses, and alerts for your whole group">
-      {/* Group name */}
-      <div className="flex items-center gap-2 mb-6 flex-wrap">
-        <span className="text-base md:text-lg font-bold text-foreground">🏰 The Moss Family Trip — Magic Kingdom · May 20–23, 2026</span>
-        <button className="p-1 rounded border border-primary/30 text-primary hover:bg-primary/10"><Pencil className="w-3.5 h-3.5" /></button>
+  useEffect(() => {
+    if (!session) return;
+    supabase.from("saved_trips")
+      .select("id, name, parks, start_date, end_date, itinerary, estimated_total")
+      .eq("user_id", session.user.id)
+      .order("updated_at", { ascending: false })
+      .limit(10)
+      .then(({ data }) => {
+        setTrips(data || []);
+        if (data && data.length > 0) loadTrip(data[0]);
+        else setLoading(false);
+      });
+  }, [session]);
+
+  const loadTrip = async (trip: any) => {
+    setSelectedTrip(trip);
+    setLoading(true);
+    try {
+      const [membResp, expResp, alertsResp] = await Promise.all([
+        fetch(`${SUPABASE_URL}/functions/v1/social?action=trip-members&tripId=${trip.id}`, { headers: getHeaders() }),
+        fetch(`${SUPABASE_URL}/functions/v1/social?action=expenses&tripId=${trip.id}`, { headers: getHeaders() }),
+        supabase.from("dining_alerts").select("*, restaurant:restaurants(name, location)").eq("user_id", session!.user.id).in("status", ["watching", "found"]).limit(5),
+      ]);
+
+      const [membData, expData] = await Promise.all([membResp.json(), expResp.json()]);
+      setMembers(membData.members || []);
+      setExpenses(expData.expenses || []);
+      setSettleUp(expData.settleUp || []);
+      setDiningAlerts(alertsResp.data || []);
+
+      // Get first day itinerary from trip
+      if (trip.itinerary && trip.itinerary[0]?.items) {
+        setItinerary(trip.itinerary[0].items);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createPoll = () => {
+    if (!pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2) return;
+    const newPoll = {
+      id: Date.now(),
+      question: pollQuestion,
+      options: pollOptions.filter(o => o.trim()).map(opt => ({ text: opt, votes: 0 })),
+      votes: {} as Record<string, string>,
+      closed: false,
+    };
+    setPolls(prev => [newPoll, ...prev]);
+    setPollQuestion("");
+    setPollOptions(["", ""]);
+    setShowPollForm(false);
+    toast({ title: "📊 Poll created!" });
+  };
+
+  const vote = (pollId: number, optionIdx: number) => {
+    setPolls(prev => prev.map(p => {
+      if (p.id !== pollId) return p;
+      const alreadyVoted = p.votes[session?.user.id || ""];
+      const updatedOptions = p.options.map((opt: any, i: number) => ({
+        ...opt,
+        votes: alreadyVoted === String(i)
+          ? opt.votes - 1
+          : i === optionIdx ? opt.votes + 1 : opt.votes,
+      }));
+      return { ...p, options: updatedOptions, votes: { ...p.votes, [session?.user.id || ""]: String(optionIdx) } };
+    }));
+  };
+
+  if (!session) return (
+    <DashboardLayout title="👨‍👩‍👧 Group Coordinator" subtitle="Plan together, stay in sync">
+      <div className="text-center py-16">
+        <p className="text-sm text-muted-foreground">Please log in to use Group Coordinator</p>
       </div>
-
-      {/* Section 1: Group Members */}
-      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">Your Travel Group (5 members)</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-            {members.map((m) => (
-              <div key={m.name} className="flex-shrink-0 w-[140px] md:w-[160px] rounded-xl border border-primary/15 bg-[#0D1230]/60 p-3 flex flex-col items-center gap-1.5 text-center">
-                <div className={`w-10 h-10 rounded-full ${m.color} flex items-center justify-center text-sm font-bold text-white`}>{m.initial}</div>
-                <p className="text-sm font-semibold text-foreground">{m.name}</p>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${m.role === "Trip Organizer" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>{m.role}</span>
-                <span className="text-[10px] font-medium text-green-400">✅ {m.status}</span>
-                <span className="text-[10px] text-muted-foreground">{m.pass}</span>
-              </div>
-            ))}
-            {/* Add member */}
-            <div className="flex-shrink-0 w-[140px] md:w-[160px] rounded-xl border-2 border-dashed border-primary/30 bg-transparent p-3 flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:border-primary/60 transition-colors">
-              <div className="w-10 h-10 rounded-full border-2 border-dashed border-primary/40 flex items-center justify-center">
-                <Plus className="w-5 h-5 text-primary" />
-              </div>
-              <span className="text-xs font-medium text-primary">Invite Someone</span>
-            </div>
-          </div>
-          <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Send className="w-3.5 h-3.5 mr-1" /> Invite to Group — They Get $1 First Month</Button>
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">Non-members get a special discount offer</span>
-            </div>
-            <span className="text-xs text-muted-foreground">Magic Pass members are added instantly. Non-members receive a $1 first-month offer.</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Section 2: Itinerary + Polls */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6 mb-6">
-        {/* Itinerary */}
-        <Card className="lg:col-span-3 border-primary/20 bg-card/80 overflow-hidden">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">📅 Group Itinerary — Magic Kingdom · May 20</CardTitle>
-            <CardDescription>Live — all members see updates in real time</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-0">
-            {itinerary.map((item, i) => (
-              <div key={i} className="flex gap-3 py-3 border-b border-primary/10 last:border-0">
-                <div className="w-16 md:w-20 shrink-0 text-xs md:text-sm font-mono text-primary font-semibold pt-0.5">{item.time}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                    {item.location && (
-                      <CompassButton destination={item.location} context={item.land} />
-                    )}
-                  </div>
-                  <p className={`text-xs mt-0.5 ${item.status === "partial" ? "text-yellow-400" : item.status === "vote" ? "text-blue-400" : "text-green-400"}`}>{item.label}</p>
-                  {item.action && <Button size="sm" className="mt-1.5 h-7 text-[11px] bg-primary/20 text-primary hover:bg-primary/30 border-0">{item.action}</Button>}
-                </div>
-              </div>
-            ))}
-            <div className="flex flex-col sm:flex-row gap-2 pt-4">
-              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Plus className="w-3.5 h-3.5 mr-1" /> Add Activity</Button>
-              <Button variant="outline" className="border-muted text-muted-foreground hover:text-foreground text-xs">📤 Export Full Itinerary</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Polls */}
-        <Card className="lg:col-span-2 border-primary/20 bg-card/80 overflow-hidden">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">🗳️ Active Polls</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
-            {/* Poll 1 */}
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 space-y-2">
-              <p className="text-sm font-semibold text-foreground">Where should we eat lunch on May 20?</p>
-              {[
-                { label: "Columbia Harbour House", votes: 3, pct: 60 },
-                { label: "Skipper Canteen", votes: 2, pct: 40 },
-                { label: "Quick service / split up", votes: 0, pct: 0 },
-              ].map((o) => (
-                <div key={o.label} className="space-y-0.5">
-                  <div className="flex justify-between text-xs"><span className="text-muted-foreground">{o.label}</span><span className="text-primary font-semibold">{o.votes}</span></div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${o.pct}%` }} /></div>
-                </div>
-              ))}
-              <p className="text-[10px] text-muted-foreground">Poll closes in 2 hours · Brandon hasn't voted yet</p>
-              <div className="flex gap-2">
-                <Button size="sm" className="h-7 text-[11px]">Cast My Vote</Button>
-                <Button size="sm" variant="ghost" className="h-7 text-[11px] text-muted-foreground">Close Poll</Button>
-              </div>
-            </div>
-            {/* Poll 2 */}
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 space-y-1 opacity-70">
-              <p className="text-sm font-semibold text-foreground">Which park on Day 2?</p>
-              <p className="text-xs text-primary font-semibold">🏆 EPCOT — 4/5 votes</p>
-              <p className="text-[10px] text-muted-foreground">Closed · Added to itinerary ✅</p>
-            </div>
-            <Button variant="outline" className="w-full border-primary/30 text-primary hover:bg-primary/10 text-xs"><Plus className="w-3.5 h-3.5 mr-1" /> Create New Poll</Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Section 3: Split Expense Tracker */}
-      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">💸 Split Expense Tracker</CardTitle>
-          <CardDescription>Log what you paid — Magic Pass calculates who owes who at the end</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-              <p className="text-xs text-muted-foreground">Total Group Spend</p>
-              <p className="text-xl font-bold text-primary">$1,847.50</p>
-            </div>
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-              <p className="text-xs text-muted-foreground">Your Share</p>
-              <p className="text-xl font-bold text-foreground">$369.50<span className="text-sm text-muted-foreground">/person</span></p>
-            </div>
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-              <p className="text-xs text-muted-foreground">Settle Up</p>
-              <p className="text-xl font-bold text-green-400">Jake owes you $43.20</p>
-            </div>
-          </div>
-
-          {/* Add Expense form */}
-          <div className="rounded-lg border border-primary/15 bg-[#0D1230]/40 p-3 space-y-3">
-            <button onClick={() => setExpenseOpen(!expenseOpen)} className="flex items-center justify-between w-full text-sm font-semibold text-foreground">
-              Add Expense {expenseOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expenseOpen && (
-              <div className="space-y-3">
-                <Input placeholder="e.g. Lunch at Be Our Guest" className="bg-background/50 border-primary/20 text-sm" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input type="number" placeholder="$120" className="bg-background/50 border-primary/20 text-sm" />
-                  <Select><SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue placeholder="Paid by..." /></SelectTrigger>
-                    <SelectContent>{members.map(m => <SelectItem key={m.name} value={m.name}>{m.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1.5">Split between:</p>
-                  <div className="flex flex-wrap gap-3">
-                    {members.map(m => (
-                      <label key={m.name} className="flex items-center gap-1.5 text-xs text-foreground"><Checkbox defaultChecked className="border-primary/40" />{m.name}</label>
-                    ))}
-                  </div>
-                </div>
-                <Button className="text-xs">Add Expense</Button>
-              </div>
-            )}
-          </div>
-
-          {/* Expense table */}
-          <div className="overflow-x-auto max-w-full">
-            <Table className="min-w-[500px]">
-              <TableHeader><TableRow className="border-primary/10">
-                <TableHead className="text-xs">Description</TableHead><TableHead className="text-xs">Amount</TableHead><TableHead className="text-xs">Paid By</TableHead><TableHead className="text-xs">Split</TableHead><TableHead className="text-xs">Date</TableHead><TableHead className="text-xs">Action</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {expenses.map((e, i) => (
-                  <TableRow key={i} className="border-primary/10">
-                    <TableCell className="text-xs font-medium text-foreground">{e.desc}</TableCell>
-                    <TableCell className="text-xs text-primary font-semibold">{e.amount}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{e.paidBy}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{e.split}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{e.date}</TableCell>
-                    <TableCell><button className="text-xs text-primary hover:underline">Edit</button></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Settle Up */}
-          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-2">
-            <p className="text-sm font-bold text-primary">💰 Settle Up Summary</p>
-            <ul className="text-xs text-foreground space-y-1">
-              <li>• Jake owes Brandon <span className="text-primary font-semibold">$43.20</span></li>
-              <li>• Emma owes Sarah <span className="text-primary font-semibold">$12.75</span></li>
-              <li>• Sarah owes Brandon <span className="text-primary font-semibold">$8.50</span></li>
-            </ul>
-            <Button className="text-xs mt-1">📤 Send Settle Up Summary to Group</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Section 4: Group Dining Alerts */}
-      <Card className="border-primary/20 bg-card/80 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">🍽️ Group Dining Alerts</CardTitle>
-          <CardDescription>All members are notified simultaneously when a reservation opens</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="rounded-lg border border-yellow-500/20 bg-[#0D1230]/60 p-3">
-              <p className="text-sm font-semibold text-foreground">Be Our Guest · May 21 · Party of 5 · Dinner</p>
-              <p className="text-xs text-yellow-400 mt-1 font-semibold">🟡 Watching...</p>
-            </div>
-            <div className="rounded-lg border border-green-500/30 bg-green-500/5 p-3">
-              <p className="text-sm font-semibold text-foreground">Cinderella's Royal Table · May 22 · Party of 5 · Breakfast</p>
-              <p className="text-xs text-green-400 mt-1 font-semibold">🟢 AVAILABLE — Book Now!</p>
-              <div className="flex items-center gap-2 mt-2">
-                <Button size="sm" className="h-7 text-[11px]">Book Now</Button>
-                <CompassButton destination="Cinderella's Royal Table" context="Fantasyland · Magic Kingdom" />
-              </div>
-            </div>
-          </div>
-          <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Plus className="w-3.5 h-3.5 mr-1" /> Add Group Dining Alert</Button>
-        </CardContent>
-      </Card>
     </DashboardLayout>
   );
-};
 
-export default GroupCoordinator;
+  return (
+    <DashboardLayout title="👨‍👩‍👧 Group Coordinator" subtitle={selectedTrip ? `${selectedTrip.name} — ${selectedTrip.start_date}` : "Plan together, stay in sync"}>
+      <div className="space-y-5">
+
+        {/* No trips CTA */}
+        {!loading && trips.length === 0 && (
+          <div className="text-center py-16">
+            <Map className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-sm font-semibold text-foreground mb-2">No trips yet</p>
+            <p className="text-xs text-muted-foreground mb-6">Create a trip in Trip Planner to coordinate with your group</p>
+            <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+              Plan a Trip →
+            </Link>
+          </div>
+        )}
+
+        {trips.length > 0 && (
+          <>
+            {/* Trip selector */}
+            {trips.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {trips.map(trip => (
+                  <button key={trip.id} onClick={() => loadTrip(trip)}
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors ${selectedTrip?.id === trip.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    {trip.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Group members summary */}
+            {members.length > 0 && (
+              <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-bold text-foreground">Travel Party ({members.length})</p>
+                  <Link to="/trip-planner" className="text-xs text-primary hover:underline">Manage →</Link>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {members.map(m => (
+                    <div key={m.id} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/8 border border-white/10">
+                      <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center text-xs font-bold text-primary">
+                        {m.first_name[0]}
+                      </div>
+                      <span className="text-xs font-medium text-foreground">{m.first_name}</span>
+                      <span className={`text-xs px-1 rounded ${m.status === "joined" ? "text-green-400" : "text-yellow-400"}`}>
+                        {m.status === "joined" ? "✅" : "⏳"}
+                      </span>
+                    </div>
+                  ))}
+                  <Link to="/trip-planner" className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-dashed border-white/20 text-xs text-muted-foreground hover:border-primary/40">
+                    <Plus className="w-3 h-3" /> Add
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {members.length === 0 && (
+              <div className="rounded-xl p-4 border border-dashed border-white/15 text-center">
+                <UserPlus className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground mb-2">No group members yet</p>
+                <Link to="/trip-planner" className="text-xs text-primary hover:underline">Add people to your trip in Trip Planner →</Link>
+              </div>
+            )}
+
+            {/* Section tabs */}
+            <div className="flex gap-1 border-b border-white/10">
+              {[
+                { id: "itinerary", label: "📅 Itinerary" },
+                { id: "expenses", label: "💸 Expenses" },
+                { id: "dining", label: "🍽️ Dining Alerts" },
+                { id: "members", label: "🗳️ Polls" },
+              ].map(s => (
+                <button key={s.id} onClick={() => setActiveSection(s.id as any)}
+                  className={`px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${activeSection === s.id ? "text-primary border-b-2 border-primary -mb-px" : "text-muted-foreground"}`}>
+                  {s.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Itinerary */}
+            {activeSection === "itinerary" && (
+              <div>
+                {loading ? (
+                  <div className="text-center py-8"><div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" /></div>
+                ) : itinerary.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-xs text-muted-foreground">No itinerary yet</p>
+                    <Link to="/trip-planner" className="text-xs text-primary hover:underline mt-1 block">Generate one in Trip Planner →</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedTrip?.itinerary?.[0] && (
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xl">{selectedTrip.itinerary[0].parkEmoji}</span>
+                        <p className="text-sm font-bold text-foreground">{selectedTrip.itinerary[0].park} — {selectedTrip.itinerary[0].date}</p>
+                      </div>
+                    )}
+                    {itinerary.slice(0, 10).map((item: any, i: number) => (
+                      <div key={i} className="rounded-xl p-3 border border-white/8 flex gap-3" style={{ background: "#111827" }}>
+                        <div>
+                          <p className="text-xs text-muted-foreground font-mono">{item.time}</p>
+                          <p className="text-sm font-semibold text-foreground leading-tight mt-0.5">{item.activity}</p>
+                          {item.badge && <span className={`text-xs px-1.5 py-0.5 rounded mt-1 inline-block ${item.priority === "must-do" ? "bg-primary/20 text-primary" : "bg-white/8 text-muted-foreground"}`}>{item.badge}</span>}
+                        </div>
+                        {item.location && (
+                          <div className="ml-auto shrink-0">
+                            <CompassButton destination={item.location} context={item.land || ""} size="inline" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <Link to="/trip-planner" className="block text-center text-xs text-primary hover:underline py-2">View full itinerary →</Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Expenses */}
+            {activeSection === "expenses" && (
+              <div className="space-y-4">
+                {settleUp.length > 0 && (
+                  <div className="rounded-xl p-4 border border-primary/20 bg-primary/5">
+                    <p className="text-xs font-bold text-primary mb-2">💸 Settle Up</p>
+                    {settleUp.map(s => (
+                      <div key={s.memberId} className="flex justify-between text-sm">
+                        <span className="text-foreground">{s.name}</span>
+                        <span className={s.balance > 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                          {s.balance > 0 ? `+$${s.balance.toFixed(2)}` : `-$${Math.abs(s.balance).toFixed(2)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {expenses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <DollarSign className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-xs text-muted-foreground">No expenses logged</p>
+                    <Link to="/budget-manager" className="text-xs text-primary hover:underline block mt-1">Go to Budget Manager →</Link>
+                  </div>
+                ) : (
+                  <div>
+                    {expenses.map((exp, i) => (
+                      <div key={exp.id} className={`flex justify-between px-3 py-2.5 ${i < expenses.length - 1 ? "border-b border-white/5" : ""}`}>
+                        <div>
+                          <p className="text-sm text-foreground">{exp.description}</p>
+                          <p className="text-xs text-muted-foreground">{exp.expense_type === "shared" ? "👥 Shared" : "👤 Personal"} · {exp.date}</p>
+                        </div>
+                        <p className="text-sm font-bold text-foreground">${parseFloat(exp.amount).toFixed(2)}</p>
+                      </div>
+                    ))}
+                    <Link to="/budget-manager" className="block text-center text-xs text-primary hover:underline py-3">Log expense in Budget Manager →</Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Dining Alerts */}
+            {activeSection === "dining" && (
+              <div>
+                {diningAlerts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-xs text-muted-foreground">No dining alerts active</p>
+                    <Link to="/dining-alerts" className="text-xs text-primary hover:underline block mt-1">Set up dining alerts →</Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {diningAlerts.map(alert => (
+                      <div key={alert.id} className="rounded-xl p-3 border border-white/8 flex items-center justify-between" style={{ background: "#111827" }}>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{alert.restaurant?.name}</p>
+                          <p className="text-xs text-muted-foreground">{alert.alert_date} · Party of {alert.party_size}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${alert.status === "found" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                          {alert.status === "found" ? "AVAILABLE!" : "Watching..."}
+                        </span>
+                      </div>
+                    ))}
+                    <Link to="/dining-alerts" className="block text-center text-xs text-primary hover:underline py-2">Manage dining alerts →</Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Polls */}
+            {activeSection === "members" && (
+              <div className="space-y-4">
+                <button onClick={() => setShowPollForm(s => !s)}
+                  className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+                  style={{ background: "#F5C842" }}>
+                  <Plus className="w-4 h-4" /> Create Group Poll
+                </button>
+
+                {showPollForm && (
+                  <div className="rounded-xl p-4 border border-white/10" style={{ background: "#111827" }}>
+                    <input value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} placeholder="Poll question (e.g. Which park on Day 2?)"
+                      className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" />
+                    {pollOptions.map((opt, i) => (
+                      <input key={i} value={opt} onChange={e => { const n = [...pollOptions]; n[i] = e.target.value; setPollOptions(n); }}
+                        placeholder={`Option ${i + 1}`}
+                        className="w-full px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground mb-2 focus:outline-none focus:border-primary/40" />
+                    ))}
+                    <button onClick={() => setPollOptions(p => [...p, ""])} className="text-xs text-primary hover:underline mb-3 block">+ Add option</button>
+                    <button onClick={createPoll} className="w-full py-2 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Create Poll</button>
+                  </div>
+                )}
+
+                {polls.length === 0 && !showPollForm && (
+                  <div className="text-center py-8">
+                    <Vote className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-xs text-muted-foreground">No polls yet — create one to decide as a group!</p>
+                    <p className="text-xs text-muted-foreground mt-1">Example: "Which park on Day 2?" or "Where should we eat lunch?"</p>
+                  </div>
+                )}
+
+                {polls.map(poll => {
+                  const totalVotes = poll.options.reduce((s: number, o: any) => s + o.votes, 0);
+                  const myVote = poll.votes[session?.user.id || ""];
+                  return (
+                    <div key={poll.id} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+                      <p className="text-sm font-bold text-foreground mb-3">🗳️ {poll.question}</p>
+                      <div className="space-y-2 mb-2">
+                        {poll.options.map((opt: any, i: number) => {
+                          const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                          const isLeading = opt.votes === Math.max(...poll.options.map((o: any) => o.votes)) && opt.votes > 0;
+                          return (
+                            <button key={i} onClick={() => vote(poll.id, i)} className="w-full text-left">
+                              <div className={`p-2.5 rounded-lg border transition-colors ${myVote === String(i) ? "border-primary/50 bg-primary/10" : "border-white/8 hover:border-white/15"}`}>
+                                <div className="flex justify-between text-xs mb-1">
+                                  <span className={myVote === String(i) ? "text-primary font-semibold" : "text-foreground"}>{opt.text}</span>
+                                  <span className="text-muted-foreground">{opt.votes} vote{opt.votes !== 1 ? "s" : ""} {isLeading && "🏆"}</span>
+                                </div>
+                                <div className="w-full bg-white/5 rounded-full h-1.5">
+                                  <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, background: isLeading ? "#F5C842" : "#7C3AED" }} />
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{totalVotes} total vote{totalVotes !== 1 ? "s" : ""}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </DashboardLayout>
+  );
+}
