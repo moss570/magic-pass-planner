@@ -588,7 +588,7 @@ function DisneyConnectSection() {
       }, 300000);
 
     } catch (err) {
-      toast({ title: "Connection failed", variant: "destructive" });
+      toastFn({ title: "Connection failed", variant: "destructive" });
       setConnecting(false);
     }
   };
