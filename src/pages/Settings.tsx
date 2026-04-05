@@ -557,7 +557,7 @@ function DisneyConnectSection() {
             popup.close();
             
             // Save token to backend
-            const saveResp = await fetch(\`\${SUPABASE_URL}/functions/v1/disney-auth?action=save\`, {
+            const saveResp = await fetch(`\${SUPABASE_URL}/functions/v1/disney-auth?action=save`, {
               method: "POST",
               headers: getHeaders(),
               body: JSON.stringify({ access_token: tokenResult }),
