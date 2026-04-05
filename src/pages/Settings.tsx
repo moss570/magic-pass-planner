@@ -521,7 +521,7 @@ function DisneyConnectSection() {
       );
 
       if (!popup) {
-        toast({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
+        toastFn({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
         setConnecting(false);
         return;
       }
