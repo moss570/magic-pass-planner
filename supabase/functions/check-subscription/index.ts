@@ -88,6 +88,11 @@ serve(async (req) => {
 
     logStep("Active subscription found", { status: sub.status, planName, priceId });
 
+    const trialEndDate = sub.trial_end ? new Date(sub.trial_end * 1000) : null;
+    const periodEndDate = sub.current_period_end ? new Date(sub.current_period_end * 1000) : null;
+    const trialEndISO = trialEndDate && !isNaN(trialEndDate.getTime()) ? trialEndDate.toISOString() : null;
+    const periodEndISO = periodEndDate && !isNaN(periodEndDate.getTime()) ? periodEndDate.toISOString() : null;
+
     // Upsert into subscriptions table
     await supabaseClient.from("subscriptions").upsert({
       user_id: user.id,
@@ -96,8 +101,8 @@ serve(async (req) => {
       plan_name: planName,
       plan_interval: interval === "year" ? "annual" : "monthly",
       status: sub.status,
-      trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      trial_end: trialEndISO,
+      current_period_end: periodEndISO,
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id" });
 
@@ -106,8 +111,8 @@ serve(async (req) => {
       status: sub.status,
       plan_name: planName,
       plan_interval: interval,
-      trial_end: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-      current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+      trial_end: trialEndISO,
+      current_period_end: periodEndISO,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
