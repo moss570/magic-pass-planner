@@ -572,26 +572,64 @@ function DisneyConnectSection() {
 
       {!connected ? (
         <div className="space-y-3">
-          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-            <p className="text-xs text-foreground font-semibold mb-1">How it works:</p>
-            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-              <li>Click "Connect Disney Account" below</li>
-              <li>A window opens — log into your Disney account if needed</li>
-              <li>Magic Pass captures your session token securely</li>
-              <li>We check availability every 60 seconds on your behalf</li>
-              <li>Alert fires the instant a reservation opens</li>
-            </ol>
-          </div>
-          <button
-            onClick={handleConnect}
-            disabled={connecting}
-            className="w-full py-3 rounded-xl font-bold text-sm text-[var(--background)] disabled:opacity-60"
-            style={{ background: "#F5C842" }}
-          >
-            {connecting ? "Waiting for Disney login..." : "🏰 Connect Disney Account"}
-          </button>
+          {!showTokenInstructions ? (
+            <>
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <p className="text-xs text-foreground font-semibold mb-1">Enable real-time dining alerts:</p>
+                <p className="text-xs text-muted-foreground">Connect your Disney account to enable 60-second availability checking. Your Disney password is never stored.</p>
+              </div>
+              <button
+                onClick={handleConnect}
+                disabled={connecting}
+                className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60"
+                style={{ background: "#F5C842", color: "#080E1E" }}
+              >
+                🏰 Connect Disney Account
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
+                <p className="text-xs font-bold text-foreground mb-2">📋 How to get your Disney token (2 min):</p>
+                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
+                  <li>Open <a href="https://disneyworld.disney.go.com/dine-res/availability/" target="_blank" rel="noopener noreferrer" className="text-primary underline">disneyworld.disney.go.com/dine-res/availability/</a> and log in</li>
+                  <li>Press <code className="bg-white/10 px-1 rounded">F12</code> → click <strong>Network</strong> tab</li>
+                  <li>Type <code className="bg-white/10 px-1 rounded">get-client-token</code> in the filter box</li>
+                  <li>Change party size on the Disney page to trigger a request</li>
+                  <li>Click the <code className="bg-white/10 px-1 rounded">get-client-token</code> entry → click <strong>Response</strong></li>
+                  <li>Copy the value after <code className="bg-white/10 px-1 rounded">"access_token":</code></li>
+                  <li>Paste it below and click Save</li>
+                </ol>
+                <p className="text-xs text-yellow-500 mt-2">⚠️ Token expires in 30 min — you'll reconnect periodically</p>
+              </div>
+              <textarea
+                value={manualToken}
+                onChange={e => setManualToken(e.target.value)}
+                placeholder="Paste your Disney access_token here..."
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-xs text-foreground font-mono focus:outline-none focus:border-primary/40 resize-none"
+                style={{ background: "var(--muted)" }}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setShowTokenInstructions(false); setManualToken(""); }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-muted-foreground hover:border-white/20"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConnect}
+                  disabled={connecting || !manualToken.trim()}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-sm disabled:opacity-50"
+                  style={{ background: "#F5C842", color: "#080E1E" }}
+                >
+                  {connecting ? "Verifying..." : "✅ Save Token"}
+                </button>
+              </div>
+            </>
+          )}
           <p className="text-xs text-muted-foreground text-center">
-            Your Disney credentials are never stored — only a secure session token
+            Your Disney password is never stored — only a temporary session token
           </p>
         </div>
       ) : (
