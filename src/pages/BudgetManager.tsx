@@ -1,225 +1,349 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import {
+  Plus, Receipt, Users, DollarSign, TrendingUp, Trash2,
+  ChevronDown, ChevronUp, ArrowRight
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Pencil, Download } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const categories = [
-  { emoji: "🎟️", label: "Tickets & Passes", spent: 1200, budget: 1500, color: "bg-primary" },
-  { emoji: "🏨", label: "Hotel", spent: 892, budget: 1200, color: "bg-primary" },
-  { emoji: "🍽️", label: "Dining", spent: 330, budget: 900, color: "bg-green-500" },
-  { emoji: "⚡", label: "Lightning Lane", spent: 0, budget: 300, color: "bg-muted-foreground/40" },
-  { emoji: "🛍️", label: "Merchandise", spent: 162, budget: 400, color: "bg-green-500" },
-  { emoji: "🎡", label: "Extras / Misc", spent: 263, budget: 200, color: "bg-destructive" },
-  { emoji: "🚗", label: "Transportation", spent: 0, budget: 200, color: "bg-muted-foreground/40" },
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
+const CATEGORIES = [
+  { value: "tickets", label: "🎟️ Tickets & Passes", color: "bg-primary/20 text-primary" },
+  { value: "hotel", label: "🏨 Hotel", color: "bg-purple-500/20 text-purple-400" },
+  { value: "dining", label: "🍽️ Dining", color: "bg-orange-500/20 text-orange-400" },
+  { value: "lightning-lane", label: "⚡ Lightning Lane", color: "bg-yellow-500/20 text-yellow-400" },
+  { value: "merchandise", label: "🛍️ Merchandise", color: "bg-pink-500/20 text-pink-400" },
+  { value: "transportation", label: "🚗 Transportation", color: "bg-blue-500/20 text-blue-400" },
+  { value: "misc", label: "📦 Misc / Extras", color: "bg-muted text-muted-foreground" },
 ];
 
-const tips = [
-  { title: "🎁 Buy your remaining dining spend as Sam's Club gift cards", desc: "You have $570 left in your dining budget. Buying at Sam's Club saves ~$8.55. Stack with your credit card for an extra $11.40 back.", savings: "Save ~$20" },
-  { title: "⚡ Skip individual Lightning Lane — use Multi Pass instead", desc: "For a party of 5, individual LL ($22/person) adds up fast. LLMP at $15-24/person covers more rides with better value.", savings: "Save up to $35" },
-  { title: "🍽️ Swap one table service meal for quick service", desc: "One Columbia Harbour House meal (~$20/person) vs. one table service (~$55/person) for a party of 5 saves $175.", savings: "Save $175" },
-  { title: "🏨 AP hotel rate alert active for your dates", desc: "A passholder rate of $189/night is available for May 13-16 vs. your current rate of $267/night.", savings: "Save $234" },
-];
+export default function BudgetManager() {
+  const { session } = useAuth();
+  const { toast } = useToast();
 
-const expenses = [
-  { desc: "Park tickets (4 day tickets)", amount: "$1,200.00", paidBy: "Brandon", split: "All 5", date: "May 1", category: "Tickets" },
-  { desc: "Be Our Guest breakfast", amount: "$187.50", paidBy: "Sarah", split: "All 5", date: "May 20", category: "Dining" },
-  { desc: "Souvenir run — gift shop", amount: "$94.00", paidBy: "Brandon", split: "All 5", date: "May 20", category: "Merchandise" },
-  { desc: "Jake's Lightning Lane (individual)", amount: "$22.00", paidBy: "Jake", split: "Jake only", date: "May 20", category: "Lightning Lane" },
-  { desc: "Columbia Harbour House lunch", amount: "$143.00", paidBy: "Emma", split: "All 5", date: "May 20", category: "Dining" },
-  { desc: "Mickey ears (kids)", amount: "$68.00", paidBy: "Brandon", split: "Emma, Jake", date: "May 20", category: "Merchandise" },
-];
+  const [trips, setTrips] = useState<any[]>([]);
+  const [selectedTrip, setSelectedTrip] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [settleUp, setSettleUp] = useState<any[]>([]);
+  const [totalShared, setTotalShared] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-const filterOptions = ["All", "Tickets", "Dining", "Hotel", "Merchandise", "Misc"];
+  // Add expense form
+  const [showAddExpense, setShowAddExpense] = useState(false);
+  const [desc, setDesc] = useState("");
+  const [amount, setAmount] = useState("");
+  const [expenseType, setExpenseType] = useState<"personal" | "shared">("personal");
+  const [category, setCategory] = useState("misc");
+  const [paidByMember, setPaidByMember] = useState("");
+  const [splitWith, setSplitWith] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
-const categoryColors: Record<string, string> = {
-  Tickets: "bg-primary/20 text-primary",
-  Dining: "bg-blue-500/20 text-blue-400",
-  Hotel: "bg-purple-500/20 text-purple-400",
-  Merchandise: "bg-pink-500/20 text-pink-400",
-  "Lightning Lane": "bg-yellow-500/20 text-yellow-400",
-  Misc: "bg-muted text-muted-foreground",
-};
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${session?.access_token}`,
+    "x-client-authorization": `Bearer ${session?.access_token}`,
+    "apikey": SUPABASE_ANON,
+  });
 
-const BudgetManager = () => {
-  const [filter, setFilter] = useState("All");
-  const totalSpent = 1847;
-  const totalBudget = 6500;
+  // Load trips
+  useEffect(() => {
+    if (!session) return;
+    supabase.from("saved_trips")
+      .select("id, name, parks, start_date, estimated_total")
+      .eq("user_id", session.user.id)
+      .order("updated_at", { ascending: false })
+      .limit(10)
+      .then(({ data }) => {
+        setTrips(data || []);
+        if (data && data.length > 0) selectTrip(data[0]);
+        else setLoading(false);
+      });
+  }, [session]);
 
-  const filtered = filter === "All" ? expenses : expenses.filter(e => e.category.toLowerCase().includes(filter.toLowerCase()));
+  const selectTrip = async (trip: any) => {
+    setSelectedTrip(trip);
+    setLoading(true);
+    try {
+      // Load members
+      const membResp = await fetch(`${SUPABASE_URL}/functions/v1/social?action=trip-members&tripId=${trip.id}`, { headers: getHeaders() });
+      const membData = await membResp.json();
+      setMembers(membData.members || []);
+
+      // Load expenses
+      const expResp = await fetch(`${SUPABASE_URL}/functions/v1/social?action=expenses&tripId=${trip.id}`, { headers: getHeaders() });
+      const expData = await expResp.json();
+      setExpenses(expData.expenses || []);
+      setSettleUp(expData.settleUp || []);
+      setTotalShared(expData.totalShared || 0);
+    } catch (err) {
+      console.error("Load error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addExpense = async () => {
+    if (!desc || !amount || !selectedTrip) return;
+    setSaving(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/social?action=add-expense`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          tripId: selectedTrip.id,
+          description: desc,
+          amount: parseFloat(amount),
+          expenseType,
+          paidByMemberId: paidByMember || null,
+          category,
+          splitWith: expenseType === "shared" ? splitWith : [],
+          date: new Date().toISOString().split("T")[0],
+        }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        toast({ title: "✅ Expense logged" });
+        setDesc(""); setAmount(""); setExpenseType("personal"); setCategory("misc");
+        setPaidByMember(""); setSplitWith([]);
+        setShowAddExpense(false);
+        selectTrip(selectedTrip); // Refresh
+      }
+    } catch {
+      toast({ title: "Failed to save expense", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const totalSpent = expenses.reduce((s, e) => s + e.amount, 0);
+  const budget = selectedTrip?.estimated_total || 6500;
+  const remaining = budget - totalSpent;
+
+  if (loading && trips.length === 0) {
+    return (
+      <DashboardLayout title="💰 Budget Manager" subtitle="Track your Disney trip expenses">
+        <div className="text-center py-16">
+          <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-sm font-semibold text-foreground mb-2">No trips yet</p>
+          <p className="text-xs text-muted-foreground mb-6">Create a trip in Trip Planner to start tracking expenses</p>
+          <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+            Create My First Trip →
+          </Link>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
-    <DashboardLayout title="💰 Budget Manager" subtitle="Know exactly what your Disney trip will cost — and how to cut it by $500">
-      {/* Trip integration banner */}
-      <div className="rounded-xl p-4 border border-primary/20 bg-primary/5 mb-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold text-foreground">💡 Connect to your Trip Planner</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Generate a trip in Trip Planner to automatically populate your budget breakdown with real estimates</p>
-        </div>
-        <Link to="/trip-planner" className="shrink-0 px-4 py-2 rounded-lg text-xs font-bold text-[#080E1E] ml-4" style={{ background: "#F5C842" }}>
-          Open Trip Planner →
-        </Link>
-      </div>
-      {/* Section 1: Budget Overview */}
-      <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground mb-1">Total Trip Budget</p>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl md:text-4xl font-bold text-foreground">$6,500</span>
-                <button className="p-1 rounded border border-primary/30 text-primary hover:bg-primary/10"><Pencil className="w-3.5 h-3.5" /></button>
+    <DashboardLayout title="💰 Budget Manager" subtitle={selectedTrip ? `${selectedTrip.name} — ${selectedTrip.start_date}` : "Track your Disney trip expenses"}>
+      <div className="space-y-5">
+
+        {/* Trip selector */}
+        {trips.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {trips.map(trip => (
+              <button key={trip.id} onClick={() => selectTrip(trip)}
+                className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${selectedTrip?.id === trip.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-white/20"}`}>
+                {trip.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Budget overview */}
+        {selectedTrip && (
+          <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs text-muted-foreground mb-0.5">Total Trip Budget (from Trip Planner)</p>
+                <p className="text-3xl font-black text-foreground">${budget.toLocaleString()}</p>
               </div>
-              <div className="mt-3">
-                <Progress value={(totalSpent / totalBudget) * 100} className="h-3 bg-muted" />
-                <p className="text-[10px] text-muted-foreground mt-1">${totalSpent.toLocaleString()} of ${totalBudget.toLocaleString()} spent</p>
-              </div>
+              <Link to="/trip-planner" className="text-xs text-primary hover:underline flex items-center gap-1">
+                Adjust <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
-            <div className="grid grid-cols-2 gap-3 lg:w-[340px]">
-              <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-                <p className="text-[10px] text-muted-foreground">Spent So Far</p>
-                <p className="text-lg font-bold text-primary">$1,847</p>
-              </div>
-              <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-                <p className="text-[10px] text-muted-foreground">Remaining</p>
-                <p className="text-lg font-bold text-green-400">$4,653</p>
-              </div>
-              <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-                <p className="text-[10px] text-muted-foreground">Est. Final Cost</p>
-                <p className="text-lg font-bold text-foreground">$5,920</p>
-              </div>
-              <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3 text-center">
-                <p className="text-[10px] text-muted-foreground">Projected Savings</p>
-                <p className="text-lg font-bold text-green-400">✅ $580</p>
-              </div>
+            <div className="w-full bg-white/5 rounded-full h-3 mb-3">
+              <div className="h-3 rounded-full transition-all" style={{ width: `${Math.min(100, (totalSpent/budget)*100)}%`, background: totalSpent > budget ? "#F43F5E" : "#F5C842" }} />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Spent", value: `$${totalSpent.toLocaleString()}`, color: "text-foreground" },
+                { label: "Remaining", value: `$${Math.max(0, remaining).toLocaleString()}`, color: remaining >= 0 ? "text-green-400" : "text-red-400" },
+                { label: "Shared Total", value: `$${totalShared.toLocaleString()}`, color: "text-primary" },
+              ].map(s => (
+                <div key={s.label} className="text-center p-2 rounded-lg bg-white/5">
+                  <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                  <p className={`text-sm font-bold ${s.color}`}>{s.value}</p>
+                </div>
+              ))}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* Trend message */}
-      <div className="rounded-lg border-l-4 border-green-500 bg-green-500/10 p-3 mb-6">
-        <p className="text-xs text-green-400 font-medium">✅ You're trending $580 under budget. At your current spending pace, you'll finish the trip with money to spare.</p>
-      </div>
+        {/* Settle Up */}
+        {settleUp.length > 0 && (
+          <div className="rounded-xl p-4 border border-primary/20 bg-primary/5">
+            <p className="text-xs font-bold text-primary mb-3">💸 Settle Up Summary</p>
+            <div className="space-y-2">
+              {settleUp.map(s => (
+                <div key={s.memberId} className="flex justify-between items-center">
+                  <span className="text-sm text-foreground">{s.name}</span>
+                  <span className={`text-sm font-bold ${s.balance > 0 ? "text-green-400" : "text-red-400"}`}>
+                    {s.balance > 0 ? `+$${s.balance.toFixed(2)} (owed to them)` : `-$${Math.abs(s.balance).toFixed(2)} (owes)`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-      {/* Section 2: Category Breakdown + Tips */}
-      <div className="grid grid-cols-1 lg:grid-cols-9 gap-4 md:gap-6 mb-6">
-        {/* Spending by Category */}
-        <Card className="lg:col-span-5 border-primary/20 bg-card/80 overflow-hidden">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">Spending by Category</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-3">
-            {categories.map((c) => {
-              const pct = c.budget > 0 ? Math.round((c.spent / c.budget) * 100) : 0;
-              const isOver = pct > 100;
-              const barColor = isOver ? "bg-destructive" : pct === 0 ? "bg-muted-foreground/30" : pct < 50 ? "bg-green-500" : "bg-primary";
-              return (
-                <div key={c.label} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">{c.emoji} {c.label}</span>
-                    <span className={`font-semibold ${isOver ? "text-destructive" : "text-foreground"}`}>${c.spent} / ${c.budget} ({pct}%)</span>
+        {/* Add Expense */}
+        <div>
+          <button onClick={() => setShowAddExpense(e => !e)}
+            className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+            style={{ background: "#F5C842" }}>
+            <Plus className="w-4 h-4" /> Log New Expense
+          </button>
+        </div>
+
+        {showAddExpense && (
+          <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+            <h3 className="text-sm font-bold text-foreground mb-4">Add Expense</h3>
+            <div className="space-y-3">
+              {/* Description */}
+              <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description (e.g. Be Our Guest dinner)"
+                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+
+              {/* Amount */}
+              <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount ($)"
+                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+
+              {/* Expense Type */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Type</p>
+                <div className="flex gap-2">
+                  <button onClick={() => setExpenseType("personal")}
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "personal" ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    👤 Personal (just me)
+                  </button>
+                  <button onClick={() => setExpenseType("shared")}
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "shared" ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    👥 Shared (split it)
+                  </button>
+                </div>
+                {expenseType === "personal" && <p className="text-xs text-muted-foreground mt-1">This expense is yours — it won't affect the group settle-up</p>}
+                {expenseType === "shared" && <p className="text-xs text-muted-foreground mt-1">This will be split among selected group members</p>}
+              </div>
+
+              {/* Category */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Category</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {CATEGORIES.map(cat => (
+                    <button key={cat.value} onClick={() => setCategory(cat.value)}
+                      className={`py-2 px-3 rounded-lg text-xs font-medium text-left border transition-all ${category === cat.value ? "bg-primary/15 border-primary/50 text-primary" : "border-white/8 text-muted-foreground hover:border-white/15"}`}>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Paid by (for shared expenses) */}
+              {expenseType === "shared" && members.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Who paid?</p>
+                  <select value={paidByMember} onChange={e => setPaidByMember(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }}>
+                    <option value="">Select person...</option>
+                    {members.filter(m => m.is_splitting_expenses).map(m => (
+                      <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <button onClick={addExpense} disabled={saving || !desc || !amount}
+                className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50"
+                style={{ background: "#F5C842" }}>
+                {saving ? "Saving..." : "Add Expense"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Expense list */}
+        {expenses.length > 0 ? (
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">All Expenses ({expenses.length})</p>
+            <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+              {expenses.map((exp, i) => {
+                const cat = CATEGORIES.find(c => c.value === exp.category);
+                const paidBy = members.find(m => m.id === exp.paid_by_member_id);
+                return (
+                  <div key={exp.id} className={`flex items-center justify-between px-4 py-3 ${i < expenses.length - 1 ? "border-b border-white/5" : ""}`}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{cat?.label.split(" ")[0] || "📦"}</span>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{exp.description}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${exp.expense_type === "shared" ? "bg-green-500/15 text-green-400" : "bg-white/8 text-muted-foreground"}`}>
+                            {exp.expense_type === "shared" ? "👥 Shared" : "👤 Personal"}
+                          </span>
+                          {paidBy && <span className="text-xs text-muted-foreground">Paid by {paidBy.first_name}</span>}
+                          <span className="text-xs text-muted-foreground">{exp.date}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm font-bold text-foreground">${parseFloat(exp.amount).toFixed(2)}</p>
                   </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                );
+              })}
+            </div>
+          </div>
+        ) : selectedTrip ? (
+          <div className="text-center py-8">
+            <Receipt className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">No expenses logged yet</p>
+            <p className="text-xs text-muted-foreground">Tap "Log New Expense" to start tracking</p>
+          </div>
+        ) : null}
+
+        {/* Trip members */}
+        {selectedTrip && (
+          <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+            <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
+              <p className="text-sm font-bold text-foreground">Travel Party ({members.length})</p>
+              <Link to={`/trip-planner`} className="text-xs text-primary hover:underline">Manage →</Link>
+            </div>
+            {members.length === 0 ? (
+              <div className="px-4 py-6 text-center">
+                <p className="text-xs text-muted-foreground">No members added yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Add trip members in Trip Planner to split expenses</p>
+              </div>
+            ) : members.map((m, i) => (
+              <div key={m.id} className={`flex items-center justify-between px-4 py-3 ${i < members.length - 1 ? "border-b border-white/5" : ""}`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                    {m.first_name[0]}{m.last_name?.[0] || ""}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{m.first_name} {m.last_name}</p>
+                    <p className="text-xs text-muted-foreground">{m.is_adult ? "Adult" : "Child"} · {m.status}</p>
                   </div>
                 </div>
-              );
-            })}
-            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 mt-2">
-              <p className="text-xs text-destructive font-medium">⚠️ Extras/Misc is 31% over budget ($63 over). Consider tracking these purchases more carefully.</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* AI Tips */}
-        <Card className="lg:col-span-4 border-primary/20 bg-card/80 overflow-hidden">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="text-base md:text-lg">💡 Clark's Savings Recommendations</CardTitle>
-            <CardDescription>Personalized for your trip</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-3">
-            {tips.map((tip, i) => (
-              <div key={i} className="rounded-lg border-l-4 border-primary bg-[#0D1230]/60 p-3 space-y-1">
-                <p className="text-sm font-semibold text-foreground">{tip.title}</p>
-                <p className="text-xs text-muted-foreground">{tip.desc}</p>
-                <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 mt-1">{tip.savings}</span>
+                {m.is_splitting_expenses && <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">Splitting</span>}
               </div>
             ))}
-            <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 text-center">
-              <p className="text-sm font-bold text-primary">💰 Apply all recommendations: potential additional savings of $464</p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
+
       </div>
-
-      {/* Section 3: Log Expense */}
-      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">➕ Log a New Expense</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-            <Input placeholder="Description" className="bg-background/50 border-primary/20 text-sm" />
-            <Input type="number" placeholder="$0.00" className="bg-background/50 border-primary/20 text-sm" />
-            <Select><SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue placeholder="Category" /></SelectTrigger>
-              <SelectContent>
-                {["Tickets", "Hotel", "Dining", "Lightning Lane", "Merchandise", "Transportation", "Misc"].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Input type="date" className="bg-background/50 border-primary/20 text-sm" />
-            <Button className="text-xs">Add to Budget</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Section 4: Expense History */}
-      <Card className="border-primary/20 bg-card/80 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <CardTitle className="text-base md:text-lg">📋 All Expenses</CardTitle>
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs w-fit"><Download className="w-3.5 h-3.5 mr-1" /> Export to CSV</Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0">
-          <div className="flex flex-wrap gap-2 mb-4">
-            {filterOptions.map(f => (
-              <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${filter === f ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>{f}</button>
-            ))}
-          </div>
-          <div className="overflow-x-auto max-w-full">
-            <Table className="min-w-[500px]">
-              <TableHeader><TableRow className="border-primary/10">
-                <TableHead className="text-xs">Description</TableHead><TableHead className="text-xs">Amount</TableHead><TableHead className="text-xs">Category</TableHead><TableHead className="text-xs">Paid By</TableHead><TableHead className="text-xs">Date</TableHead>
-              </TableRow></TableHeader>
-              <TableBody>
-                {filtered.map((e, i) => (
-                  <TableRow key={i} className="border-primary/10">
-                    <TableCell className="text-xs font-medium text-foreground">{e.desc}</TableCell>
-                    <TableCell className="text-xs text-primary font-semibold">{e.amount}</TableCell>
-                    <TableCell><span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${categoryColors[e.category] || "bg-muted text-muted-foreground"}`}>{e.category}</span></TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{e.paidBy}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{e.date}</TableCell>
-                  </TableRow>
-                ))}
-                <TableRow className="border-primary/10">
-                  <TableCell className="text-xs font-bold text-primary">Total</TableCell>
-                  <TableCell className="text-xs font-bold text-primary">$1,847.50</TableCell>
-                  <TableCell colSpan={3} />
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
     </DashboardLayout>
   );
-};
-
-export default BudgetManager;
+}
