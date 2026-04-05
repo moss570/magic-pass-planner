@@ -124,7 +124,6 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
   ],
 };
 
-};
 
 // LINE GAMES — mini games to play while waiting
 const LINE_GAMES = [
