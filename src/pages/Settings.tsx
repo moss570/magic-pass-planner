@@ -598,7 +598,7 @@ function DisneyConnectSection() {
       method: "POST", headers: getHeaders(),
     });
     setConnected(false);
-    toast({ title: "Disney account disconnected" });
+    toastFn({ title: "Disney account disconnected" });
   };
 
   if (loading) return <div className="h-8 bg-muted/20 rounded animate-pulse" />;
