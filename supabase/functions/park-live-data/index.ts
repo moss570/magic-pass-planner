@@ -41,36 +41,71 @@ const RIDE_COORDS: Record<string, { lat: number; lng: number; area: string; ride
 };
 
 // Fireworks viewing spots from rides (researched from Disney Tourist Blog, WDWInfo)
-const FIREWORKS_RIDE_DATA: Record<string, { viewQuality: "excellent" | "great" | "good" | "partial"; description: string; tip: string }> = {
+// Fireworks viewing data — researched from Magic Kingdom ride experiences
+// Community photos enabled for each location
+const FIREWORKS_RIDE_DATA: Record<string, { viewQuality: "excellent" | "great" | "good" | "partial"; description: string; tip: string; photoTip: string; emoji: string }> = {
+  "TRON Lightcycle / Run": {
+    viewQuality: "excellent",
+    description: "The undisputed king of fireworks rides. As your Lightcycle launches into the open-air section of the track, the neon canopy disappears and the full Happily Ever After sky opens above you — fireworks bursting in every direction against the glow of Tomorrowland below.",
+    tip: "Time your boarding for about 5 minutes before showtime. The open-air section lasts roughly 30 seconds and lines up perfectly with the finale bursts if you board at the right moment.",
+    photoTip: "The open section faces northeast — position yourself in the rear cars for the widest sky view. The castle is visible in the distance lit in purple and gold.",
+    emoji: "⚡"
+  },
   "Big Thunder Mountain Railroad": {
     viewQuality: "great",
-    description: "Brilliant overhead view of fireworks as you crest the final hill",
-    tip: "Get in line so you exit during the finale — the timing is magical from the final drop"
+    description: "The wildest ride in the wilderness gets even wilder after dark. As your mine train crests the final hill before the big drop, the Frontierland sky opens up and fireworks explode directly overhead — all while you're seconds from a screaming descent into the canyon below.",
+    tip: "Sit in the rear cars for the best overhead view at the crest. Aim to board 15-20 minutes before the show so the timing lines up at the top of the hill.",
+    photoTip: "The rear of the train crests the hill facing the castle. You'll catch gold and red bursts framed against the Frontierland rockwork — a shot no one else gets.",
+    emoji: "🌋"
   },
   "Tiana's Bayou Adventure": {
     viewQuality: "great",
-    description: "Clear sky view of castle fireworks from the open-air sections of the ride",
-    tip: "Aim for the second half of the show — the log flume exit area has a direct castle sightline"
+    description: "One of Magic Kingdom's most underrated fireworks experiences. As you climb toward the big drop, the bayou canopy opens and you catch a breathtaking glimpse of the fireworks sky — perfectly framed between the Spanish moss and the night air — right before you plunge into the bayou below.",
+    tip: "The fireworks view happens at the very top of the lift hill. Board so you reach the top during the middle or finale of the show for the most dramatic burst-to-drop combo.",
+    photoTip: "Front-row riders get a clean sky shot at the top. Castle is visible northwest — look left as you crest the hill for the best framing.",
+    emoji: "🎷"
   },
-  "\"it's a small world\"": {
+  "Astro Orbiter": {
+    viewQuality: "great",
+    description: "No ride in Magic Kingdom puts you higher above the action than Astro Orbiter. Spinning 60 feet above Tomorrowland, you get a full 360° view of Happily Ever After — fireworks bursting at eye level in every direction, Cinderella Castle glowing below you, and the entire park lit up like a map.",
+    tip: "Lines are minimal during fireworks — everyone is on the ground. Ride it during the show for one of the most cinematic views in the park. Brace for wind at the top.",
+    photoTip: "You're literally eye-level with the lower shells. Wide-angle or portrait mode works best — you'll capture bursts, the castle, and Main Street all in one shot from above.",
+    emoji: "🚀"
+  },
+  "Dumbo the Flying Elephant": {
     viewQuality: "good",
-    description: "Partially visible through the outdoor section near the loading area",
-    tip: "The outdoor waiting area and boarding zone offer partial fireworks views between launches"
+    description: "Quietly one of the most magical ways to experience the fireworks. The short line during showtime means you'll be airborne in minutes, floating in gentle circles above Fantasyland while Happily Ever After lights up the sky above you and the little ones beside you experience pure wonder.",
+    tip: "This is the perfect fireworks ride for families with young kids. Lines drop to near zero during the show. You'll get 2-3 full laps in the air during the peak of the fireworks.",
+    photoTip: "Face your camera up and outward at the top of the circle for bursts framed with the Fantasyland rooftops below. The warm purple and gold shells photograph beautifully from this height.",
+    emoji: "🐘"
+  },
+  "Seven Dwarfs Mine Train": {
+    viewQuality: "good",
+    description: "When the timing is right, riding Seven Dwarfs Mine Train during the fireworks is pure movie magic. The combination of smooth swooping turns, twinkling gemstones inside the mine, and fireworks bursting above Fantasyland creates a sensory experience you simply cannot recreate anywhere else on earth.",
+    tip: "Lines thin significantly during fireworks as most guests stake out viewing spots. Strategic timing here nets you a shorter wait AND a fireworks show from the ride. Board 12-15 minutes before showtime.",
+    photoTip: "The outdoor sections face southwest toward the castle. Sit in the rear car and look left during the ascents for the cleanest sky framing with Fantasyland below.",
+    emoji: "💎"
   },
   "Jungle Cruise": {
     viewQuality: "good",
-    description: "Open-air ride with overhead sky visibility throughout",
-    tip: "Evening boat rides have clear sky views — time to be on the river during the finale"
-  },
-  "Walt Disney's Enchanted Tiki Room": {
-    viewQuality: "partial",
-    description: "Exit area has an open courtyard with castle fireworks visible",
-    tip: "Position yourself at the exit during the show — the courtyard faces the castle"
+    description: "The Jungle Cruise after dark is already a different animal — the lantern glow on the water, the audio jokes that land better at night, the animatronics with a spookier edge. Add Happily Ever After bursting above the tropical canopy and you have one of the most atmospheric fireworks experiences in the park.",
+    tip: "Board right as the show begins. The open-air boat gives you clear sky views throughout the entire journey. The skippers often acknowledge the fireworks — it adds to the magic.",
+    photoTip: "The boat faces all directions throughout the ride. Look for breaks in the tree canopy — you'll get layered shots of bursts with palm fronds and jungle animals in the foreground.",
+    emoji: "🐊"
   },
   "Haunted Mansion": {
     viewQuality: "partial",
-    description: "The stretching room delay sometimes syncs with fireworks bursts overhead",
-    tip: "The outdoor queue area near Liberty Square has good sky views before boarding"
+    description: "The outdoor queue along the mansion's front grounds offers surprising fireworks views between burst sequences. If you time your wait in the exterior queue, you'll catch flashes of color through the wrought iron gates with the candlelit mansion behind you — genuinely haunting.",
+    tip: "Don't rush through the outdoor queue during fireworks season. Stand at the gate section facing the hub for the best sightlines. Inside, the stretching room occasionally syncs with outside bursts audible through the walls.",
+    photoTip: "The wrought iron gate with fireworks in the background is one of the most unique shots in Magic Kingdom. Long exposure at night with the gate in foreground = stunning.",
+    emoji: "👻"
+  },
+  "\"it\'s a small world\"": {
+    viewQuality: "partial",
+    description: "The outdoor boarding area and the final exterior boat section offer glimpses of the fireworks sky. If you're in the outdoor queue as the show begins, you'll see colorful reflections dancing on the water of the loading canal — a surprisingly beautiful and crowd-free vantage point.",
+    tip: "The best fireworks views here are actually while you're waiting to board, not while riding. Position yourself in the outdoor queue near the water for the most open sky exposure.",
+    photoTip: "The reflection of fireworks in the loading canal at night is an unexpected magic shot. Set your phone to Night mode and capture the bursts reflected in the still water below the clock facade.",
+    emoji: "🌍"
   },
 };
 

@@ -796,3 +796,4 @@ export default function LivePark() {
     </DashboardLayout>
   );
 }
+// Note: FIREWORKS_RIDE_DATA expanded to 9 locations - sync with edge function
