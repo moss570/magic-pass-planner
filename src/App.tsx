@@ -26,6 +26,7 @@ import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import FAQ from "./pages/FAQ";
+import DisneyConnect from "./pages/DisneyConnect";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/disney-connect" element={<DisneyConnect />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
