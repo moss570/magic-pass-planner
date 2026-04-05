@@ -440,6 +440,21 @@ const Settings = () => {
         </CardContent>
       </Card>
 
+            {/* Disney Account Connect */}
+      <Card className="border-primary/20 bg-card/80 overflow-hidden">
+        <CardHeader className="p-4 md:p-6">
+          <CardTitle className="text-base md:text-lg flex items-center gap-2">
+            🏰 Disney Account
+          </CardTitle>
+          <CardDescription className="text-xs md:text-sm">
+            Connect your Disney account to enable real-time dining reservation alerts
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 md:p-6 pt-0">
+          <DisneyConnectSection />
+        </CardContent>
+      </Card>
+
       {/* Section 7: Data & Privacy */}
       <Card className="border-primary/20 bg-card/80 overflow-hidden">
         <CardHeader className="p-4 md:p-6">
@@ -466,5 +481,187 @@ const Settings = () => {
     </DashboardLayout>
   );
 };
+
+
+// Disney Account Connect Component
+function DisneyConnectSection() {
+  const { session } = useAuth();
+  const { toast } = useToast();
+  const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+
+  const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+  const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${session?.access_token}`,
+    "x-client-authorization": `Bearer ${session?.access_token}`,
+    "apikey": SUPABASE_ANON,
+  });
+
+  useEffect(() => {
+    if (!session) return;
+    fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=status`, { headers: getHeaders() })
+      .then(r => r.json())
+      .then(d => setConnected(d.connected || false))
+      .catch(() => setConnected(false))
+      .finally(() => setLoading(false));
+  }, [session]);
+
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      // Open Disney login in a popup
+      const popup = window.open(
+        "https://disneyworld.disney.go.com/dine-res/availability/",
+        "disney-login",
+        "width=900,height=700,scrollbars=yes,resizable=yes"
+      );
+
+      if (!popup) {
+        toast({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
+        setConnecting(false);
+        return;
+      }
+
+      // Poll until popup closes or we get a token
+      const checkPopup = setInterval(async () => {
+        if (popup.closed) {
+          clearInterval(checkPopup);
+          setConnecting(false);
+          return;
+        }
+        
+        try {
+          // Try to get the token from the popup's page
+          const popupDoc = popup.document;
+          const tokenResult = await popup.eval(\`
+            (async () => {
+              try {
+                const resp = await fetch('/profile-api/authentication/get-client-token', {
+                  headers: { 'Accept': 'application/json' }
+                });
+                if (resp.ok) {
+                  const data = await resp.json();
+                  return data.access_token || null;
+                }
+              } catch(e) {}
+              return null;
+            })()
+          \`).catch(() => null);
+          
+          if (tokenResult) {
+            clearInterval(checkPopup);
+            popup.close();
+            
+            // Save token to backend
+            const saveResp = await fetch(\`\${SUPABASE_URL}/functions/v1/disney-auth?action=save\`, {
+              method: "POST",
+              headers: getHeaders(),
+              body: JSON.stringify({ access_token: tokenResult }),
+            });
+            const saveData = await saveResp.json();
+            
+            if (saveData.success) {
+              setConnected(true);
+              toast({ 
+                title: saveData.hasFullScope ? "✅ Disney account connected!" : "⚠️ Connected (limited scope)",
+                description: saveData.hasFullScope 
+                  ? "Real-time dining alerts are now active" 
+                  : "Connected but may need login for full dining access"
+              });
+            }
+            setConnecting(false);
+          }
+        } catch (_) {
+          // Cross-origin, popup still on Disney login page - keep waiting
+        }
+      }, 2000);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(checkPopup);
+        if (!popup.closed) popup.close();
+        setConnecting(false);
+      }, 300000);
+
+    } catch (err) {
+      toast({ title: "Connection failed", variant: "destructive" });
+      setConnecting(false);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    await fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=disconnect`, {
+      method: "POST", headers: getHeaders(),
+    });
+    setConnected(false);
+    toast({ title: "Disney account disconnected" });
+  };
+
+  if (loading) return <div className="h-8 bg-muted/20 rounded animate-pulse" />;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between p-4 rounded-xl border border-white/10" style={{ background: "#0D1230" }}>
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            {connected ? "✅ Disney Account Connected" : "⚠️ Not Connected"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {connected 
+              ? "Real-time dining alerts active — checking every 60 seconds" 
+              : "Connect to enable automatic dining reservation detection"}
+          </p>
+        </div>
+        <div className={`w-3 h-3 rounded-full ${connected ? "bg-green-400" : "bg-yellow-400"}`} />
+      </div>
+
+      {!connected ? (
+        <div className="space-y-3">
+          <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+            <p className="text-xs text-foreground font-semibold mb-1">How it works:</p>
+            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+              <li>Click "Connect Disney Account" below</li>
+              <li>A window opens — log into your Disney account if needed</li>
+              <li>Magic Pass captures your session token securely</li>
+              <li>We check availability every 60 seconds on your behalf</li>
+              <li>Alert fires the instant a reservation opens</li>
+            </ol>
+          </div>
+          <button
+            onClick={handleConnect}
+            disabled={connecting}
+            className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-60"
+            style={{ background: "#F5C842" }}
+          >
+            {connecting ? "Waiting for Disney login..." : "🏰 Connect Disney Account"}
+          </button>
+          <p className="text-xs text-muted-foreground text-center">
+            Your Disney credentials are never stored — only a secure session token
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+            <p className="text-xs text-green-400">
+              🍽️ Dining alerts are now checking in real-time. You'll be notified the instant a reservation opens.
+            </p>
+          </div>
+          <button
+            onClick={handleDisconnect}
+            className="text-xs text-red-400 hover:text-red-300 transition-colors"
+          >
+            Disconnect Disney account
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
 export default Settings;
