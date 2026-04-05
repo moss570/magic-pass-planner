@@ -1,7 +1,8 @@
 import { useState } from "react";
 import {
   Castle, RefreshCw, Calendar, Users, Minus, Plus, Sparkles,
-  ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle
+  ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle,
+  Save, Share2, Printer, Bell, FolderOpen, Trash2, Copy, Check
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
@@ -187,11 +188,155 @@ export default function TripPlanner() {
   const [estimatedTotal, setEstimatedTotal] = useState<number | null>(null);
   const [budgetBreakdown, setBudgetBreakdown] = useState<Record<string, number> | null>(null);
   const [generated, setGenerated] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [savedTripId, setSavedTripId] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [savedTrips, setSavedTrips] = useState<any[]>([]);
+  const [showSavedTrips, setShowSavedTrips] = useState(false);
 
   const togglePark = (park: string) => {
     setSelectedParks(prev =>
       prev.includes(park) ? prev.filter(p => p !== park) : [...prev, park]
     );
+  };
+
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${session?.access_token}`,
+    "x-client-authorization": `Bearer ${session?.access_token}`,
+    "apikey": SUPABASE_ANON,
+  });
+
+  const saveTrip = async () => {
+    if (!session || !plans.length) return;
+    setSaving(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=save`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          id: savedTripId || undefined,
+          name: `${selectedParks[0]} Trip — ${startDate}`,
+          parks: selectedParks,
+          start_date: startDate,
+          end_date: endDate || startDate,
+          adults, children, ages, ride_preference: ridePreference,
+          budget, ll_option: llOption, special_notes: specialNotes,
+          itinerary: plans, estimated_total: estimatedTotal,
+        }),
+      });
+      const data = await resp.json();
+      if (data.trip) {
+        setSavedTripId(data.trip.id);
+        toast({ title: "✅ Trip saved!", description: "Find it in My Saved Trips" });
+      }
+    } catch {
+      toast({ title: "Save failed", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const shareTrip = async () => {
+    if (!session || !savedTripId) {
+      await saveTrip();
+      return;
+    }
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=share`, {
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify({ id: savedTripId }),
+      });
+      const data = await resp.json();
+      if (data.shareUrl) {
+        setShareUrl(data.shareUrl);
+        await navigator.clipboard.writeText(data.shareUrl).catch(() => {});
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+        toast({ title: "🔗 Share link copied!", description: "Anyone with this link can view your itinerary" });
+      }
+    } catch {
+      toast({ title: "Share failed", variant: "destructive" });
+    }
+  };
+
+  const exportToPDF = () => {
+    window.print();
+    toast({ title: "📄 Print dialog opened", description: "Save as PDF to export your itinerary" });
+  };
+
+  const syncDiningAlerts = async () => {
+    if (!session || !plans.length) return;
+    let count = 0;
+    for (const plan of plans) {
+      const diningItems = plan.items.filter(item => item.type === "dining" && item.location);
+      for (const item of diningItems) {
+        if (!item.location) continue;
+        try {
+          // Find restaurant in DB
+          const searchResp = await fetch(
+            `${SUPABASE_URL}/functions/v1/dining-alerts?action=restaurants&search=${encodeURIComponent(item.location)}`,
+            { headers: getHeaders() }
+          );
+          const searchData = await searchResp.json();
+          const restaurant = searchData.restaurants?.[0];
+          if (restaurant) {
+            await fetch(`${SUPABASE_URL}/functions/v1/dining-alerts?action=create`, {
+              method: "POST", headers: getHeaders(),
+              body: JSON.stringify({
+                restaurant_id: restaurant.id,
+                alert_date: plan.date,
+                party_size: adults + children,
+                meal_periods: ["Any"],
+                alert_email: true,
+              }),
+            });
+            count++;
+          }
+        } catch {}
+      }
+    }
+    toast({ 
+      title: count > 0 ? `🍽️ ${count} dining alert${count > 1 ? "s" : ""} created!` : "No new alerts needed",
+      description: count > 0 ? "We'll notify you the instant a reservation opens" : "All dining spots already covered"
+    });
+  };
+
+  const loadSavedTrips = async () => {
+    if (!session) return;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=list`, { headers: getHeaders() });
+      const data = await resp.json();
+      setSavedTrips(data.trips || []);
+      setShowSavedTrips(true);
+    } catch {}
+  };
+
+  const loadTrip = async (tripId: string) => {
+    if (!session) return;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=load&id=${tripId}`, { headers: getHeaders() });
+      const data = await resp.json();
+      const trip = data.trip;
+      if (trip) {
+        setSelectedParks(trip.parks || []);
+        setStartDate(trip.start_date || "");
+        setEndDate(trip.end_date || "");
+        setAdults(trip.adults || 2);
+        setChildren(trip.children || 0);
+        setAges(trip.ages || "");
+        setRidePreference(trip.ride_preference || "mix");
+        setBudget(trip.budget || 6500);
+        setLlOption(trip.ll_option || "multi");
+        setSpecialNotes(trip.special_notes || "");
+        if (trip.itinerary) { setPlans(trip.itinerary); setGenerated(true); }
+        setEstimatedTotal(trip.estimated_total);
+        setSavedTripId(trip.id);
+        setShowSavedTrips(false);
+        toast({ title: "Trip loaded!" });
+      }
+    } catch {}
   };
 
   const generateItinerary = async () => {
@@ -244,7 +389,32 @@ export default function TripPlanner() {
 
         {/* ── FORM ─────────────────────────────────────────────── */}
         <div className="rounded-xl border border-white/8 p-5" style={{ background: "#111827" }}>
-          <h2 className="text-sm font-bold text-foreground mb-4">Plan Your Trip</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-foreground">Plan Your Trip</h2>
+            {session && (
+              <button onClick={loadSavedTrips} className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                <FolderOpen className="w-3.5 h-3.5" /> Saved Trips
+              </button>
+            )}
+          </div>
+          {showSavedTrips && savedTrips.length > 0 && (
+            <div className="mb-4 rounded-xl border border-white/10 overflow-hidden" style={{ background: "#0D1230" }}>
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/8">
+                <p className="text-xs font-semibold text-foreground">Your Saved Trips</p>
+                <button onClick={() => setShowSavedTrips(false)} className="text-xs text-muted-foreground hover:text-foreground">Close</button>
+              </div>
+              {savedTrips.map((trip: any) => (
+                <button key={trip.id} onClick={() => loadTrip(trip.id)}
+                  className="w-full flex items-center justify-between px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/5 text-left transition-colors">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{trip.name}</p>
+                    <p className="text-xs text-muted-foreground">{trip.parks?.join(", ")} · {trip.start_date}</p>
+                  </div>
+                  <span className="text-xs text-primary">Load →</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="space-y-5">
             {/* Parks */}
@@ -396,14 +566,33 @@ export default function TripPlanner() {
             ))}
 
             {/* Action buttons */}
-            <div className="flex gap-3">
-              <button className="flex-1 py-2.5 rounded-xl border border-primary/40 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors">
-                📅 Add to Calendar
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={saveTrip} disabled={saving}
+                className="py-2.5 rounded-xl border border-primary/40 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60">
+                <Save className="w-3.5 h-3.5" /> {saving ? "Saving..." : savedTripId ? "Update Trip" : "Save Trip"}
               </button>
-              <button className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm font-semibold text-muted-foreground hover:border-white/20 transition-colors">
-                👥 Share with Group
+              <button onClick={shareTrip}
+                className="py-2.5 rounded-xl border border-white/10 text-sm font-semibold text-muted-foreground hover:border-white/20 transition-colors flex items-center justify-center gap-1.5">
+                {copied ? <><Check className="w-3.5 h-3.5 text-green-400" /><span className="text-green-400">Copied!</span></> : <><Share2 className="w-3.5 h-3.5" /> Share Trip</>}
+              </button>
+              <button onClick={syncDiningAlerts}
+                className="py-2.5 rounded-xl border border-orange-500/30 text-sm font-semibold text-orange-400 hover:bg-orange-500/10 transition-colors flex items-center justify-center gap-1.5">
+                <Bell className="w-3.5 h-3.5" /> Create Dining Alerts
+              </button>
+              <button onClick={exportToPDF}
+                className="py-2.5 rounded-xl border border-white/10 text-sm font-semibold text-muted-foreground hover:border-white/20 transition-colors flex items-center justify-center gap-1.5">
+                <Printer className="w-3.5 h-3.5" /> Export PDF
               </button>
             </div>
+            {shareUrl && (
+              <div className="p-3 rounded-xl border border-primary/20 bg-primary/5 flex items-center gap-2">
+                <p className="text-xs text-muted-foreground flex-1 truncate">{shareUrl}</p>
+                <button onClick={() => { navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                  className="shrink-0 text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+                  <Copy className="w-3 h-3" /> Copy
+                </button>
+              </div>
+            )}
           </div>
         )}
 

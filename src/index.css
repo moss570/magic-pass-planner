@@ -116,3 +116,13 @@
     flex-wrap: wrap;
   }
 }
+
+/* Print styles for Trip Planner PDF export */
+@media print {
+  nav, aside, .bottom-nav-bar, [data-sidebar], button, .live-pulse {
+    display: none !important;
+  }
+  body { background: white !important; color: black !important; }
+  .rounded-xl { border: 1px solid #ddd !important; }
+  * { color: #333 !important; background: transparent !important; }
+}
