@@ -601,6 +601,7 @@ function DisneyConnectSection() {
                   <li>Paste it below and click Save</li>
                 </ol>
                 <p className="text-xs text-yellow-500 mt-2">⚠️ Token expires in 30 min — you'll reconnect periodically</p>
+                <p className="text-xs text-muted-foreground mt-2">🔒 <strong>Privacy:</strong> Only a temporary session token is stored. Never your Disney password. You authorize Magic Pass Plus to check availability on your behalf using your own Disney session. This is similar to how services like Stakeout, MouseDining, and MouseWatcher operate. Magic Pass Plus is not affiliated with Disney.</p>
               </div>
               <textarea
                 value={manualToken}
