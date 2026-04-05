@@ -566,7 +566,7 @@ function DisneyConnectSection() {
             
             if (saveData.success) {
               setConnected(true);
-              toast({ 
+              toastFn({ 
                 title: saveData.hasFullScope ? "✅ Disney account connected!" : "⚠️ Connected (limited scope)",
                 description: saveData.hasFullScope 
                   ? "Real-time dining alerts are now active" 
