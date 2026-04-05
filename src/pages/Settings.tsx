@@ -486,7 +486,7 @@ const Settings = () => {
 // Disney Account Connect Component
 function DisneyConnectSection() {
   const { session } = useAuth();
-  const { toast } = useToast();
+  const toastFn = (opts: { title: string; description?: string; variant?: string }) => toast(opts.title, { description: opts.description });
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
