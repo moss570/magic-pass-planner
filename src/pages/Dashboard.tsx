@@ -115,27 +115,37 @@ const Dashboard = () => {
           {/* Itinerary — 3/5 */}
           <div className="lg:col-span-3 rounded-xl bg-card gold-border p-4 md:p-6">
             <h2 className="text-sm md:text-base font-bold text-foreground mb-1">Your Trip Itinerary</h2>
-            <p className="text-xs text-muted-foreground mb-5">Magic Kingdom · May 20</p>
-            <div className="space-y-0">
-              {itinerary.map((item, i) => (
-                <div key={i} className="flex gap-4 relative">
-                  <div className="flex flex-col items-center">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                    {i < itinerary.length - 1 && <div className="w-px flex-1 bg-primary/20" />}
-                  </div>
-                  <div className="pb-5">
-                    <p className="text-xs font-semibold text-primary">{item.time}</p>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm text-foreground">{item.activity}</p>
-                      {item.location && (
-                        <CompassButton destination={item.location} context={item.land} />
-                      )}
+            <p className="text-xs text-muted-foreground mb-5">
+              {mostRecentTrip ? `${mostRecentTrip.parks?.[0] || "Disney"} · ${mostRecentTrip.start_date || ""}` : "No trip planned yet"}
+            </p>
+            {mostRecentTrip?.itinerary && Array.isArray(mostRecentTrip.itinerary) ? (
+              <div className="space-y-0">
+                {(mostRecentTrip.itinerary as any[]).map((item: any, i: number) => (
+                  <div key={i} className="flex gap-4 relative">
+                    <div className="flex flex-col items-center">
+                      <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1.5" />
+                      {i < (mostRecentTrip.itinerary as any[]).length - 1 && <div className="w-px flex-1 bg-primary/20" />}
                     </div>
-                    {item.badge && <p className={`text-xs mt-0.5 ${item.badgeColor}`}>{item.badge}</p>}
+                    <div className="pb-5">
+                      <p className="text-xs font-semibold text-primary">{item.time}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm text-foreground">{item.activity}</p>
+                        {item.location && (
+                          <CompassButton destination={item.location} context={item.land} />
+                        )}
+                      </div>
+                      {item.badge && <p className={`text-xs mt-0.5 ${item.badgeColor}`}>{item.badge}</p>}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Castle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No itinerary yet</p>
+                <Link to="/trip-planner" className="text-xs text-primary hover:underline mt-1 inline-block">Plan your trip →</Link>
+              </div>
+            )}
           </div>
 
           {/* Right column — 2/5 */}

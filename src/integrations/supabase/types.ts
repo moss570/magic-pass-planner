@@ -225,6 +225,72 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_trips: {
+        Row: {
+          adults: number | null
+          ages: string | null
+          budget: number | null
+          children: number | null
+          created_at: string | null
+          end_date: string | null
+          estimated_total: number | null
+          id: string
+          is_public: boolean | null
+          itinerary: Json | null
+          ll_option: string | null
+          name: string
+          parks: string[] | null
+          ride_preference: string | null
+          share_token: string | null
+          special_notes: string | null
+          start_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          adults?: number | null
+          ages?: string | null
+          budget?: number | null
+          children?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          estimated_total?: number | null
+          id?: string
+          is_public?: boolean | null
+          itinerary?: Json | null
+          ll_option?: string | null
+          name: string
+          parks?: string[] | null
+          ride_preference?: string | null
+          share_token?: string | null
+          special_notes?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          adults?: number | null
+          ages?: string | null
+          budget?: number | null
+          children?: number | null
+          created_at?: string | null
+          end_date?: string | null
+          estimated_total?: number | null
+          id?: string
+          is_public?: boolean | null
+          itinerary?: Json | null
+          ll_option?: string | null
+          name?: string
+          parks?: string[] | null
+          ride_preference?: string | null
+          share_token?: string | null
+          special_notes?: string | null
+          start_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
