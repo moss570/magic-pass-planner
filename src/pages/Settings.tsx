@@ -537,20 +537,7 @@ function DisneyConnectSection() {
         try {
           // Try to get the token from the popup's page
           const popupDoc = popup.document;
-          const tokenResult = await (popup as any).eval(`
-            (async () => {
-              try {
-                const resp = await fetch('/profile-api/authentication/get-client-token', {
-                  headers: { 'Accept': 'application/json' }
-                });
-                if (resp.ok) {
-                  const data = await resp.json();
-                  return data.access_token || null;
-                }
-              } catch(e) {}
-              return null;
-            })()
-          `).catch(() => null);
+          const tokenResult = null; // Popup approach removed - using server proxy
           
           if (tokenResult) {
             clearInterval(checkPopup);
