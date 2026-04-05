@@ -14,14 +14,30 @@ interface CompassModalProps {
 
 const TARGET_HEADING = 247;
 
+function getCardinalDirection(degrees: number): string {
+  const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  return dirs[Math.round(degrees / 45) % 8];
+}
+
 const CompassModal = ({ open, onClose, destination, land, walkTime, distance, directions, fineLocation }: CompassModalProps) => {
   const [heading, setHeading] = useState<number | null>(null);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [sweepAngle, setSweepAngle] = useState(0);
 
   const handleOrientation = useCallback((e: DeviceOrientationEvent) => {
-    const alpha = (e as any).webkitCompassHeading ?? e.alpha;
-    if (alpha != null) setHeading(alpha);
+    // iOS provides webkitCompassHeading (0=North, clockwise, correct)
+    // Android provides e.alpha (0=North but counterclockwise, needs inversion)
+    const webkitHeading = (e as any).webkitCompassHeading;
+    if (webkitHeading != null) {
+      // iOS - use directly
+      setHeading(webkitHeading);
+    } else if (e.alpha != null) {
+      // Android - alpha is counterclockwise, invert to get true compass bearing
+      // Also need to account for screen orientation
+      const screenOrientation = window.screen?.orientation?.angle ?? 0;
+      const corrected = (360 - e.alpha + screenOrientation) % 360;
+      setHeading(corrected);
+    }
   }, []);
 
   useEffect(() => {
@@ -78,7 +94,7 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
     }
   }
 
-  const displayHeading = heading != null ? `${Math.round(heading)}°` : "---°";
+  const displayHeading = heading != null ? `${Math.round(heading)}° (${getCardinalDirection(heading)})` : "---°";
   const vw80 = typeof window !== "undefined" ? window.innerWidth * 0.8 : 320;
   const compassSize = typeof window !== "undefined" && window.innerWidth < 768 ? Math.min(280, vw80) : 320;
   const r = compassSize / 2;
