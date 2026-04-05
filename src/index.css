@@ -13,7 +13,7 @@
     --popover: 217 47% 11%;
     --popover-foreground: 210 50% 98%;
 
-    --primary: 44 90% 61%;
+    --primary: 44 95% 55%;
     --primary-foreground: 222 72% 7%;
 
     --secondary: 263 84% 58%;
@@ -125,4 +125,34 @@
   body { background: white !important; color: black !important; }
   .rounded-xl { border: 1px solid #ddd !important; }
   * { color: #333 !important; background: transparent !important; }
+}
+
+/* Disney Magic Utilities */
+.disney-gradient {
+  background: linear-gradient(135deg, #080E1E 0%, #0D1A35 40%, #130D2E 100%);
+}
+
+.magic-glow {
+  box-shadow: 0 0 20px rgba(245, 200, 66, 0.15), 0 0 40px rgba(124, 58, 237, 0.08);
+}
+
+.castle-shimmer {
+  background: linear-gradient(90deg, #F5C842, #FFE066, #F5C842);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.fairy-dust::before {
+  content: '✨';
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
 }

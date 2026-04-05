@@ -39,6 +39,15 @@ serve(async (req) => {
     // ── SAVE TRIP ──────────────────────────────────────────
     if (action === "save" && req.method === "POST") {
       const body = await req.json();
+      // Enforce 10-trip limit
+      if (!body.id) {
+        const { count } = await supabase.from("saved_trips").select("id", { count: "exact" }).eq("user_id", userId);
+        if ((count || 0) >= 10) {
+          return new Response(JSON.stringify({ error: "Trip limit reached (10 max). Delete an existing trip to save a new one." }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+          });
+        }
+      }
       const shareToken = body.is_public ? crypto.randomUUID().replace(/-/g, "").substring(0, 12) : null;
       
       const { data: trip, error } = await supabase.from("saved_trips").upsert({

@@ -61,7 +61,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
   return (
     <div className="flex min-h-screen">
       {/* Sidebar — hidden on mobile, icon-only on tablet, full on desktop */}
-      <aside className="fixed top-0 left-0 bottom-0 hidden md:flex flex-col z-40 w-16 lg:w-60 transition-all" style={{ background: "#0D1230" }}>
+      <aside className="fixed top-0 left-0 bottom-0 hidden md:flex flex-col z-40 w-16 lg:w-60 transition-all" style={{ background: "linear-gradient(180deg, #0D1A35 0%, #130D2E 100%)" }}>
         <div className="px-3 lg:px-5 pt-6 pb-4">
           <Link to="/" className="flex items-center gap-2">
             <Castle className="w-6 h-6 text-primary shrink-0" />
@@ -87,7 +87,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
                 to={item.path}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
                   isActive
-                    ? "text-primary border-l-[3px] border-primary bg-primary/5"
+                    ? "text-primary border-l-[3px] border-primary bg-primary/10 font-bold"
                     : "text-muted-foreground hover:text-foreground hover:bg-[#1a2235]"
                 } lg:justify-start justify-center`}
               >

@@ -8,16 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const itinerary = [
-  { time: "8:00 AM", activity: "Arrive at park, rope drop Tron Lightcycle Run", badge: "wait: 12 min ✅", badgeColor: "text-green-400", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
-  { time: "9:30 AM", activity: "Breakfast: Be Our Guest", badge: "reservation confirmed 🍽️", badgeColor: "text-primary", location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
-  { time: "11:00 AM", activity: "Space Mountain", badge: "Lightning Lane booked ⚡", badgeColor: "text-primary", location: "Space Mountain", land: "Tomorrowland · Magic Kingdom" },
-  { time: "1:00 PM", activity: "Columbia Harbour House lunch", badge: "quick service", badgeColor: "text-muted-foreground", location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
-  { time: "2:30 PM", activity: "Festival of Fantasy Parade", badge: null, badgeColor: "", location: null, land: "" },
-  { time: "4:00 PM", activity: "Rest / pool time", badge: null, badgeColor: "", location: null, land: "" },
-  { time: "7:00 PM", activity: "Dinner: Cinderella's Royal Table", badge: null, badgeColor: "", location: "Cinderella's Royal Table", land: "Fantasyland · Magic Kingdom" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks", badge: "best view: Main Street Hub · arrive by 8:45 PM 🎆", badgeColor: "text-primary", location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
-];
+// itinerary is now loaded from mostRecentTrip state
 
 const alerts = [
   { emoji: "🍽️", title: "Be Our Guest — Oct 15, party of 4", status: "Watching...", statusColor: "text-yellow-400", dot: "bg-yellow-400 live-pulse" },
@@ -37,6 +28,7 @@ const Dashboard = () => {
   const [firstName, setFirstName] = useState("there");
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
+  const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
   const [realAlerts, setRealAlerts] = useState<any[]>([]);
 
   useEffect(() => {
@@ -47,6 +39,21 @@ const Dashboard = () => {
             setFirstName(data.first_name);
           } else {
             setFirstName("there");
+          }
+        });
+
+      // Fetch most recent saved trip + itinerary
+      supabase.from("saved_trips")
+        .select("id, name, parks, start_date, itinerary, estimated_total")
+        .eq("user_id", user.id)
+        .not("itinerary", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .then(({ data: tripData }) => {
+          if (tripData && tripData.length > 0) {
+            setMostRecentTrip(tripData[0]);
+          } else {
+            setMostRecentTrip(null);
           }
         });
 
@@ -80,13 +87,13 @@ const Dashboard = () => {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
-    <DashboardLayout title={`${greeting}, ${firstName} 👋`} subtitle="Your next Disney trip is 47 days away">
+    <DashboardLayout title={`${greeting}, ${firstName} 👋`} subtitle={mostRecentTrip ? `Your next trip: ${mostRecentTrip.parks?.[0] || "Disney"} ${mostRecentTrip.start_date ? "— " + Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000)) + " days away" : ""}` : "Plan your perfect Disney adventure"}>
       <div className="space-y-6">
         {/* ROW 1 — Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[
             { label: "Active Alerts", value: activeAlertCount !== null ? String(activeAlertCount) : "—", valueColor: "text-primary", sub: activeAlertCount === 0 ? "No active alerts" : "Dining reservation alerts" },
-            { label: "Days to Trip", value: "47", valueColor: "text-primary", sub: "Magic Kingdom · May 20" },
+            { label: "Days to Trip", value: mostRecentTrip?.start_date ? String(Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000))) : "—", valueColor: "text-primary", sub: mostRecentTrip ? `${mostRecentTrip.parks?.[0] || "Disney"} · ${mostRecentTrip.start_date}` : "No trips planned" },
             { label: "Est. Trip Savings", value: "$340", valueColor: "text-green-400", sub: "Gift cards + hotel discount" },
           ].map((card) => (
             <div key={card.label} className="rounded-xl bg-card gold-border p-4 md:p-5">
