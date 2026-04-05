@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
+import RideLineQuest from "@/pages/RideLineQuest";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -436,6 +437,7 @@ export default function LivePark() {
   const [activeTab, setActiveTab] = useState<"waits" | "fireworks" | "games" | "info">("waits");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
+  const [rideLineQuestOpen, setRideLineQuestOpen] = useState(false);
   const [navigateOpen, setNavigateOpen] = useState(false);
   const [navigateSearch, setNavigateSearch] = useState("");
   const [navigateTarget, setNavigateTarget] = useState<{name: string; area: string} | null>(null);
@@ -1005,7 +1007,19 @@ export default function LivePark() {
         )}
 
         {/* ── LINE GAMES TAB ──────────────────────────────────── */}
-        {activeTab === "games" && <LineGames />}
+        {activeTab === "games" && (
+          <div className="space-y-4">
+            <button
+              onClick={() => setRideLineQuestOpen(true)}
+              className="w-full py-4 rounded-2xl font-black text-lg text-[#080E1E] flex items-center justify-center gap-3"
+              style={{ background: "#F5C842" }}
+            >
+              🏛️ Ride Line Quest — Play Now!
+            </button>
+            <LineGames />
+          </div>
+        )}
+        {rideLineQuestOpen && <RideLineQuest onClose={() => setRideLineQuestOpen(false)} />}
 
         {/* ── PARK INFO TAB ───────────────────────────────────── */}
         {activeTab === "info" && (

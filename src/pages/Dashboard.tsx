@@ -36,6 +36,8 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [firstName, setFirstName] = useState("there");
   const [searchParams, setSearchParams] = useSearchParams();
+  const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
+  const [realAlerts, setRealAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +47,20 @@ const Dashboard = () => {
             setFirstName(data.first_name);
           } else {
             setFirstName("there");
+          }
+        });
+
+      // Fetch real active alerts count and recent alerts
+      supabase.from("dining_alerts")
+        .select(`*, restaurant:restaurants(name, location)`)
+        .eq("user_id", user.id)
+        .in("status", ["watching", "found"])
+        .order("created_at", { ascending: false })
+        .limit(3)
+        .then(({ data: alertData, count }) => {
+          if (alertData) {
+            setRealAlerts(alertData);
+            setActiveAlertCount(alertData.length);
           }
         });
     }
@@ -69,7 +85,7 @@ const Dashboard = () => {
         {/* ROW 1 — Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {[
-            { label: "Active Alerts", value: "3", valueColor: "text-primary", sub: "Dining, hotel & gift card" },
+            { label: "Active Alerts", value: activeAlertCount !== null ? String(activeAlertCount) : "—", valueColor: "text-primary", sub: activeAlertCount === 0 ? "No active alerts" : "Dining reservation alerts" },
             { label: "Days to Trip", value: "47", valueColor: "text-primary", sub: "Magic Kingdom · May 20" },
             { label: "Est. Trip Savings", value: "$340", valueColor: "text-green-400", sub: "Gift cards + hotel discount" },
           ].map((card) => (
@@ -120,6 +136,24 @@ const Dashboard = () => {
             {/* Active Alerts */}
             <div className="rounded-xl bg-card gold-border p-4 md:p-5">
               <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">🔔 Active Alerts</h3>
+              {realAlerts.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {realAlerts.map((alert: any) => (
+                    <div key={alert.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">🍽️</span>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">{alert.restaurant?.name}</p>
+                          <p className="text-xs text-muted-foreground">{alert.alert_date} · Party of {alert.party_size}</p>
+                        </div>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.status === "found" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                        {alert.status === "found" ? "AVAILABLE!" : "Watching..."}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="space-y-4">
                 {alerts.map((a, i) => (
                   <div key={i} className="flex items-start gap-3">
