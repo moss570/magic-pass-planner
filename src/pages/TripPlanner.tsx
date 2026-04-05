@@ -222,7 +222,15 @@ export default function TripPlanner() {
   const [resortStay, setResortStay] = useState(false);
   const [nonParkDays, setNonParkDays] = useState(0);
   const [halfDays, setHalfDays] = useState<string[]>([]); // dates for half-day visits
-  const [halfDayType, setHalfDayType] = useState<"am" | "pm">("am"); // AM or PM half
+  const [halfDayType, setHalfDayType] = useState<"am" | "pm">("am");
+  // Trip members
+  const [tripMembers, setTripMembers] = useState<Array<{firstName: string; lastName: string; email: string; isAdult: boolean; isSplitting: boolean}>>([]);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [memberFirstName, setMemberFirstName] = useState("");
+  const [memberLastName, setMemberLastName] = useState("");
+  const [memberEmail, setMemberEmail] = useState("");
+  const [memberIsAdult, setMemberIsAdult] = useState(true);
+  const [memberIsSplitting, setMemberIsSplitting] = useState(true);
   const [specialNotes, setSpecialNotes] = useState("");
 
   // Results state
@@ -388,6 +396,14 @@ export default function TripPlanner() {
     } catch {}
   };
 
+  const addTripMember = () => {
+    if (!memberFirstName || !memberLastName) return;
+    if (memberIsAdult && !memberEmail) { toast({ title: "Email required for adults", variant: "destructive" }); return; }
+    setTripMembers(prev => [...prev, { firstName: memberFirstName, lastName: memberLastName, email: memberEmail, isAdult: memberIsAdult, isSplitting: memberIsSplitting }]);
+    setMemberFirstName(""); setMemberLastName(""); setMemberEmail(""); setMemberIsAdult(true); setMemberIsSplitting(true);
+    setShowAddMember(false);
+  };
+
   const generateItinerary = async () => {
     if (!selectedParks.length) { toast({ title: "Select at least one park", variant: "destructive" }); return; }
     if (!startDate) { toast({ title: "Select your travel dates", variant: "destructive" }); return; }
@@ -464,6 +480,31 @@ export default function TripPlanner() {
           if (saveData.trip?.id) setSavedTripId(saveData.trip.id);
         } catch (saveErr) {
           console.log("Auto-save failed:", saveErr);
+        }
+        
+        // Invite trip members
+        if (savedTripId && tripMembers.length > 0) {
+          for (const member of tripMembers) {
+            try {
+              await fetch(`${SUPABASE_URL}/functions/v1/social?action=add-trip-member`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${session.access_token}`,
+                  "x-client-authorization": `Bearer ${session.access_token}`,
+                  "apikey": SUPABASE_ANON,
+                },
+                body: JSON.stringify({
+                  tripId: savedTripId,
+                  firstName: member.firstName,
+                  lastName: member.lastName,
+                  email: member.email || null,
+                  isAdult: member.isAdult,
+                  isSplittingExpenses: member.isSplitting,
+                }),
+              });
+            } catch (_) {}
+          }
         }
       }
     } catch (err) {
@@ -646,6 +687,52 @@ export default function TripPlanner() {
               <textarea value={specialNotes} onChange={e => setSpecialNotes(e.target.value)} rows={2}
                 placeholder="e.g. celebrating a birthday, grandparents joining, must ride Tron, first trip..."
                 className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none" />
+            </div>
+
+            {/* Travel Party */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Travel Party Members</label>
+                <button onClick={() => setShowAddMember(s => !s)} className="text-xs text-primary hover:underline">+ Add Person</button>
+              </div>
+              {tripMembers.length > 0 && (
+                <div className="space-y-1.5 mb-3">
+                  {tripMembers.map((m, i) => (
+                    <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/8">
+                      <div>
+                        <span className="text-xs font-medium text-foreground">{m.firstName} {m.lastName}</span>
+                        <span className="text-xs text-muted-foreground ml-2">{m.isAdult ? "Adult" : "Child"}{m.isSplitting ? " · splitting" : ""}</span>
+                      </div>
+                      <button onClick={() => setTripMembers(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-400 text-xs">✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {showAddMember && (
+                <div className="rounded-xl border border-white/10 p-4 space-y-3" style={{ background: "#0D1230" }}>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input value={memberFirstName} onChange={e => setMemberFirstName(e.target.value)} placeholder="First name *"
+                      className="px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                    <input value={memberLastName} onChange={e => setMemberLastName(e.target.value)} placeholder="Last name *"
+                      className="px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setMemberIsAdult(true)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${memberIsAdult ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>👤 Adult</button>
+                    <button onClick={() => setMemberIsAdult(false)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${!memberIsAdult ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>👶 Child</button>
+                  </div>
+                  {memberIsAdult && (
+                    <input value={memberEmail} onChange={e => setMemberEmail(e.target.value)} placeholder="Email (required for adults)"
+                      type="email" className="w-full px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                  )}
+                  {memberIsAdult && (
+                    <button onClick={() => setMemberIsSplitting(s => !s)} className={`w-full py-1.5 rounded-lg text-xs font-semibold border transition-all ${memberIsSplitting ? "bg-green-500/20 text-green-400 border-green-500/30" : "border-white/10 text-muted-foreground"}`}>
+                      {memberIsSplitting ? "✅ Splitting expenses" : "❌ Not splitting expenses"}
+                    </button>
+                  )}
+                  <button onClick={addTripMember} className="w-full py-2 rounded-lg text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Add to Trip</button>
+                  <p className="text-xs text-muted-foreground text-center">Adults will receive an email invite to join Magic Pass Plus and your trip</p>
+                </div>
+              )}
             </div>
 
             <button onClick={generateItinerary} disabled={generating || !selectedParks.length || !startDate}
