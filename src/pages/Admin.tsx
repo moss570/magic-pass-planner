@@ -133,9 +133,12 @@ export default function Admin() {
     try {
       const today = new Date().toISOString().split("T")[0];
 
+      // Exclude admin test accounts from revenue stats
+      const adminUserIds = ["6bfddcfe-3201-4275-be9c-02819bb70854"]; // moss570@gmail.com test account
+
       const [subsResult, planResult, alertsResult, foundResult, notifsResult, profilesResult, alertUsersResult] = await Promise.all([
-        supabase.from("subscriptions").select("status", { count: "exact" }),
-        supabase.from("subscriptions").select("plan_name, status"),
+        supabase.from("subscriptions").select("status", { count: "exact" }).not("user_id", "in", `(${adminUserIds.join(",")})`),
+        supabase.from("subscriptions").select("plan_name, status").not("user_id", "in", `(${adminUserIds.join(",")})`),
         supabase.from("dining_alerts").select("id", { count: "exact" }).eq("status", "watching"),
         supabase.from("dining_alerts").select("id", { count: "exact" }).eq("status", "found").gte("availability_found_at", today),
         supabase.from("dining_notifications").select("id", { count: "exact" }).gte("sent_at", today),
