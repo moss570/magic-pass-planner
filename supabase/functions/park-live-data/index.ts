@@ -100,13 +100,6 @@ const FIREWORKS_RIDE_DATA: Record<string, { viewQuality: "excellent" | "great" |
     photoTip: "The wrought iron gate with fireworks in the background is one of the most unique shots in Magic Kingdom. Long exposure at night with the gate in foreground = stunning.",
     emoji: "👻"
   },
-  "\"it\'s a small world\"": {
-    viewQuality: "partial",
-    description: "The outdoor boarding area and the final exterior boat section offer glimpses of the fireworks sky. If you're in the outdoor queue as the show begins, you'll see colorful reflections dancing on the water of the loading canal — a surprisingly beautiful and crowd-free vantage point.",
-    tip: "The best fireworks views here are actually while you're waiting to board, not while riding. Position yourself in the outdoor queue near the water for the most open sky exposure.",
-    photoTip: "The reflection of fireworks in the loading canal at night is an unexpected magic shot. Set your phone to Night mode and capture the bursts reflected in the still water below the clock facade.",
-    emoji: "🌍"
-  },
 };
 
 // Crowd level estimation based on wait times
