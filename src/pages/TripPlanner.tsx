@@ -1,76 +1,259 @@
 import { useState } from "react";
-import { Castle, RefreshCw, Calendar, FileText, Users, Minus, Plus } from "lucide-react";
+import {
+  Castle, RefreshCw, Calendar, Users, Minus, Plus, Sparkles,
+  ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Slider } from "@/components/ui/slider";
 import CompassButton from "@/components/CompassButton";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-const parks = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Disney Springs", "🌊 Typhoon Lagoon", "❄️ Blizzard Beach"];
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const ridePreferences = [
+const PARKS = [
+  "Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom",
+  "Disney Springs", "🌊 Typhoon Lagoon", "❄️ Blizzard Beach"
+];
+
+const RIDE_PREFS = [
   { label: "🎢 Thrill Seeker", value: "thrill" },
   { label: "🎠 Family Friendly", value: "family" },
   { label: "👶 Little Ones First", value: "little" },
   { label: "⚖️ Mix of Everything", value: "mix" },
 ];
 
-const llOptions = [
+const LL_OPTIONS = [
   { label: "Individual Lightning Lane", value: "individual" },
   { label: "Lightning Lane Multi Pass", value: "multi" },
   { label: "None", value: "none" },
 ];
 
-const itineraryItems = [
-  { time: "7:45 AM", activity: "Arrive at park entrance", badge: "Rope Drop", badgeColor: "bg-primary/20 text-primary", tip: "Arrive 15 min before park open — rope drop gives you 45 min of low crowds", wait: null, location: null, land: "" },
-  { time: "8:00 AM", activity: "Tron Lightcycle Run", badge: "Lightning Lane", badgeColor: "bg-yellow-500/20 text-yellow-400", tip: "Book this LL first — it sells out by 7:02 AM on busy days", wait: 8, waitColor: "text-green-400", location: "Tron Lightcycle Run", land: "Tomorrowland · Magic Kingdom" },
-  { time: "9:15 AM", activity: "Seven Dwarfs Mine Train", badge: null, badgeColor: "", tip: "Best window is right after Tron while crowds are still moving to Fantasyland", wait: 22, waitColor: "text-yellow-400", location: "Seven Dwarfs Mine Train", land: "Fantasyland · Magic Kingdom" },
-  { time: "10:00 AM", activity: "Meet Mickey at Town Square", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Great photo op — lines stay short until 11 AM", wait: null, location: "Town Square", land: "Main Street U.S.A. · Magic Kingdom" },
-  { time: "11:30 AM", activity: "Be Our Guest Restaurant", badge: "Dining", badgeColor: "bg-orange-500/20 text-orange-400", tip: "Reservation confirmed ✅ — arrive 5 min early, ask for a window table", wait: null, location: "Be Our Guest Restaurant", land: "Fantasyland · Magic Kingdom" },
-  { time: "1:00 PM", activity: "Rest break / hotel return", badge: "Break", badgeColor: "bg-muted text-muted-foreground", tip: "Crowds peak 1-3 PM — this is the smartest time to leave and return refreshed", wait: null, location: null, land: "" },
-  { time: "3:30 PM", activity: "Return to park for afternoon", badge: null, badgeColor: "", tip: "Crowds drop significantly after 3 PM — ideal for Fantasyland rides", wait: null, location: null, land: "" },
-  { time: "4:00 PM", activity: "Haunted Mansion", badge: null, badgeColor: "", tip: "Consistent low waits mid-afternoon", wait: 18, waitColor: "text-green-400", location: "Haunted Mansion", land: "Liberty Square · Magic Kingdom" },
-  { time: "5:00 PM", activity: "Pirates of the Caribbean", badge: null, badgeColor: "", tip: "One of the best waits of the day at this time", wait: 12, waitColor: "text-green-400", location: "Pirates of the Caribbean", land: "Adventureland · Magic Kingdom" },
-  { time: "6:30 PM", activity: "Columbia Harbour House dinner", badge: "Quick Service", badgeColor: "bg-blue-500/20 text-blue-400", tip: "Best quick service in Magic Kingdom — second floor has great views", wait: null, location: "Columbia Harbour House", land: "Liberty Square · Magic Kingdom" },
-  { time: "8:00 PM", activity: "Get in position for Happily Ever After Fireworks", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Main Street Hub center — arrive by 8:45 PM for prime position", wait: null, location: "Main Street Hub", land: "Main Street U.S.A. · Magic Kingdom" },
-  { time: "9:00 PM", activity: "Happily Ever After Fireworks 🎆", badge: "Show", badgeColor: "bg-secondary/20 text-secondary", tip: "Best spot: Main Street Hub center — arrive by 8:45 PM for prime position", wait: null, location: null, land: "" },
-];
+interface ItineraryItem {
+  time: string;
+  activity: string;
+  type: string;
+  badge?: string;
+  tip: string;
+  wait?: number;
+  location?: string;
+  land?: string;
+  priority: string;
+}
 
-const TripPlanner = () => {
+interface DayPlan {
+  date: string;
+  park: string;
+  parkEmoji: string;
+  crowdLevel: number;
+  items: ItineraryItem[];
+  summary: string;
+  highlights: string[];
+}
+
+const badgeColors: Record<string, string> = {
+  "Rope Drop": "bg-primary/20 text-primary",
+  "Lightning Lane": "bg-yellow-500/20 text-yellow-400",
+  "Dining": "bg-orange-500/20 text-orange-400",
+  "Quick Service": "bg-blue-500/20 text-blue-400",
+  "Show": "bg-purple-500/20 text-purple-400",
+  "Fireworks": "bg-purple-500/20 text-purple-400",
+  "Break": "bg-muted text-muted-foreground",
+};
+
+const typeIcons: Record<string, string> = {
+  "ride": "🎢",
+  "dining": "🍽️",
+  "show": "🎭",
+  "break": "☀️",
+  "rope-drop": "🏃",
+  "transport": "🚌",
+};
+
+const crowdLabel = (level: number) => {
+  if (level <= 3) return { text: "Low", color: "text-green-400", bg: "bg-green-500/20" };
+  if (level <= 5) return { text: "Moderate", color: "text-yellow-400", bg: "bg-yellow-500/20" };
+  if (level <= 7) return { text: "Busy", color: "text-orange-400", bg: "bg-orange-500/20" };
+  return { text: "Very Busy", color: "text-red-400", bg: "bg-red-500/20" };
+};
+
+function DayCard({ plan, dayNum }: { plan: DayPlan; dayNum: number }) {
+  const [expanded, setExpanded] = useState(dayNum === 1);
+  const crowd = crowdLabel(plan.crowdLevel);
+  const dateFormatted = new Date(plan.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+  return (
+    <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+      {/* Day Header */}
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/3 transition-colors text-left"
+      >
+        <div className="flex items-center gap-3">
+          <div className="text-2xl">{plan.parkEmoji}</div>
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-foreground">Day {dayNum} — {plan.park}</p>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${crowd.bg} ${crowd.color}`}>
+                {crowd.text} Crowds
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">{dateFormatted}</p>
+          </div>
+        </div>
+        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+      </button>
+
+      {expanded && (
+        <div>
+          {/* Highlights */}
+          <div className="px-5 pb-3 flex flex-wrap gap-1.5">
+            {plan.highlights.map((h, i) => (
+              <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-muted-foreground">✨ {h}</span>
+            ))}
+          </div>
+
+          {/* Timeline */}
+          <div className="px-5 pb-4">
+            <div className="relative">
+              {/* Timeline line */}
+              <div className="absolute left-[22px] top-2 bottom-2 w-px bg-white/10" />
+
+              <div className="space-y-3">
+                {plan.items.map((item, i) => (
+                  <div key={i} className="flex gap-3 relative">
+                    {/* Icon dot */}
+                    <div className="w-11 h-11 rounded-full bg-[#0D1230] border border-white/10 flex items-center justify-center shrink-0 z-10 text-base">
+                      {typeIcons[item.type] || "📍"}
+                    </div>
+
+                    {/* Content */}
+                    <div className={`flex-1 rounded-xl p-3 border transition-colors ${item.priority === "must-do" ? "border-primary/30 bg-primary/5" : "border-white/5 bg-white/3"}`}>
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{item.time}</p>
+                          <p className="text-sm font-semibold text-foreground leading-tight">{item.activity}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {item.wait !== undefined && (
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${item.wait <= 15 ? "bg-green-500/20 text-green-400" : item.wait <= 30 ? "bg-yellow-500/20 text-yellow-400" : "bg-red-500/20 text-red-400"}`}>
+                              {item.wait} min
+                            </span>
+                          )}
+                          {item.badge && (
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${badgeColors[item.badge] || "bg-white/10 text-muted-foreground"}`}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{item.tip}</p>
+                      {item.location && (
+                        <div className="mt-2">
+                          <CompassButton destination={item.location} context={item.land || plan.park} size="inline" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function TripPlanner() {
+  const { session } = useAuth();
+  const { toast } = useToast();
+
+  // Form state
   const [selectedParks, setSelectedParks] = useState<string[]>(["Magic Kingdom"]);
-  const [ridePreference, setRidePreference] = useState("mix");
-  const [llOption, setLlOption] = useState("multi");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
-  const [budget, setBudget] = useState([6500]);
-  const [generated, setGenerated] = useState(true);
+  const [children, setChildren] = useState(0);
+  const [ages, setAges] = useState("");
+  const [ridePreference, setRidePreference] = useState("mix");
+  const [budget, setBudget] = useState(6500);
+  const [llOption, setLlOption] = useState("multi");
+  const [specialNotes, setSpecialNotes] = useState("");
+
+  // Results state
+  const [generating, setGenerating] = useState(false);
+  const [plans, setPlans] = useState<DayPlan[]>([]);
+  const [estimatedTotal, setEstimatedTotal] = useState<number | null>(null);
+  const [budgetBreakdown, setBudgetBreakdown] = useState<Record<string, number> | null>(null);
+  const [generated, setGenerated] = useState(false);
 
   const togglePark = (park: string) => {
-    setSelectedParks((prev) =>
-      prev.includes(park) ? prev.filter((p) => p !== park) : [...prev, park]
+    setSelectedParks(prev =>
+      prev.includes(park) ? prev.filter(p => p !== park) : [...prev, park]
     );
   };
 
+  const generateItinerary = async () => {
+    if (!selectedParks.length) { toast({ title: "Select at least one park", variant: "destructive" }); return; }
+    if (!startDate) { toast({ title: "Select your travel dates", variant: "destructive" }); return; }
+    if (!session) { toast({ title: "Please log in", variant: "destructive" }); return; }
+
+    setGenerating(true);
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/ai-trip-planner`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+          "x-client-authorization": `Bearer ${session.access_token}`,
+          "apikey": SUPABASE_ANON,
+        },
+        body: JSON.stringify({
+          parks: selectedParks,
+          startDate,
+          endDate: endDate || startDate,
+          adults,
+          children,
+          ages,
+          ridePreference,
+          budget,
+          llOption,
+          specialNotes,
+        }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || "Generation failed");
+
+      setPlans(data.plans);
+      setEstimatedTotal(data.estimatedTotal);
+      setBudgetBreakdown(data.budgetBreakdown);
+      setGenerated(true);
+      toast({ title: "✨ Itinerary generated!", description: `${data.numDays}-day plan ready` });
+    } catch (err) {
+      toast({ title: "Failed to generate", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
-    <DashboardLayout title="🗺️ Trip Planner" subtitle="Build your perfect Disney day with AI-powered itineraries">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* LEFT — Form (2/5) */}
-        <div className="lg:col-span-2 rounded-xl bg-card gold-border p-6 h-fit">
-          <h2 className="text-base font-bold text-foreground mb-5">🗺️ Plan Your Trip</h2>
+    <DashboardLayout title="🗺️ Trip Planner" subtitle="AI-powered itineraries tailored to your group">
+      <div className="space-y-6">
+
+        {/* ── FORM ─────────────────────────────────────────────── */}
+        <div className="rounded-xl border border-white/8 p-5" style={{ background: "#111827" }}>
+          <h2 className="text-sm font-bold text-foreground mb-4">Plan Your Trip</h2>
 
           <div className="space-y-5">
             {/* Parks */}
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Which park(s)?</label>
               <div className="flex flex-wrap gap-2">
-                {parks.map((park) => (
-                  <button
-                    key={park}
-                    onClick={() => togglePark(park)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
-                      selectedParks.includes(park)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
-                    }`}
-                  >
+                {PARKS.map(park => (
+                  <button key={park} onClick={() => togglePark(park)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${selectedParks.includes(park) ? "bg-primary text-[#080E1E] border-primary" : "border-white/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
                     {park}
                   </button>
                 ))}
@@ -79,69 +262,53 @@ const TripPlanner = () => {
 
             {/* Dates */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Travel dates</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Travel Dates</label>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-primary/10">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-foreground">May 20, 2026</span>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Start</p>
+                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
                 </div>
-                <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2.5 border border-primary/10">
-                  <Calendar className="w-4 h-4 text-primary" />
-                  <span className="text-sm text-foreground">May 23, 2026</span>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">End</p>
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate || new Date().toISOString().split("T")[0]}
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
                 </div>
               </div>
             </div>
 
             {/* Party size */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Party size</label>
-              <div className="space-y-3">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Party Size</label>
+              <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: "Adults", value: adults, set: setAdults },
                   { label: "Children", value: children, set: setChildren },
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between bg-muted/30 rounded-lg px-3 py-2 border border-primary/10">
+                ].map(row => (
+                  <div key={row.label} className="flex items-center justify-between bg-[#0D1230] rounded-lg px-3 py-2 border border-white/10">
                     <span className="text-sm text-foreground">{row.label}</span>
                     <div className="flex items-center gap-3">
-                      <button onClick={() => row.set(Math.max(0, row.value - 1))} className="w-7 h-7 rounded-md bg-muted flex items-center justify-center text-foreground hover:bg-muted/80">
-                        <Minus className="w-3 h-3" />
-                      </button>
+                      <button onClick={() => row.set(Math.max(0, row.value - 1))} className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center text-foreground hover:bg-white/20 text-lg leading-none">−</button>
                       <span className="text-sm font-bold text-primary w-4 text-center">{row.value}</span>
-                      <button onClick={() => row.set(row.value + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground hover:bg-primary/90">
-                        <Plus className="w-3 h-3" />
-                      </button>
+                      <button onClick={() => row.set(row.value + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-[#080E1E] text-lg leading-none font-bold">+</button>
                     </div>
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Ages */}
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Ages in your group</label>
-              <input
-                type="text"
-                placeholder="e.g. 38, 35, 8, 6"
-                defaultValue="38, 35, 8, 6"
-                className="w-full bg-muted/30 border border-primary/10 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-              />
+              {children > 0 && (
+                <input type="text" placeholder="Children's ages (e.g. 8, 6, 3)" value={ages} onChange={e => setAges(e.target.value)}
+                  className="mt-2 w-full px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40" />
+              )}
             </div>
 
             {/* Ride preference */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Ride preference</label>
-              <div className="flex flex-wrap gap-2">
-                {ridePreferences.map((pref) => (
-                  <button
-                    key={pref.value}
-                    onClick={() => setRidePreference(pref.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
-                      ridePreference === pref.value
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
-                    }`}
-                  >
-                    {pref.label}
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Ride Preference</label>
+              <div className="grid grid-cols-2 gap-2">
+                {RIDE_PREFS.map(p => (
+                  <button key={p.value} onClick={() => setRidePreference(p.value)}
+                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors text-center border ${ridePreference === p.value ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
+                    {p.label}
                   </button>
                 ))}
               </div>
@@ -149,153 +316,107 @@ const TripPlanner = () => {
 
             {/* Budget */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Budget for this trip</label>
-              <p className="text-2xl font-extrabold text-primary mb-3">${budget[0].toLocaleString()}</p>
-              <Slider
-                value={budget}
-                onValueChange={setBudget}
-                min={2000}
-                max={15000}
-                step={100}
-                className="w-full"
-              />
-              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                <span>$2,000</span>
-                <span>$15,000</span>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                Budget — <span className="text-primary">${budget.toLocaleString()}</span>
+              </label>
+              <input type="range" min={1000} max={15000} step={500} value={budget} onChange={e => setBudget(parseInt(e.target.value))}
+                className="w-full accent-primary" />
+              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                <span>$1,000</span><span>$15,000</span>
               </div>
             </div>
 
             {/* Lightning Lane */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Lightning Lane pass?</label>
-              <div className="flex flex-wrap gap-2">
-                {llOptions.map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setLlOption(opt.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${
-                      llOption === opt.value
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "border-primary/30 text-muted-foreground hover:border-primary hover:text-foreground"
-                    }`}
-                  >
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Lightning Lane</label>
+              <div className="flex gap-2">
+                {LL_OPTIONS.map(opt => (
+                  <button key={opt.value} onClick={() => setLlOption(opt.value)}
+                    className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors text-center border ${llOption === opt.value ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
                     {opt.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Notes */}
+            {/* Special notes */}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Special notes for AI</label>
-              <textarea
-                placeholder="e.g. celebrating a birthday, first trip, grandparents coming, must do Tron"
-                rows={3}
-                className="w-full bg-muted/30 border border-primary/10 rounded-lg px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 resize-none"
-              />
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Special Notes (optional)</label>
+              <textarea value={specialNotes} onChange={e => setSpecialNotes(e.target.value)} rows={2}
+                placeholder="e.g. celebrating a birthday, grandparents joining, must ride Tron, first trip..."
+                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none" />
             </div>
 
-            {/* CTA */}
-            <button
-              onClick={() => setGenerated(true)}
-              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
-            >
-              ✨ Generate My Itinerary
+            <button onClick={generateItinerary} disabled={generating || !selectedParks.length || !startDate}
+              className="w-full py-3.5 rounded-xl font-bold text-[#080E1E] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: "#F5C842" }}>
+              {generating ? (
+                <><span className="w-4 h-4 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Generating your itinerary...</>
+              ) : (
+                <><Sparkles className="w-4 h-4" /> ✨ Generate My Itinerary</>
+              )}
             </button>
-            <p className="text-center text-[11px] text-muted-foreground">Powered by Magic Pass AI · Takes about 10 seconds</p>
+            <p className="text-center text-xs text-muted-foreground">Personalized day-by-day plan based on your preferences</p>
           </div>
         </div>
 
-        {/* RIGHT — Itinerary (3/5) */}
-        <div className="lg:col-span-3">
-          {!generated ? (
-            <div className="rounded-xl border-2 border-dashed border-primary/30 p-12 flex flex-col items-center justify-center text-center min-h-[500px]">
-              <Castle className="w-16 h-16 text-primary/50 mb-4" />
-              <h3 className="text-lg font-bold text-foreground mb-2">Your personalized itinerary will appear here</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">Fill in your trip details and hit Generate to build your custom Disney day plan</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="rounded-xl bg-card gold-border p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-base font-bold text-foreground">Magic Kingdom · May 20, 2026 · Party of 4</h2>
-                  </div>
-                  <button className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground border border-primary/20 px-3 py-1.5 rounded-lg hover:text-foreground hover:border-primary/40 transition-colors">
-                    <RefreshCw className="w-3 h-3" />
-                    Regenerate
-                  </button>
-                </div>
-
-                <div className="space-y-0">
-                  {itineraryItems.map((item, i) => (
-                    <div key={i} className="flex gap-4 relative">
-                      <div className="flex flex-col items-center">
-                        <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                        {i < itineraryItems.length - 1 && <div className="w-px flex-1 bg-primary/20" />}
-                      </div>
-                      <div className="pb-5 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-bold text-primary">{item.time}</span>
-                          {item.badge && (
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.badgeColor}`}>
-                              {item.badge}
-                            </span>
-                          )}
-                          {item.wait !== null && (
-                            <span className={`text-[10px] font-semibold ${item.waitColor}`}>
-                              Wait: {item.wait} min {item.wait < 20 ? "🟢" : item.wait <= 45 ? "🟡" : "🔴"}
-                            </span>
-                          )}
+        {/* ── GENERATED ITINERARY ───────────────────────────────── */}
+        {generated && plans.length > 0 && (
+          <div className="space-y-4">
+            {/* Trip Summary */}
+            <div className="rounded-xl p-4 border border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-bold text-foreground">Your {plans.length}-Day Disney Adventure</h2>
+                <button onClick={generateItinerary} disabled={generating}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`} />
+                  Regenerate
+                </button>
+              </div>
+              {estimatedTotal && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Estimated trip cost: <span className="text-primary font-bold">${estimatedTotal.toLocaleString()}</span> {estimatedTotal <= budget ? "✅ Within budget" : `⚠️ $${(estimatedTotal - budget).toLocaleString()} over budget`}</p>
+                  {budgetBreakdown && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {Object.entries(budgetBreakdown).map(([key, val]) => (
+                        <div key={key} className="text-center">
+                          <p className="text-xs text-muted-foreground capitalize">{key}</p>
+                          <p className="text-xs font-semibold text-foreground">${val.toLocaleString()}</p>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                          <p className="text-sm font-medium text-foreground">{item.activity}</p>
-                          {item.location && (
-                            <CompassButton destination={item.location} context={item.land} />
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground italic mt-0.5">{item.tip}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-
-              {/* Summary stats */}
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { icon: "⏱️", label: "Est. Total Wait Time: 1h 42min" },
-                  { icon: "⚡", label: "Lightning Lane Bookings: 2" },
-                  { icon: "🎢", label: "Attractions: 7" },
-                ].map((stat) => (
-                  <div key={stat.label} className="inline-flex items-center gap-2 bg-card gold-border rounded-full px-4 py-2 text-xs font-semibold text-foreground">
-                    <span>{stat.icon}</span>
-                    {stat.label}
-                  </div>
-                ))}
-              </div>
-
-              {/* Action buttons */}
-              <div className="flex flex-wrap gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border border-primary/30 text-primary hover:bg-primary/10 transition-colors">
-                  <Calendar className="w-3.5 h-3.5" />
-                  Add to Calendar
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border border-secondary/30 text-secondary hover:bg-secondary/10 transition-colors">
-                  <Users className="w-3.5 h-3.5" />
-                  Share with Group
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold border border-muted-foreground/30 text-muted-foreground hover:bg-muted/30 transition-colors">
-                  <FileText className="w-3.5 h-3.5" />
-                  Export PDF
-                </button>
-              </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Day Plans */}
+            {plans.map((plan, i) => (
+              <DayCard key={i} plan={plan} dayNum={i + 1} />
+            ))}
+
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              <button className="flex-1 py-2.5 rounded-xl border border-primary/40 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors">
+                📅 Add to Calendar
+              </button>
+              <button className="flex-1 py-2.5 rounded-xl border border-white/10 text-sm font-semibold text-muted-foreground hover:border-white/20 transition-colors">
+                👥 Share with Group
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!generated && (
+          <div className="rounded-xl p-10 text-center border border-dashed border-white/10" style={{ background: "#111827" }}>
+            <Castle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-sm font-semibold text-foreground mb-1">Your personalized itinerary will appear here</p>
+            <p className="text-xs text-muted-foreground">Fill in your trip details above and hit Generate</p>
+          </div>
+        )}
+
       </div>
     </DashboardLayout>
   );
-};
-
-export default TripPlanner;
+}
