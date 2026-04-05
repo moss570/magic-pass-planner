@@ -27,12 +27,16 @@ export function useSubscription() {
     }
 
     try {
+      // Always get a fresh session to avoid expired JWT errors
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const token = freshSession?.access_token ?? session.access_token;
+
       const res = await fetch(`${SUPABASE_URL}/functions/v1/check-subscription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-          "x-client-authorization": `Bearer ${session.access_token}`,
+          "Authorization": `Bearer ${token}`,
+          "x-client-authorization": `Bearer ${token}`,
           "apikey": SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({}),
