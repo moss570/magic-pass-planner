@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Zap, MapPin, Clock, Navigation, Trophy, Gamepad2, RefreshCw,
   ChevronDown, ChevronUp, Star, Sparkles, Timer, AlertTriangle,
-  CloudRain, Calendar, BarChart3, SortAsc, Filter
+  CloudRain, Calendar, BarChart3, SortAsc, Filter, Menu, X, Search
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
@@ -27,6 +27,102 @@ const PARK_BOUNDS: Record<string, { lat: [number, number]; lng: [number, number]
   "animal-kingdom": { lat: [28.355, 28.365], lng: [-81.594, -81.582] },
   "typhoon-lagoon": { lat: [28.369, 28.376], lng: [-81.530, -81.523] },
   "blizzard-beach": { lat: [28.354, 28.360], lng: [-81.577, -81.568] },
+
+// Navigate-To locations by park
+const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "restaurant" | "shop" | "restroom" | "area"; area: string }>> = {
+  "magic-kingdom": [
+    // Rides
+    { name: "TRON Lightcycle / Run", type: "ride", area: "Tomorrowland" },
+    { name: "Space Mountain", type: "ride", area: "Tomorrowland" },
+    { name: "Seven Dwarfs Mine Train", type: "ride", area: "Fantasyland" },
+    { name: "Big Thunder Mountain Railroad", type: "ride", area: "Frontierland" },
+    { name: "Tiana's Bayou Adventure", type: "ride", area: "Frontierland" },
+    { name: "Haunted Mansion", type: "ride", area: "Liberty Square" },
+    { name: "Pirates of the Caribbean", type: "ride", area: "Adventureland" },
+    { name: "Jungle Cruise", type: "ride", area: "Adventureland" },
+    { name: "Peter Pan's Flight", type: "ride", area: "Fantasyland" },
+    { name: ""it's a small world"", type: "ride", area: "Fantasyland" },
+    { name: "Mad Tea Party", type: "ride", area: "Fantasyland" },
+    { name: "Dumbo the Flying Elephant", type: "ride", area: "Fantasyland" },
+    { name: "The Barnstormer", type: "ride", area: "Fantasyland" },
+    { name: "Buzz Lightyear's Space Ranger Spin", type: "ride", area: "Tomorrowland" },
+    { name: "Astro Orbiter", type: "ride", area: "Tomorrowland" },
+    { name: "Tomorrowland Speedway", type: "ride", area: "Tomorrowland" },
+    // Restaurants
+    { name: "Be Our Guest Restaurant", type: "restaurant", area: "Fantasyland" },
+    { name: "Cinderella's Royal Table", type: "restaurant", area: "Fantasyland" },
+    { name: "Liberty Tree Tavern", type: "restaurant", area: "Liberty Square" },
+    { name: "The Skipper Canteen", type: "restaurant", area: "Adventureland" },
+    { name: "Tony's Town Square Restaurant", type: "restaurant", area: "Main Street USA" },
+    { name: "Columbia Harbour House", type: "restaurant", area: "Liberty Square" },
+    { name: "Pecos Bill Tall Tale Inn & Cafe", type: "restaurant", area: "Frontierland" },
+    // Areas / Landmarks
+    { name: "Cinderella Castle", type: "area", area: "Main Street USA" },
+    { name: "Main Street USA", type: "area", area: "Entrance" },
+    { name: "Town Square", type: "area", area: "Main Street USA" },
+    { name: "Main Street Hub", type: "area", area: "Main Street USA" },
+    { name: "Fantasyland", type: "area", area: "Park" },
+    { name: "Tomorrowland", type: "area", area: "Park" },
+    { name: "Frontierland", type: "area", area: "Park" },
+    { name: "Adventureland", type: "area", area: "Park" },
+    { name: "Liberty Square", type: "area", area: "Park" },
+    { name: "Guest Services", type: "area", area: "Main Street USA" },
+    { name: "First Aid", type: "area", area: "Main Street USA" },
+    { name: "Stroller Rental", type: "area", area: "Main Street USA" },
+  ],
+  "epcot": [
+    { name: "Guardians of the Galaxy: Cosmic Rewind", type: "ride", area: "World Discovery" },
+    { name: "Test Track", type: "ride", area: "World Discovery" },
+    { name: "Spaceship Earth", type: "ride", area: "World Celebration" },
+    { name: "Remy's Ratatouille Adventure", type: "ride", area: "World Showcase - France" },
+    { name: "Frozen Ever After", type: "ride", area: "World Showcase - Norway" },
+    { name: "Soarin'", type: "ride", area: "World Nature" },
+    { name: "The Seas with Nemo", type: "ride", area: "World Nature" },
+    { name: "Space 220 Restaurant", type: "restaurant", area: "World Discovery" },
+    { name: "Le Cellier Steakhouse", type: "restaurant", area: "World Showcase - Canada" },
+    { name: "Topolino's Terrace", type: "restaurant", area: "World Showcase" },
+    { name: "Akershus Royal Banquet Hall", type: "restaurant", area: "World Showcase - Norway" },
+    { name: "World Showcase", type: "area", area: "Park" },
+    { name: "Future World", type: "area", area: "Park" },
+  ],
+  "hollywood-studios": [
+    { name: "Star Wars: Rise of the Resistance", type: "ride", area: "Galaxy's Edge" },
+    { name: "Millennium Falcon: Smugglers Run", type: "ride", area: "Galaxy's Edge" },
+    { name: "Slinky Dog Dash", type: "ride", area: "Toy Story Land" },
+    { name: "Rockin' Roller Coaster", type: "ride", area: "Sunset Boulevard" },
+    { name: "Tower of Terror", type: "ride", area: "Sunset Boulevard" },
+    { name: "Mickey & Minnie's Runaway Railway", type: "ride", area: "Hollywood Boulevard" },
+    { name: "Sci-Fi Dine-In Theater", type: "restaurant", area: "Hollywood Boulevard" },
+    { name: "50's Prime Time Café", type: "restaurant", area: "Hollywood Boulevard" },
+    { name: "Galaxy's Edge", type: "area", area: "Park" },
+    { name: "Toy Story Land", type: "area", area: "Park" },
+    { name: "Sunset Boulevard", type: "area", area: "Park" },
+  ],
+  "animal-kingdom": [
+    { name: "Avatar Flight of Passage", type: "ride", area: "Pandora" },
+    { name: "Na'vi River Journey", type: "ride", area: "Pandora" },
+    { name: "Expedition Everest", type: "ride", area: "Asia" },
+    { name: "Kilimanjaro Safaris", type: "ride", area: "Africa" },
+    { name: "Tiffins Restaurant", type: "restaurant", area: "Discovery Island" },
+    { name: "Tusker House Restaurant", type: "restaurant", area: "Africa" },
+    { name: "Pandora - The World of Avatar", type: "area", area: "Park" },
+    { name: "Discovery Island", type: "area", area: "Park" },
+    { name: "Tree of Life", type: "area", area: "Discovery Island" },
+  ],
+  "typhoon-lagoon": [
+    { name: "Miss Adventure Falls", type: "ride", area: "Park" },
+    { name: "Crush 'n' Gusher", type: "ride", area: "Park" },
+    { name: "Typhoon Lagoon Surf Pool", type: "area", area: "Park" },
+    { name: "Leaning Palms", type: "restaurant", area: "Park" },
+  ],
+  "blizzard-beach": [
+    { name: "Summit Plummet", type: "ride", area: "Park" },
+    { name: "Slush Gusher", type: "ride", area: "Park" },
+    { name: "Melt-Away Bay", type: "area", area: "Park" },
+    { name: "Lottawatta Lodge", type: "restaurant", area: "Park" },
+  ],
+};
+
 };
 
 // LINE GAMES — mini games to play while waiting
@@ -339,6 +435,10 @@ export default function LivePark() {
   const [fireworksTime, setFireworksTime] = useState("21:00");
   const [activeTab, setActiveTab] = useState<"waits" | "fireworks" | "games" | "info">("waits");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [liveMenuOpen, setLiveMenuOpen] = useState(false);
+  const [navigateOpen, setNavigateOpen] = useState(false);
+  const [navigateSearch, setNavigateSearch] = useState("");
+  const [navigateTarget, setNavigateTarget] = useState<{name: string; area: string} | null>(null);
 
   // GPS detection
   useEffect(() => {
@@ -458,26 +558,192 @@ export default function LivePark() {
           ))}
         </div>
 
-        {/* GPS Status / In-Park Banner */}
+        {/* GPS Status Banner + Live Park Menu Button */}
         {inPark === false && gpsError === null && (
-          <div className="rounded-xl px-4 py-3 border border-yellow-500/30 bg-yellow-500/10 flex items-center gap-3">
-            <MapPin className="w-4 h-4 text-yellow-400 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-yellow-400">You're not in the park</p>
-              <p className="text-xs text-muted-foreground">Navigate buttons hidden · Wait times and fireworks calculator still available</p>
+          <div className="rounded-xl px-4 py-4 border border-yellow-500/30 bg-yellow-500/10">
+            <div className="flex items-center gap-3 mb-3">
+              <MapPin className="w-4 h-4 text-yellow-400 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-yellow-400">You're not in the park</p>
+                <p className="text-xs text-muted-foreground">Live wait times available · Navigation hidden until you're inside</p>
+              </div>
             </div>
+            <button
+              onClick={() => setLiveMenuOpen(true)}
+              className="w-full py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+              style={{ background: "#F5C842" }}
+            >
+              <Zap className="w-4 h-4" /> LIVE PARK MENU
+            </button>
           </div>
         )}
         {inPark === true && (
-          <div className="rounded-xl px-4 py-3 border border-green-500/30 bg-green-500/10 flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-green-400 live-pulse shrink-0" />
-            <p className="text-sm font-semibold text-green-400">You're in {PARKS.find(p => p.slug === selectedPark)?.name}! All features active.</p>
+          <div className="rounded-xl px-4 py-4 border border-green-500/30 bg-green-500/10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-2 h-2 rounded-full bg-green-400 live-pulse shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-green-400">You're in {PARKS.find(p => p.slug === selectedPark)?.name}! 🎉</p>
+                <p className="text-xs text-muted-foreground">All features active · Have a magical day!</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLiveMenuOpen(true)}
+                className="flex-1 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+                style={{ background: "#F5C842" }}
+              >
+                <Zap className="w-4 h-4" /> LIVE PARK MENU
+              </button>
+              <button
+                onClick={() => setNavigateOpen(true)}
+                className="flex-1 py-2.5 rounded-lg font-bold text-sm text-foreground border border-primary/40 flex items-center justify-center gap-2 bg-primary/10"
+              >
+                <Navigation className="w-4 h-4 text-primary" /> NAVIGATE TO
+              </button>
+            </div>
           </div>
         )}
         {gpsError && (
-          <div className="rounded-xl px-4 py-3 border border-white/10 bg-muted/10 flex items-center gap-3">
-            <AlertTriangle className="w-4 h-4 text-muted-foreground shrink-0" />
-            <p className="text-xs text-muted-foreground">GPS unavailable — {gpsError}. Navigation features disabled.</p>
+          <div className="rounded-xl px-4 py-4 border border-white/10 bg-muted/10">
+            <div className="flex items-center gap-3 mb-3">
+              <AlertTriangle className="w-4 h-4 text-muted-foreground shrink-0" />
+              <p className="text-xs text-muted-foreground">GPS unavailable — {gpsError}</p>
+            </div>
+            <button
+              onClick={() => setLiveMenuOpen(true)}
+              className="w-full py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+              style={{ background: "#F5C842" }}
+            >
+              <Zap className="w-4 h-4" /> LIVE PARK MENU
+            </button>
+          </div>
+        )}
+
+        {/* LIVE PARK MENU — slide-up modal */}
+        {liveMenuOpen && (
+          <>
+            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" onClick={() => setLiveMenuOpen(false)} />
+            <div className="fixed bottom-0 left-0 right-0 z-[51] rounded-t-2xl overflow-hidden" style={{ background: "#111827" }}>
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
+                <div>
+                  <p className="text-base font-bold text-foreground">⚡ Live Park Menu</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{PARKS.find(p => p.slug === selectedPark)?.icon} {PARKS.find(p => p.slug === selectedPark)?.name}</p>
+                </div>
+                <button onClick={() => setLiveMenuOpen(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4 grid grid-cols-2 gap-3 pb-8">
+                {[
+                  { id: "waits", icon: "⚡", label: "Wait Times", sub: "Live ride waits + sort by distance" },
+                  { id: "fireworks", icon: "🎆", label: "Fireworks Calculator", sub: "Ride timing for best views" },
+                  { id: "games", icon: "🎮", label: "Line Games", sub: "Play while you wait" },
+                  { id: "info", icon: "ℹ️", label: "Park Info", sub: "Hours, crowds, Lightning Lane" },
+                ].map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => { setActiveTab(item.id as any); setLiveMenuOpen(false); }}
+                    className={`text-left p-4 rounded-xl border transition-colors ${activeTab === item.id ? "border-primary/60 bg-primary/10" : "border-white/10 bg-[#0D1230] hover:border-primary/30"}`}
+                  >
+                    <p className="text-2xl mb-2">{item.icon}</p>
+                    <p className="text-sm font-bold text-foreground">{item.label}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.sub}</p>
+                  </button>
+                ))}
+                {inPark && (
+                  <button
+                    onClick={() => { setNavigateOpen(true); setLiveMenuOpen(false); }}
+                    className="text-left p-4 rounded-xl border border-white/10 bg-[#0D1230] hover:border-primary/30 transition-colors"
+                  >
+                    <p className="text-2xl mb-2">🧭</p>
+                    <p className="text-sm font-bold text-foreground">Navigate To</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Compass to any attraction or restaurant</p>
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* NAVIGATE TO — full screen destination picker */}
+        {navigateOpen && (
+          <>
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setNavigateOpen(false)} />
+            <div className="fixed inset-x-0 bottom-0 top-16 z-[51] rounded-t-2xl overflow-hidden flex flex-col" style={{ background: "#111827" }}>
+              <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b shrink-0" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
+                <p className="text-base font-bold text-foreground">🧭 Navigate To</p>
+                <button onClick={() => setNavigateOpen(false)} className="text-muted-foreground hover:text-foreground">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="px-4 pt-3 pb-2 shrink-0">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder="Search attractions, restaurants, areas..."
+                    value={navigateSearch}
+                    onChange={e => setNavigateSearch(e.target.value)}
+                    autoFocus
+                    className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+                  />
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto px-4 pb-8">
+                {(() => {
+                  const locations = PARK_LOCATIONS[selectedPark] || [];
+                  const filtered = navigateSearch
+                    ? locations.filter(l => l.name.toLowerCase().includes(navigateSearch.toLowerCase()) || l.area.toLowerCase().includes(navigateSearch.toLowerCase()))
+                    : locations;
+                  
+                  const grouped: Record<string, typeof locations> = {};
+                  filtered.forEach(loc => {
+                    if (!grouped[loc.area]) grouped[loc.area] = [];
+                    grouped[loc.area].push(loc);
+                  });
+
+                  return Object.entries(grouped).map(([area, locs]) => (
+                    <div key={area} className="mb-4">
+                      <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2 mt-3">{area}</p>
+                      {locs.map(loc => (
+                        <button
+                          key={loc.name}
+                          onClick={() => {
+                            setNavigateTarget({ name: loc.name, area: loc.area });
+                            setNavigateOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-primary/10 transition-colors text-left mb-1"
+                        >
+                          <span className="text-lg">{loc.type === "ride" ? "🎢" : loc.type === "restaurant" ? "🍽️" : loc.type === "shop" ? "🛍️" : "📍"}</span>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{loc.name}</p>
+                            <p className="text-xs text-muted-foreground">{loc.area}</p>
+                          </div>
+                          <Navigation className="w-4 h-4 text-primary ml-auto" />
+                        </button>
+                      ))}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Navigate To — Compass overlay when destination selected */}
+        {navigateTarget && (
+          <div className="rounded-xl p-4 border border-primary/40 bg-primary/5 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Navigating to:</p>
+              <p className="text-sm font-bold text-foreground">{navigateTarget.name}</p>
+              <p className="text-xs text-muted-foreground">{navigateTarget.area}</p>
+            </div>
+            <div className="flex gap-2">
+              <CompassButton destination={navigateTarget.name} context={`${navigateTarget.area} · ${PARKS.find(p => p.slug === selectedPark)?.name}`} size="inline" />
+              <button onClick={() => setNavigateTarget(null)} className="text-xs text-muted-foreground hover:text-foreground px-2">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
@@ -507,13 +773,13 @@ export default function LivePark() {
           </div>
         )}
 
-        {/* Tab Bar */}
-        <div className="flex gap-1 border-b border-white/10">
+        {/* Tab Bar — desktop only, mobile uses Live Park Menu */}
+        <div className="hidden md:flex gap-1 border-b border-white/10">
           {[
-            { id: "waits", label: "⚡ Wait Times", icon: Clock },
-            { id: "fireworks", label: "🎆 Fireworks", icon: Sparkles },
-            { id: "games", label: "🎮 Line Games", icon: Gamepad2 },
-            { id: "info", label: "ℹ️ Park Info", icon: BarChart3 },
+            { id: "waits", label: "⚡ Wait Times" },
+            { id: "fireworks", label: "🎆 Fireworks" },
+            { id: "games", label: "🎮 Line Games" },
+            { id: "info", label: "ℹ️ Park Info" },
           ].map(tab => (
             <button
               key={tab.id}
@@ -523,6 +789,17 @@ export default function LivePark() {
               {tab.label}
             </button>
           ))}
+        </div>
+        {/* Current view label on mobile */}
+        <div className="md:hidden flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            Showing: <span className="text-foreground font-semibold">
+              {activeTab === "waits" ? "⚡ Wait Times" : activeTab === "fireworks" ? "🎆 Fireworks" : activeTab === "games" ? "🎮 Line Games" : "ℹ️ Park Info"}
+            </span>
+          </p>
+          <button onClick={() => setLiveMenuOpen(true)} className="text-xs text-primary font-semibold flex items-center gap-1">
+            <Menu className="w-3.5 h-3.5" /> Switch View
+          </button>
         </div>
 
         {/* ── WAIT TIMES TAB ─────────────────────────────────── */}
