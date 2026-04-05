@@ -75,6 +75,7 @@ const PARK_SCALE_METERS = 500; // 100 units = 500 meters
 function walkTime(from: string, to: string, park: string): { minutes: number; description: string } {
   if (park !== "Magic Kingdom") return { minutes: 8, description: `Walking to ${to}` };
   
+  // Use park-specific locations if available
   const fromLoc = MK_LOCATIONS[from];
   const toLoc = MK_LOCATIONS[to];
   
@@ -97,7 +98,74 @@ function walkTime(from: string, to: string, park: string): { minutes: number; de
 
 // ─── QUEUE NEARBY DINING ─────────────────────────────────────────────────────
 function nearbyDining(location: string, park: string): string[] {
-  if (park !== "Magic Kingdom") return [];
+  // Support all parks
+  const parkLocations: Record<string, any> = {
+    "Magic Kingdom": MK_LOCATIONS,
+    "EPCOT": {
+      "EPCOT Main Entrance": {x:50,y:0,land:"Entrance",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Start here"},
+      "Guardians of the Galaxy: Cosmic Rewind": {x:75,y:30,land:"World Discovery",rideTime:4,category:"ride",thrillLevel:5,avgWait:{low:45,moderate:90,high:150},llAvailable:true,tips:"Book LL immediately — sells out first"},
+      "Test Track": {x:80,y:35,land:"World Discovery",rideTime:5,category:"ride",thrillLevel:4,avgWait:{low:20,moderate:50,high:90},llAvailable:true,tips:"Design a car, then test it. Book LL morning"},
+      "Frozen Ever After": {x:50,y:25,land:"World Showcase - Norway",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Book LL morning"},
+      "Remy's Ratatouille Adventure": {x:50,y:80,land:"World Showcase - France",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:30,moderate:60,high:95},llAvailable:true,tips:"Book LL early"},
+      "Soarin' Around the World": {x:25,y:35,land:"World Nature",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:40,high:70},llAvailable:true,tips:"Classic hang glider simulation"},
+      "Mission: SPACE": {x:72,y:35,land:"World Discovery",rideTime:5,category:"ride",thrillLevel:4,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Orange mission is intense, Green is tamer"},
+      "The Seas with Nemo & Friends": {x:20,y:32,land:"World Nature",rideTime:6,category:"ride",thrillLevel:1,avgWait:{low:10,moderate:20,high:35},llAvailable:false,tips:"Great for young kids"},
+      "Spaceship Earth": {x:50,y:15,land:"World Celebration",rideTime:15,category:"ride",thrillLevel:1,avgWait:{low:10,moderate:20,high:35},llAvailable:false,tips:"Iconic EPCOT landmark. Low waits."},
+      "Space 220 Restaurant": {x:70,y:28,land:"World Discovery",rideTime:90,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"RESERVATION REQUIRED — hardest table in WDW"},
+      "Sunshine Seasons": {x:28,y:36,land:"World Nature",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Best QS in EPCOT. Huge variety."},
+      "World Showcase Lagoon": {x:50,y:50,land:"World Showcase",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Best fireworks position"},
+    },
+    "Hollywood Studios": {
+      "Hollywood Studios Entrance": {x:50,y:0,land:"Hollywood Boulevard",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Rope drop here"},
+      "Star Wars: Rise of the Resistance": {x:20,y:85,land:"Galaxy's Edge",rideTime:20,category:"ride",thrillLevel:4,avgWait:{low:50,moderate:90,high:150},llAvailable:true,tips:"Book LL immediately. Most immersive ride in WDW."},
+      "Millennium Falcon: Smugglers Run": {x:25,y:80,land:"Galaxy's Edge",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Pilot the Falcon. Pilot role gets best experience."},
+      "Slinky Dog Dash": {x:75,y:75,land:"Toy Story Land",rideTime:3,category:"ride",thrillLevel:3,avgWait:{low:30,moderate:65,high:110},llAvailable:true,tips:"Best family coaster in HS. Book LL early."},
+      "Tower of Terror": {x:85,y:55,land:"Sunset Boulevard",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Haunted elevator drops. Best thrill in HS."},
+      "Rockin' Roller Coaster": {x:88,y:60,land:"Sunset Boulevard",rideTime:2,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Launching coaster, 0-60 in 2.8 sec."},
+      "Mickey & Minnie's Runaway Railway": {x:50,y:25,land:"Hollywood Boulevard",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:85},llAvailable:true,tips:"Book LL. Major upgrade ride."},
+      "Toy Story Mania!": {x:78,y:72,land:"Toy Story Land",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:45,high:75},llAvailable:true,tips:"Interactive 4D shooter. Families love this."},
+      "Sci-Fi Dine-In Theater Restaurant": {x:55,y:30,land:"Echo Lake",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Drive-in movie atmosphere."},
+      "Backlot Express": {x:60,y:40,land:"Echo Lake",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Best QS in HS area."},
+      "Fantasmic! Amphitheater": {x:85,y:65,land:"Sunset Boulevard",rideTime:30,category:"show",thrillLevel:1,avgWait:{low:20,moderate:30,high:45},llAvailable:false,tips:"Evening show. Arrive 45 min early."},
+    },
+    "Animal Kingdom": {
+      "Animal Kingdom Entrance": {x:50,y:0,land:"The Oasis",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"AK opens early — safaris best at open"},
+      "Avatar Flight of Passage": {x:25,y:70,land:"Pandora",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:50,moderate:100,high:165},llAvailable:true,tips:"Book LL immediately. Best ride in WDW."},
+      "Na'vi River Journey": {x:22,y:75,land:"Pandora",rideTime:5,category:"ride",thrillLevel:1,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Gentle boat ride through Pandora. Stunning visuals."},
+      "Kilimanjaro Safaris": {x:20,y:40,land:"Africa",rideTime:18,category:"ride",thrillLevel:2,avgWait:{low:15,moderate:35,high:65},llAvailable:true,tips:"Go at rope drop — animals most active. Best in whole park."},
+      "Expedition Everest": {x:80,y:55,land:"Asia",rideTime:4,category:"ride",thrillLevel:5,avgWait:{low:20,moderate:45,high:80},llAvailable:true,tips:"Best coaster in AK. Goes backwards!"},
+      "DINOSAUR": {x:75,y:30,land:"DinoLand U.S.A.",rideTime:4,category:"ride",thrillLevel:3,avgWait:{low:20,moderate:40,high:65},llAvailable:false,tips:"Dark, intense ride. Usually short waits."},
+      "Kali River Rapids": {x:75,y:60,land:"Asia",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:20,moderate:45,high:75},llAvailable:false,tips:"You WILL get wet. Great on hot days."},
+      "Tiffins Restaurant": {x:55,y:40,land:"Discovery Island",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Best food in AK."},
+      "Flame Tree Barbecue": {x:52,y:38,land:"Discovery Island",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:18},llAvailable:false,tips:"Best BBQ in WDW. Outdoor seating with great views."},
+      "Satu'li Canteen": {x:23,y:72,land:"Pandora",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Best QS in AK. Customizable bowls."},
+      "Rivers of Light: We Are One": {x:50,y:50,land:"Discovery Island",rideTime:25,category:"show",thrillLevel:1,avgWait:{low:20,moderate:25,high:35},llAvailable:false,tips:"Evening show. Arrive 30 min early."},
+    },
+    "Typhoon Lagoon": {
+      "Typhoon Lagoon Entrance": {x:50,y:0,land:"Typhoon Lagoon",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Head to Crush n' Gusher first"},
+      "Crush 'n' Gusher": {x:75,y:60,land:"Typhoon Lagoon",rideTime:2,category:"ride",thrillLevel:4,avgWait:{low:20,moderate:40,high:70},llAvailable:false,tips:"Best water coaster in WDW. Go at rope drop."},
+      "Miss Adventure Falls": {x:25,y:55,land:"Typhoon Lagoon",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:35,high:60},llAvailable:false,tips:"Family raft ride"},
+      "Humunga Kowabunga": {x:60,y:70,land:"Typhoon Lagoon",rideTime:1,category:"ride",thrillLevel:5,avgWait:{low:15,moderate:30,high:50},llAvailable:false,tips:"Near-vertical speed slide. Thrillseekers only."},
+      "Typhoon Lagoon Surf Pool": {x:50,y:30,land:"Typhoon Lagoon",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Huge wave pool. Waves every 90 sec."},
+      "Leaning Palms": {x:50,y:25,land:"Typhoon Lagoon",rideTime:15,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Main QS. Burgers, chicken, wraps."},
+    },
+    "Blizzard Beach": {
+      "Blizzard Beach Entrance": {x:50,y:0,land:"Blizzard Beach",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Head to Summit Plummet first"},
+      "Summit Plummet": {x:50,y:90,land:"Blizzard Beach",rideTime:1,category:"ride",thrillLevel:5,avgWait:{low:20,moderate:45,high:75},llAvailable:false,tips:"Tallest, fastest slide in WDW (120 ft, 60 mph). Go first!"},
+      "Slush Gusher": {x:55,y:85,land:"Blizzard Beach",rideTime:1,category:"ride",thrillLevel:4,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Speed slide, slightly less intense than Summit"},
+      "Teamboat Springs": {x:30,y:75,land:"Blizzard Beach",rideTime:3,category:"ride",thrillLevel:2,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Longest family raft ride in WDW."},
+      "Cross Country Creek": {x:50,y:50,land:"Blizzard Beach",rideTime:20,category:"ride",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Lazy river around the whole park."},
+      "Lottawatta Lodge": {x:50,y:20,land:"Blizzard Beach",rideTime:15,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Main QS. Burgers, hot dogs, sandwiches."},
+    },
+  };
+  
+  const locations = parkLocations[park];
+  if (!locations) return []; // No park data
+  
+  // For non-MK parks, use the universal route planner
+  if (park !== "Magic Kingdom") {
+    return planUniversalRoute(park, locations, preference, crowdLevel, input);
+  }
   const loc = MK_LOCATIONS[location];
   if (!loc) return [];
   
@@ -117,8 +185,306 @@ function nearbyDining(location: string, park: string): string[] {
 }
 
 // ─── OPTIMAL ROUTE PLANNER ────────────────────────────────────────────────────
+
+function generateFallbackRoute(park: string, preference: string, crowdLevel: number, input: any): any[] {
+  return []; // Use generateFallbackItinerary instead
+}
+
+
+// ─── UNIVERSAL PARK ROUTE PLANNER ────────────────────────────────────────────
+function planUniversalRoute(park: string, parkLocs: Record<string, any>, preference: string, crowdLevel: number, input: any): any[] {
+  const crowd = crowdLevel <= 3 ? "low" : crowdLevel <= 6 ? "moderate" : "high";
+  const isThrill = preference === "thrill";
+  const isFamily = preference === "family" || preference === "little";
+  const isWater = park === "Typhoon Lagoon" || park === "Blizzard Beach";
+  
+  const items: any[] = [];
+  let currentTime = 480; // 8:00 AM
+  let currentLocation = Object.keys(parkLocs).find(k => k.includes("Entrance")) || Object.keys(parkLocs)[0];
+  
+  // Sort rides by preference and thrill
+  const allRides = Object.entries(parkLocs)
+    .filter(([, info]) => (info as any).category === "ride")
+    .sort((a, b) => {
+      const ai = a[1] as any, bi = b[1] as any;
+      if (isThrill) return (bi.thrillLevel - ai.thrillLevel);
+      if (isFamily) return (ai.thrillLevel - bi.thrillLevel);
+      return bi.avgWait[crowd] - ai.avgWait[crowd];
+    });
+  
+  // Park entrance / rope drop
+  items.push({
+    startTime: 465, duration: 15, walkMinutes: 0, waitMinutes: 0,
+    activity: `Arrive at ${park} — Rope Drop`,
+    type: "rope-drop", badge: "Rope Drop",
+    tip: `Arrive 15-20 min before park open. ${isWater ? "Rope drop: head straight to the biggest thrill slide before crowds build." : "Rope drop gives you critical low-wait access to top attractions."}`,
+    priority: "must-do",
+  });
+  currentTime = 480;
+  
+  // LL Priority ride first
+  const llRides = allRides.filter(([, info]) => (info as any).llAvailable);
+  if (llRides.length > 0 && input.llOption !== "none" && !isWater) {
+    const [rideName, rideInfo] = llRides[0] as [string, any];
+    const walk = universalWalkTime(currentLocation, rideName, parkLocs);
+    const waitMin = 5; // LL
+    const rideMin = rideInfo.rideTime || 3;
+    
+    items.push({
+      startTime: currentTime + walk.minutes,
+      duration: waitMin + rideMin,
+      walkMinutes: walk.minutes,
+      waitMinutes: waitMin,
+      rideMinutes: rideMin,
+      activity: rideName,
+      type: "ride", badge: "Lightning Lane",
+      tip: `${walk.description}. Book Lightning Lane immediately at park open. LL wait: ~${waitMin} min. Ride: ${rideMin} min.`,
+      location: rideName, land: rideInfo.land,
+      priority: "must-do",
+    });
+    
+    currentTime += walk.minutes + waitMin + rideMin;
+    currentLocation = rideName;
+  }
+  
+  // Schedule remaining rides
+  const scheduledRides = new Set([llRides[0]?.[0]]);
+  let mealsServed = { lunch: false, dinner: false };
+  
+  for (const [rideName, rideInfoRaw] of allRides) {
+    const rideInfo = rideInfoRaw as any;
+    if (scheduledRides.has(rideName)) continue;
+    if (currentTime >= 18 * 60) break; // Stop before 6 PM
+    
+    // Insert lunch around noon
+    if (currentTime < 750 && currentTime + (rideInfo.avgWait[crowd] || 30) > 720 && !mealsServed.lunch) {
+      const nearbyQS = findNearbyDining(currentLocation, parkLocs, 3);
+      const lunchSpot = nearbyQS[0] || Object.keys(parkLocs).find(k => (parkLocs[k] as any).category === "dining") || "Park Restaurant";
+      const lunchWalk = universalWalkTime(currentLocation, lunchSpot, parkLocs);
+      
+      items.push({
+        startTime: currentTime + lunchWalk.minutes,
+        duration: 30,
+        walkMinutes: lunchWalk.minutes,
+        waitMinutes: 5,
+        activity: `Lunch — ${lunchSpot}`,
+        type: "dining", badge: "Quick Service",
+        tip: `${lunchWalk.description}. Eating at 12:00-12:30 PM beats the peak rush.${nearbyQS.length > 1 ? " Also nearby: " + nearbyQS.slice(1, 3).join(", ") : ""}`,
+        location: lunchSpot, land: (parkLocs[lunchSpot] as any)?.land || park,
+        alternativeDining: nearbyQS.slice(1, 3),
+        priority: "recommended",
+      });
+      
+      currentTime += lunchWalk.minutes + 30;
+      currentLocation = lunchSpot;
+      mealsServed.lunch = true;
+      
+      // Break for families
+      if (input.children > 0 && !isWater) {
+        items.push({
+          startTime: currentTime, duration: 60, walkMinutes: 0, waitMinutes: 0,
+          activity: "Rest break / hotel pool time",
+          type: "break", badge: "Break",
+          tip: "1-3 PM peak crowds. Smart strategy: rest at hotel, return at 3 PM for shorter waits and better evening.",
+          priority: "recommended",
+        });
+        currentTime += 60;
+      }
+    }
+    
+    const walk = universalWalkTime(currentLocation, rideName, parkLocs);
+    const waitMin = rideInfo.avgWait[crowd] || 30;
+    const rideMin = rideInfo.rideTime || 3;
+    const totalBlock = walk.minutes + waitMin + rideMin;
+    
+    items.push({
+      startTime: currentTime + walk.minutes,
+      duration: waitMin + rideMin,
+      walkMinutes: walk.minutes,
+      waitMinutes: waitMin,
+      rideMinutes: rideMin,
+      activity: rideName,
+      type: "ride",
+      tip: `${walk.description}. ${crowd === "high" ? `Busy day — ~${waitMin} min wait.` : crowd === "moderate" ? `~${waitMin} min wait.` : `Low wait day — ~${waitMin} min.`} Ride: ${rideMin} min. Total at this attraction: ~${totalBlock} min.`,
+      location: rideName, land: rideInfo.land,
+      priority: rideInfo.thrillLevel >= 4 ? "must-do" : "recommended",
+    });
+    
+    currentTime += walk.minutes + waitMin + rideMin;
+    currentLocation = rideName;
+    scheduledRides.add(rideName);
+  }
+  
+  // Dinner around 6 PM
+  if (!mealsServed.dinner && !isWater) {
+    const nearbyDining = findNearbyDining(currentLocation, parkLocs, 2);
+    const dinnerSpot = nearbyDining[0] || "Park Restaurant";
+    const dinnerWalk = universalWalkTime(currentLocation, dinnerSpot, parkLocs);
+    
+    items.push({
+      startTime: 18 * 60 + dinnerWalk.minutes,
+      duration: 45,
+      walkMinutes: dinnerWalk.minutes,
+      waitMinutes: 5,
+      activity: `Dinner — ${dinnerSpot}`,
+      type: "dining", badge: "Dining",
+      tip: `${dinnerWalk.description}. Check dining recommendations below for table service options. ${nearbyDining.length > 1 ? "Also nearby: " + nearbyDining.slice(1, 2).join(", ") : ""}`,
+      location: dinnerSpot, land: (parkLocs[dinnerSpot] as any)?.land || park,
+      priority: "recommended",
+    });
+    currentTime = 18 * 60 + dinnerWalk.minutes + 45;
+    currentLocation = dinnerSpot;
+  }
+  
+  // Evening show if available
+  const eveningShows = Object.entries(parkLocs).filter(([, info]) => (info as any).category === "show");
+  if (eveningShows.length > 0) {
+    const [showName, showInfo] = eveningShows[eveningShows.length - 1] as [string, any];
+    if (showName.includes("Fantasmic") || showName.includes("Rivers of Light") || showName.includes("Lagoon") || showName.includes("World Showcase")) {
+      const showWalk = universalWalkTime(currentLocation, showName, parkLocs);
+      items.push({
+        startTime: 20 * 60 + 30,
+        duration: showInfo.rideTime || 25,
+        walkMinutes: showWalk.minutes,
+        waitMinutes: 20,
+        activity: showName,
+        type: "show", badge: "Show",
+        tip: `${showWalk.description}. Arrive 30-45 min early for a good spot. ${showInfo.tips}`,
+        location: showName, land: showInfo.land,
+        priority: "must-do",
+      });
+    }
+  }
+  
+  // Park-specific closing events
+  if (park === "Magic Kingdom") {
+    const fWalk = universalWalkTime(currentLocation, "Main Street Hub", parkLocs);
+    items.push({
+      startTime: 20 * 60 + 45 - fWalk.minutes,
+      duration: fWalk.minutes,
+      walkMinutes: fWalk.minutes,
+      activity: "Walk to Main Street Hub for fireworks",
+      type: "transport",
+      tip: `${fWalk.description}. Be in position by 8:45 PM for Happily Ever After.`,
+      location: "Main Street Hub", land: "Main Street U.S.A.",
+      priority: "must-do",
+    });
+    items.push({
+      startTime: 21 * 60, duration: 20, walkMinutes: 0, waitMinutes: 0,
+      activity: "Happily Ever After Fireworks 🎆",
+      type: "show", badge: "Fireworks",
+      tip: "20-minute spectacular. Best views from center Hub. Wait 15 min after before leaving — crowds at exits are intense.",
+      location: "Main Street Hub", land: "Main Street U.S.A.",
+      priority: "must-do",
+    });
+  }
+  
+  return items.sort((a, b) => a.startTime - b.startTime);
+}
+
+function universalWalkTime(from: string, to: string, parkLocs: Record<string, any>): { minutes: number; description: string } {
+  const fromLoc = parkLocs[from];
+  const toLoc = parkLocs[to];
+  if (!fromLoc || !toLoc) return { minutes: 7, description: `Walk to ${to} (~7 min)` };
+  
+  const dx = (toLoc.x - fromLoc.x) / 100 * 500;
+  const dy = (toLoc.y - fromLoc.y) / 100 * 500;
+  const distMeters = Math.sqrt(dx * dx + dy * dy);
+  const minutes = Math.max(2, Math.round(distMeters / 58));
+  
+  return {
+    minutes,
+    description: minutes <= 3 ? `Short walk to ${to} (${minutes} min)` :
+                 minutes <= 8 ? `Walk to ${to} (~${minutes} min)` :
+                 `Walk to ${to} (~${minutes} min — cross-park)`,
+  };
+}
+
+function findNearbyDining(location: string, parkLocs: Record<string, any>, count: number): string[] {
+  const loc = parkLocs[location];
+  if (!loc) return [];
+  
+  return Object.entries(parkLocs)
+    .filter(([name, info]) => (info as any).category === "dining" && name !== location)
+    .map(([name, info]) => {
+      const dx = ((info as any).x - loc.x) / 100 * 500;
+      const dy = ((info as any).y - loc.y) / 100 * 500;
+      return { name, dist: Math.sqrt(dx * dx + dy * dy) };
+    })
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, count)
+    .map(d => d.name);
+}
+
 function planOptimalRoute(park: string, preference: string, crowdLevel: number, input: any): any[] {
-  if (park !== "Magic Kingdom") return [];
+  // Support all parks
+  const parkLocations: Record<string, any> = {
+    "Magic Kingdom": MK_LOCATIONS,
+    "EPCOT": {
+      "EPCOT Main Entrance": {x:50,y:0,land:"Entrance",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Start here"},
+      "Guardians of the Galaxy: Cosmic Rewind": {x:75,y:30,land:"World Discovery",rideTime:4,category:"ride",thrillLevel:5,avgWait:{low:45,moderate:90,high:150},llAvailable:true,tips:"Book LL immediately — sells out first"},
+      "Test Track": {x:80,y:35,land:"World Discovery",rideTime:5,category:"ride",thrillLevel:4,avgWait:{low:20,moderate:50,high:90},llAvailable:true,tips:"Design a car, then test it. Book LL morning"},
+      "Frozen Ever After": {x:50,y:25,land:"World Showcase - Norway",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Book LL morning"},
+      "Remy's Ratatouille Adventure": {x:50,y:80,land:"World Showcase - France",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:30,moderate:60,high:95},llAvailable:true,tips:"Book LL early"},
+      "Soarin' Around the World": {x:25,y:35,land:"World Nature",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:40,high:70},llAvailable:true,tips:"Classic hang glider simulation"},
+      "Mission: SPACE": {x:72,y:35,land:"World Discovery",rideTime:5,category:"ride",thrillLevel:4,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Orange mission is intense, Green is tamer"},
+      "The Seas with Nemo & Friends": {x:20,y:32,land:"World Nature",rideTime:6,category:"ride",thrillLevel:1,avgWait:{low:10,moderate:20,high:35},llAvailable:false,tips:"Great for young kids"},
+      "Spaceship Earth": {x:50,y:15,land:"World Celebration",rideTime:15,category:"ride",thrillLevel:1,avgWait:{low:10,moderate:20,high:35},llAvailable:false,tips:"Iconic EPCOT landmark. Low waits."},
+      "Space 220 Restaurant": {x:70,y:28,land:"World Discovery",rideTime:90,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"RESERVATION REQUIRED — hardest table in WDW"},
+      "Sunshine Seasons": {x:28,y:36,land:"World Nature",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Best QS in EPCOT. Huge variety."},
+      "World Showcase Lagoon": {x:50,y:50,land:"World Showcase",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Best fireworks position"},
+    },
+    "Hollywood Studios": {
+      "Hollywood Studios Entrance": {x:50,y:0,land:"Hollywood Boulevard",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Rope drop here"},
+      "Star Wars: Rise of the Resistance": {x:20,y:85,land:"Galaxy's Edge",rideTime:20,category:"ride",thrillLevel:4,avgWait:{low:50,moderate:90,high:150},llAvailable:true,tips:"Book LL immediately. Most immersive ride in WDW."},
+      "Millennium Falcon: Smugglers Run": {x:25,y:80,land:"Galaxy's Edge",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Pilot the Falcon. Pilot role gets best experience."},
+      "Slinky Dog Dash": {x:75,y:75,land:"Toy Story Land",rideTime:3,category:"ride",thrillLevel:3,avgWait:{low:30,moderate:65,high:110},llAvailable:true,tips:"Best family coaster in HS. Book LL early."},
+      "Tower of Terror": {x:85,y:55,land:"Sunset Boulevard",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Haunted elevator drops. Best thrill in HS."},
+      "Rockin' Roller Coaster": {x:88,y:60,land:"Sunset Boulevard",rideTime:2,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Launching coaster, 0-60 in 2.8 sec."},
+      "Mickey & Minnie's Runaway Railway": {x:50,y:25,land:"Hollywood Boulevard",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:85},llAvailable:true,tips:"Book LL. Major upgrade ride."},
+      "Toy Story Mania!": {x:78,y:72,land:"Toy Story Land",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:45,high:75},llAvailable:true,tips:"Interactive 4D shooter. Families love this."},
+      "Sci-Fi Dine-In Theater Restaurant": {x:55,y:30,land:"Echo Lake",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Drive-in movie atmosphere."},
+      "Backlot Express": {x:60,y:40,land:"Echo Lake",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Best QS in HS area."},
+      "Fantasmic! Amphitheater": {x:85,y:65,land:"Sunset Boulevard",rideTime:30,category:"show",thrillLevel:1,avgWait:{low:20,moderate:30,high:45},llAvailable:false,tips:"Evening show. Arrive 45 min early."},
+    },
+    "Animal Kingdom": {
+      "Animal Kingdom Entrance": {x:50,y:0,land:"The Oasis",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"AK opens early — safaris best at open"},
+      "Avatar Flight of Passage": {x:25,y:70,land:"Pandora",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:50,moderate:100,high:165},llAvailable:true,tips:"Book LL immediately. Best ride in WDW."},
+      "Na'vi River Journey": {x:22,y:75,land:"Pandora",rideTime:5,category:"ride",thrillLevel:1,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Gentle boat ride through Pandora. Stunning visuals."},
+      "Kilimanjaro Safaris": {x:20,y:40,land:"Africa",rideTime:18,category:"ride",thrillLevel:2,avgWait:{low:15,moderate:35,high:65},llAvailable:true,tips:"Go at rope drop — animals most active. Best in whole park."},
+      "Expedition Everest": {x:80,y:55,land:"Asia",rideTime:4,category:"ride",thrillLevel:5,avgWait:{low:20,moderate:45,high:80},llAvailable:true,tips:"Best coaster in AK. Goes backwards!"},
+      "DINOSAUR": {x:75,y:30,land:"DinoLand U.S.A.",rideTime:4,category:"ride",thrillLevel:3,avgWait:{low:20,moderate:40,high:65},llAvailable:false,tips:"Dark, intense ride. Usually short waits."},
+      "Kali River Rapids": {x:75,y:60,land:"Asia",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:20,moderate:45,high:75},llAvailable:false,tips:"You WILL get wet. Great on hot days."},
+      "Tiffins Restaurant": {x:55,y:40,land:"Discovery Island",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Best food in AK."},
+      "Flame Tree Barbecue": {x:52,y:38,land:"Discovery Island",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:18},llAvailable:false,tips:"Best BBQ in WDW. Outdoor seating with great views."},
+      "Satu'li Canteen": {x:23,y:72,land:"Pandora",rideTime:20,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Best QS in AK. Customizable bowls."},
+      "Rivers of Light: We Are One": {x:50,y:50,land:"Discovery Island",rideTime:25,category:"show",thrillLevel:1,avgWait:{low:20,moderate:25,high:35},llAvailable:false,tips:"Evening show. Arrive 30 min early."},
+    },
+    "Typhoon Lagoon": {
+      "Typhoon Lagoon Entrance": {x:50,y:0,land:"Typhoon Lagoon",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Head to Crush n' Gusher first"},
+      "Crush 'n' Gusher": {x:75,y:60,land:"Typhoon Lagoon",rideTime:2,category:"ride",thrillLevel:4,avgWait:{low:20,moderate:40,high:70},llAvailable:false,tips:"Best water coaster in WDW. Go at rope drop."},
+      "Miss Adventure Falls": {x:25,y:55,land:"Typhoon Lagoon",rideTime:5,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:35,high:60},llAvailable:false,tips:"Family raft ride"},
+      "Humunga Kowabunga": {x:60,y:70,land:"Typhoon Lagoon",rideTime:1,category:"ride",thrillLevel:5,avgWait:{low:15,moderate:30,high:50},llAvailable:false,tips:"Near-vertical speed slide. Thrillseekers only."},
+      "Typhoon Lagoon Surf Pool": {x:50,y:30,land:"Typhoon Lagoon",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Huge wave pool. Waves every 90 sec."},
+      "Leaning Palms": {x:50,y:25,land:"Typhoon Lagoon",rideTime:15,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Main QS. Burgers, chicken, wraps."},
+    },
+    "Blizzard Beach": {
+      "Blizzard Beach Entrance": {x:50,y:0,land:"Blizzard Beach",category:"landmark",thrillLevel:1,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"Head to Summit Plummet first"},
+      "Summit Plummet": {x:50,y:90,land:"Blizzard Beach",rideTime:1,category:"ride",thrillLevel:5,avgWait:{low:20,moderate:45,high:75},llAvailable:false,tips:"Tallest, fastest slide in WDW (120 ft, 60 mph). Go first!"},
+      "Slush Gusher": {x:55,y:85,land:"Blizzard Beach",rideTime:1,category:"ride",thrillLevel:4,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Speed slide, slightly less intense than Summit"},
+      "Teamboat Springs": {x:30,y:75,land:"Blizzard Beach",rideTime:3,category:"ride",thrillLevel:2,avgWait:{low:15,moderate:30,high:55},llAvailable:false,tips:"Longest family raft ride in WDW."},
+      "Cross Country Creek": {x:50,y:50,land:"Blizzard Beach",rideTime:20,category:"ride",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Lazy river around the whole park."},
+      "Lottawatta Lodge": {x:50,y:20,land:"Blizzard Beach",rideTime:15,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:12,high:20},llAvailable:false,tips:"Main QS. Burgers, hot dogs, sandwiches."},
+    },
+  };
+  
+  const locations = parkLocations[park];
+  if (!locations) return []; // No park data
+  
+  // For non-MK parks, use the universal route planner
+  if (park !== "Magic Kingdom") {
+    return planUniversalRoute(park, locations, preference, crowdLevel, input);
+  }
   
   const crowd = crowdLevel <= 3 ? "low" : crowdLevel <= 6 ? "moderate" : "high";
   const isThrill = preference === "thrill";
@@ -469,12 +835,12 @@ serve(async (req) => {
       const parkMeta = PARK_META[park] || { emoji: "🎡", bestFor: "", llPriority: [] };
       
       // Build optimized route (full logic for MK, simplified for others)
-      const routeItems = park === "Magic Kingdom"
-        ? planOptimalRoute(park, input.ridePreference || "mix", crowdLevel, input)
-        : null;
+      // Use optimized route planner for all parks
+      // Route planning: MK uses detailed coordinate planner, others use universal
+      const routeItems = planOptimalRoute(park, input.ridePreference || "mix", crowdLevel, input);
       
       // Convert route items to itinerary items
-      const items = routeItems ? routeItems.map(item => ({
+      const items = routeItems && routeItems.length > 0 ? routeItems.map(item => ({
         time: minutesToTime(item.startTime),
         activity: item.activity,
         type: item.type,
