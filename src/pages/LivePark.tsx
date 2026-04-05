@@ -27,6 +27,7 @@ const PARK_BOUNDS: Record<string, { lat: [number, number]; lng: [number, number]
   "animal-kingdom": { lat: [28.355, 28.365], lng: [-81.594, -81.582] },
   "typhoon-lagoon": { lat: [28.369, 28.376], lng: [-81.530, -81.523] },
   "blizzard-beach": { lat: [28.354, 28.360], lng: [-81.577, -81.568] },
+};
 
 // Navigate-To locations by park
 const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "restaurant" | "shop" | "restroom" | "area"; area: string }>> = {
