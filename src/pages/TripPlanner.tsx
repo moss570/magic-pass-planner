@@ -191,6 +191,10 @@ export default function TripPlanner() {
   const [saving, setSaving] = useState(false);
   const [savedTripId, setSavedTripId] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [ticketInfo, setTicketInfo] = useState<any>(null);
+  const [hotelRecs, setHotelRecs] = useState<any[]>([]);
+  const [diningRecs, setDiningRecs] = useState<Record<string, any[]>>({});
+  const [hotelNightlyBudget, setHotelNightlyBudget] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [savedTrips, setSavedTrips] = useState<any[]>([]);
   const [showSavedTrips, setShowSavedTrips] = useState(false);
@@ -374,6 +378,10 @@ export default function TripPlanner() {
       setPlans(data.plans);
       setEstimatedTotal(data.estimatedTotal);
       setBudgetBreakdown(data.budgetBreakdown);
+      setTicketInfo(data.ticketInfo || null);
+      setHotelRecs(data.hotelRecommendations || []);
+      setDiningRecs(data.diningRecommendations || {});
+      setHotelNightlyBudget(data.hotelNightlyBudget || null);
       setGenerated(true);
       toast({ title: "✨ Itinerary generated!", description: `${data.numDays}-day plan ready` });
     } catch (err) {
@@ -544,14 +552,89 @@ export default function TripPlanner() {
                 </button>
               </div>
               {estimatedTotal && (
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">Estimated trip cost: <span className="text-primary font-bold">${estimatedTotal.toLocaleString()}</span> {estimatedTotal <= budget ? "✅ Within budget" : `⚠️ $${(estimatedTotal - budget).toLocaleString()} over budget`}</p>
-                  {budgetBreakdown && (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                      {Object.entries(budgetBreakdown).map(([key, val]) => (
-                        <div key={key} className="text-center">
-                          <p className="text-xs text-muted-foreground capitalize">{key}</p>
-                          <p className="text-xs font-semibold text-foreground">${val.toLocaleString()}</p>
+                <div className="space-y-4">
+                  {/* Cost summary */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-muted-foreground">Estimated total</span>
+                      <span className={`text-sm font-bold ${estimatedTotal <= budget ? "text-green-400" : "text-red-400"}`}>
+                        ${estimatedTotal.toLocaleString()} {estimatedTotal <= budget ? "✅" : `⚠️ $${(estimatedTotal - budget).toLocaleString()} over`}
+                      </span>
+                    </div>
+                    {budgetBreakdown && (
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        {Object.entries(budgetBreakdown).map(([key, val]) => (
+                          <div key={key} className="text-center p-2 rounded-lg bg-white/5">
+                            <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                            <p className="text-xs font-bold text-foreground">${(val as number).toLocaleString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ticket recommendations */}
+                  {ticketInfo && (
+                    <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
+                      <p className="text-xs font-bold text-primary mb-2">🎟️ Ticket Recommendation</p>
+                      <p className="text-sm font-semibold text-foreground">{ticketInfo.recommendation}</p>
+                      {ticketInfo.options?.map((opt: string, i: number) => (
+                        <p key={i} className="text-xs text-muted-foreground mt-1">{opt}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hotel recommendations */}
+                  {hotelRecs.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-primary mb-2">🏨 Hotel Recommendations {hotelNightlyBudget ? `(~$${hotelNightlyBudget}/night budget)` : ""}</p>
+                      <div className="space-y-2">
+                        {hotelRecs.map((hotel: any, i: number) => (
+                          <div key={i} className={`p-3 rounded-xl border ${i === 0 ? "border-primary/30 bg-primary/5" : "border-white/8 bg-white/3"}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-semibold text-foreground">{hotel.name}</p>
+                                  {i === 0 && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Best Match</span>}
+                                </div>
+                                <p className="text-xs text-primary font-semibold">{hotel.priceRange}/night</p>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground shrink-0">{hotel.tier}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{hotel.bestFor}</p>
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {hotel.amenities?.map((a: string) => (
+                                <span key={a} className="text-xs px-1.5 py-0.5 rounded bg-white/5 text-muted-foreground">{a}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dining recommendations */}
+                  {Object.keys(diningRecs).length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-primary mb-2">🍽️ Dining Recommendations</p>
+                      {Object.entries(diningRecs).map(([park, recs]: [string, any[]]) => (
+                        <div key={park} className="mb-3">
+                          <p className="text-xs font-semibold text-muted-foreground mb-1.5">{park}</p>
+                          <div className="space-y-1.5">
+                            {recs.map((rec: any, i: number) => (
+                              <div key={i} className="p-3 rounded-lg border border-white/8 bg-white/3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="text-xs font-semibold text-foreground">{rec.name}</p>
+                                    <p className="text-xs text-muted-foreground">{rec.type} · {rec.priceRange}</p>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground shrink-0">{rec.priceRange}</span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">{rec.why}</p>
+                                <p className="text-xs text-yellow-400 mt-1">⏰ {rec.reservationTips}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>

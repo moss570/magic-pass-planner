@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +56,16 @@ const BudgetManager = () => {
 
   return (
     <DashboardLayout title="💰 Budget Manager" subtitle="Know exactly what your Disney trip will cost — and how to cut it by $500">
+      {/* Trip integration banner */}
+      <div className="rounded-xl p-4 border border-primary/20 bg-primary/5 mb-4 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold text-foreground">💡 Connect to your Trip Planner</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Generate a trip in Trip Planner to automatically populate your budget breakdown with real estimates</p>
+        </div>
+        <Link to="/trip-planner" className="shrink-0 px-4 py-2 rounded-lg text-xs font-bold text-[#080E1E] ml-4" style={{ background: "#F5C842" }}>
+          Open Trip Planner →
+        </Link>
+      </div>
       {/* Section 1: Budget Overview */}
       <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden">
         <CardContent className="p-4 md:p-6">
