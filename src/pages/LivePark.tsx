@@ -282,7 +282,7 @@ function LineGames() {
 
   if (!activeGame) {
     return (
-      <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+      <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
         <div className="flex items-center gap-2 mb-4">
           <Gamepad2 className="w-5 h-5 text-secondary" />
           <h2 className="text-base font-bold text-foreground">Line Games</h2>
@@ -307,7 +307,7 @@ function LineGames() {
   }
 
   return (
-    <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+    <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="text-xl">{game?.icon}</span>
@@ -346,7 +346,7 @@ function LineGames() {
       {activeGame === "speed-tapper" && (
         <div className="text-center">
           {!tapActive && tapTimeLeft === 10 && (
-            <button onClick={startTapper} className="px-8 py-4 rounded-xl font-bold text-lg text-[#080E1E] w-full" style={{ background: "#F5C842" }}>
+            <button onClick={startTapper} className="px-8 py-4 rounded-xl font-bold text-lg text-[var(--background)] w-full" style={{ background: "#F5C842" }}>
               Start Tapping!
             </button>
           )}
@@ -367,7 +367,7 @@ function LineGames() {
               <p className="text-sm text-muted-foreground">
                 {tapCount >= 80 ? "🏆 You're a tapping legend!" : tapCount >= 50 ? "🔥 Great speed!" : tapCount >= 30 ? "👍 Nice work!" : "Keep practicing!"}
               </p>
-              <button onClick={startTapper} className="mt-4 px-6 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Try Again</button>
+              <button onClick={startTapper} className="mt-4 px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Try Again</button>
             </div>
           )}
         </div>
@@ -394,7 +394,7 @@ function LineGames() {
               className={`flex-1 px-4 py-2.5 rounded-lg bg-[#1a2235] border text-sm text-foreground focus:outline-none transition-colors ${scrambleCorrect === true ? "border-green-500" : scrambleCorrect === false ? "border-red-500" : "border-white/10 focus:border-primary/50"}`}
               style={{ minHeight: 44 }}
             />
-            <button onClick={handleScrambleSubmit} className="px-4 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+            <button onClick={handleScrambleSubmit} className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>
               Check
             </button>
           </div>
@@ -412,7 +412,7 @@ function LineGames() {
           <div className="text-4xl mb-2">🏆</div>
           <p className="text-xl font-bold text-primary mb-1">Game Over!</p>
           <p className="text-muted-foreground text-sm mb-4">Final Score: {score}/{activeGame === "disney-trivia" ? LINE_GAMES[0].questions.length : LINE_GAMES[2].words.length}</p>
-          <button onClick={() => { setActiveGame(null); }} className="px-6 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Play Again</button>
+          <button onClick={() => { setActiveGame(null); }} className="px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Play Again</button>
         </div>
       )}
     </div>
@@ -553,7 +553,7 @@ export default function LivePark() {
             <button
               key={p.slug}
               onClick={() => setSelectedPark(p.slug)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${selectedPark === p.slug ? "bg-primary text-[#080E1E]" : "bg-muted/20 text-muted-foreground hover:bg-muted/40"}`}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors shrink-0 ${selectedPark === p.slug ? "bg-primary text-[var(--background)]" : "bg-muted/20 text-muted-foreground hover:bg-muted/40"}`}
             >
               <span>{p.icon}</span>{p.name}
             </button>
@@ -572,7 +572,7 @@ export default function LivePark() {
             </div>
             <button
               onClick={() => setLiveMenuOpen(true)}
-              className="w-full py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
               style={{ background: "#F5C842" }}
             >
               <Zap className="w-4 h-4" /> LIVE PARK MENU
@@ -591,7 +591,7 @@ export default function LivePark() {
             <div className="flex gap-2">
               <button
                 onClick={() => setLiveMenuOpen(true)}
-                className="flex-1 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
                 style={{ background: "#F5C842" }}
               >
                 <Zap className="w-4 h-4" /> LIVE PARK MENU
@@ -613,7 +613,7 @@ export default function LivePark() {
             </div>
             <button
               onClick={() => setLiveMenuOpen(true)}
-              className="w-full py-2.5 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
               style={{ background: "#F5C842" }}
             >
               <Zap className="w-4 h-4" /> LIVE PARK MENU
@@ -625,7 +625,7 @@ export default function LivePark() {
         {liveMenuOpen && (
           <>
             <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm" onClick={() => setLiveMenuOpen(false)} />
-            <div className="fixed bottom-0 left-0 right-0 z-[51] rounded-t-2xl overflow-hidden" style={{ background: "#111827" }}>
+            <div className="fixed bottom-0 left-0 right-0 z-[51] rounded-t-2xl overflow-hidden" style={{ background: "var(--card)" }}>
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
                 <div>
                   <p className="text-base font-bold text-foreground">⚡ Live Park Menu</p>
@@ -645,7 +645,7 @@ export default function LivePark() {
                   <button
                     key={item.id}
                     onClick={() => { setActiveTab(item.id as any); setLiveMenuOpen(false); }}
-                    className={`text-left p-4 rounded-xl border transition-colors ${activeTab === item.id ? "border-primary/60 bg-primary/10" : "border-white/10 bg-[#0D1230] hover:border-primary/30"}`}
+                    className={`text-left p-4 rounded-xl border transition-colors ${activeTab === item.id ? "border-primary/60 bg-primary/10" : "border-white/10 bg-[var(--muted)] hover:border-primary/30"}`}
                   >
                     <p className="text-2xl mb-2">{item.icon}</p>
                     <p className="text-sm font-bold text-foreground">{item.label}</p>
@@ -655,7 +655,7 @@ export default function LivePark() {
                 {inPark && (
                   <button
                     onClick={() => { setNavigateOpen(true); setLiveMenuOpen(false); }}
-                    className="text-left p-4 rounded-xl border border-white/10 bg-[#0D1230] hover:border-primary/30 transition-colors"
+                    className="text-left p-4 rounded-xl border border-white/10 bg-[var(--muted)] hover:border-primary/30 transition-colors"
                   >
                     <p className="text-2xl mb-2">🧭</p>
                     <p className="text-sm font-bold text-foreground">Navigate To</p>
@@ -671,7 +671,7 @@ export default function LivePark() {
         {navigateOpen && (
           <>
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={() => setNavigateOpen(false)} />
-            <div className="fixed inset-x-0 bottom-0 top-16 z-[51] rounded-t-2xl overflow-hidden flex flex-col" style={{ background: "#111827" }}>
+            <div className="fixed inset-x-0 bottom-0 top-16 z-[51] rounded-t-2xl overflow-hidden flex flex-col" style={{ background: "var(--card)" }}>
               <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b shrink-0" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
                 <p className="text-base font-bold text-foreground">🧭 Navigate To</p>
                 <button onClick={() => setNavigateOpen(false)} className="text-muted-foreground hover:text-foreground">
@@ -687,7 +687,7 @@ export default function LivePark() {
                     value={navigateSearch}
                     onChange={e => setNavigateSearch(e.target.value)}
                     autoFocus
-                    className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+                    className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
                   />
                 </div>
               </div>
@@ -752,22 +752,22 @@ export default function LivePark() {
         {/* Stats Row */}
         {parkData && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
               <p className="text-xs text-muted-foreground mb-1">Crowd Level</p>
               <p className={`text-2xl font-bold ${crowdColor(parkData.crowdLevel.level)}`}>{parkData.crowdLevel.level}/10</p>
               <p className={`text-xs font-semibold ${crowdColor(parkData.crowdLevel.level)}`}>{parkData.crowdLevel.label}</p>
             </div>
-            <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
               <p className="text-xs text-muted-foreground mb-1">Avg Wait</p>
               <p className={`text-2xl font-bold ${waitColor(parkData.averageWait)}`}>{parkData.averageWait} min</p>
               <p className="text-xs text-muted-foreground">park-wide</p>
             </div>
-            <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
               <p className="text-xs text-muted-foreground mb-1">Park Hours</p>
               <p className="text-lg font-bold text-foreground">{fmtTime(schedule?.today?.openingTime ?? null)}</p>
               <p className="text-xs text-muted-foreground">closes {fmtTime(schedule?.today?.closingTime ?? null)}</p>
             </div>
-            <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
               <p className="text-xs text-muted-foreground mb-1">Open Rides</p>
               <p className="text-2xl font-bold text-foreground">{parkData.openAttractions}</p>
               <p className="text-xs text-muted-foreground">of {parkData.totalAttractions} attractions</p>
@@ -814,7 +814,7 @@ export default function LivePark() {
                 <span className="text-xs text-muted-foreground">Sort:</span>
                 {(["wait", "distance", "area", "name"] as SortMode[]).map(s => (
                   <button key={s} onClick={() => setSortMode(s)}
-                    className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${sortMode === s ? "bg-primary text-[#080E1E]" : "bg-muted/20 text-muted-foreground"}`}>
+                    className={`text-xs px-2 py-1 rounded-md font-medium transition-colors ${sortMode === s ? "bg-primary text-[var(--background)]" : "bg-muted/20 text-muted-foreground"}`}>
                     {s === "wait" ? "Wait" : s === "distance" ? "Distance" : s === "area" ? "Area" : "Name"}
                   </button>
                 ))}
@@ -836,7 +836,7 @@ export default function LivePark() {
               <div className="flex gap-1.5 overflow-x-auto pb-1 mb-3">
                 {areas.map(a => (
                   <button key={a} onClick={() => setFilterArea(a)}
-                    className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap font-medium shrink-0 transition-colors ${filterArea === a ? "bg-primary text-[#080E1E]" : "bg-muted/20 text-muted-foreground"}`}>
+                    className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap font-medium shrink-0 transition-colors ${filterArea === a ? "bg-primary text-[var(--background)]" : "bg-muted/20 text-muted-foreground"}`}>
                     {a}
                   </button>
                 ))}
@@ -859,7 +859,7 @@ export default function LivePark() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredRides.map(ride => (
-                  <div key={ride.id} className={`rounded-xl p-4 border transition-colors ${ride.status !== "OPERATING" ? "border-white/5 opacity-60" : "border-white/10"}`} style={{ background: "#111827" }}>
+                  <div key={ride.id} className={`rounded-xl p-4 border transition-colors ${ride.status !== "OPERATING" ? "border-white/5 opacity-60" : "border-white/10"}`} style={{ background: "var(--card)" }}>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground leading-tight">{ride.name}</p>
@@ -919,7 +919,7 @@ export default function LivePark() {
         {/* ── FIREWORKS TAB ───────────────────────────────────── */}
         {activeTab === "fireworks" && (
           <div className="space-y-4">
-            <div className="rounded-xl p-5 border border-secondary/30" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-5 border border-secondary/30" style={{ background: "var(--card)" }}>
               <h3 className="text-sm font-bold text-foreground mb-3">🎆 Fireworks Ride Timing Calculator</h3>
               <p className="text-xs text-muted-foreground mb-4">Get on a ride AND see the fireworks — perfectly timed. Enter tonight's show time to calculate get-in-line times for every ride with a fireworks view.</p>
 
@@ -1011,7 +1011,7 @@ export default function LivePark() {
           <div className="space-y-4">
             <button
               onClick={() => setRideLineQuestOpen(true)}
-              className="w-full py-4 rounded-2xl font-black text-lg text-[#080E1E] flex items-center justify-center gap-3"
+              className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-3"
               style={{ background: "#F5C842" }}
             >
               🏛️ Ride Line Quest — Play Now!
@@ -1025,7 +1025,7 @@ export default function LivePark() {
         {activeTab === "info" && (
           <div className="space-y-4">
             {schedule && (
-              <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+              <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
                 <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2"><Calendar className="w-4 h-4" /> Today's Schedule</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -1053,7 +1053,7 @@ export default function LivePark() {
             )}
 
             {parkData && (
-              <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+              <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
                 <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2"><BarChart3 className="w-4 h-4" /> Park Stats Right Now</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">

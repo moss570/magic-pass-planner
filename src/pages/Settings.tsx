@@ -192,7 +192,7 @@ const Settings = () => {
             <Button className="text-xs">⬆️ Upgrade to AP+ Plan</Button>
             <Button variant="outline" className="text-xs border-muted text-muted-foreground hover:text-foreground">Manage Billing →</Button>
           </div>
-          <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 overflow-x-auto max-w-full">
+          <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 overflow-x-auto max-w-full">
             <table className="w-full text-xs min-w-[400px]">
               <thead>
                 <tr className="border-b border-primary/10">
@@ -373,7 +373,7 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-primary/25 bg-[#0D1230]/60 p-4 space-y-2">
+            <div className="rounded-xl border border-primary/25 bg-[var(--muted)]/60 p-4 space-y-2">
               <p className="text-sm font-bold text-foreground">🏰 Moss Family — May 2026</p>
               <p className="text-xs text-muted-foreground">Magic Kingdom · May 20–23 · Party of 5</p>
               <div className="flex flex-wrap gap-1.5">
@@ -385,7 +385,7 @@ const Settings = () => {
                 <Button size="sm" className="text-xs">View Itinerary →</Button>
               </div>
             </div>
-            <div className="rounded-xl border border-primary/10 bg-[#0D1230]/30 p-4 space-y-2 opacity-80">
+            <div className="rounded-xl border border-primary/10 bg-[var(--muted)]/30 p-4 space-y-2 opacity-80">
               <p className="text-sm font-bold text-foreground">🌍 EPCOT Food & Wine — Oct 2025</p>
               <p className="text-xs text-muted-foreground">EPCOT · Oct 14–16 · Party of 2</p>
               <span className="text-[10px] text-green-400 font-semibold">Completed ✅</span>
@@ -410,15 +410,15 @@ const Settings = () => {
             <Button size="sm" className="text-xs shrink-0"><Copy className="w-3.5 h-3.5 mr-1" /> Copy Link</Button>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3">
+            <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 p-3">
               <p className="text-[10px] text-muted-foreground">Friends Referred</p>
               <p className="text-lg font-bold text-foreground">0</p>
             </div>
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3">
+            <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 p-3">
               <p className="text-[10px] text-muted-foreground">Free Months Earned</p>
               <p className="text-lg font-bold text-foreground">0</p>
             </div>
-            <div className="rounded-lg border border-primary/15 bg-[#0D1230]/60 p-3">
+            <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 p-3">
               <p className="text-[10px] text-muted-foreground">Total Saved</p>
               <p className="text-lg font-bold text-foreground">$0.00</p>
             </div>
@@ -592,7 +592,7 @@ function DisneyConnectSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between p-4 rounded-xl border border-white/10" style={{ background: "#0D1230" }}>
+      <div className="flex items-center justify-between p-4 rounded-xl border border-white/10" style={{ background: "var(--muted)" }}>
         <div>
           <p className="text-sm font-semibold text-foreground">
             {connected ? "✅ Disney Account Connected" : "⚠️ Not Connected"}
@@ -621,7 +621,7 @@ function DisneyConnectSection() {
           <button
             onClick={handleConnect}
             disabled={connecting}
-            className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-60"
+            className="w-full py-3 rounded-xl font-bold text-sm text-[var(--background)] disabled:opacity-60"
             style={{ background: "#F5C842" }}
           >
             {connecting ? "Waiting for Disney login..." : "🏰 Connect Disney Account"}

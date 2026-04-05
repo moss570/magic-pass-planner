@@ -74,7 +74,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
             {firstName ? firstName[0].toUpperCase() : (user?.email?.[0]?.toUpperCase() ?? "?")}
           </div>
           <div className="hidden lg:block">
-            <p className="text-xs text-muted-foreground">Welcome back,</p>
+            <p className="text-xs text-blue-200">Welcome back,</p>
             <p className="text-sm font-semibold text-foreground">{firstName || user?.email?.split("@")[0] || "User"}</p>
           </div>
         </div>
@@ -87,7 +87,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
                 to={item.path}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
                   isActive
-                    ? "text-primary border-l-[3px] border-primary bg-primary/10 font-bold"
+                    ? "text-white border-l-[3px] border-yellow-300 bg-white/20 font-bold"
                     : "text-muted-foreground hover:text-foreground hover:bg-[#1a2235]"
                 } lg:justify-start justify-center`}
               >
@@ -141,7 +141,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       </aside>
 
       {/* Main */}
-      <main className="md:ml-16 lg:ml-60 flex-1 min-h-screen pb-20 md:pb-0 w-full max-w-full overflow-x-hidden" style={{ background: "#080E1E" }}>
+      <main className="md:ml-16 lg:ml-60 flex-1 min-h-screen pb-20 md:pb-0 w-full max-w-full overflow-x-hidden" style={{ background: "var(--background)" }}>
         {/* Top bar */}
         <div className="px-4 md:px-8 pt-4 md:pt-8 pb-4 md:pb-6 flex items-start justify-between">
           <div className="flex items-center gap-3 md:block">
@@ -175,7 +175,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       </main>
 
       {/* Bottom Nav — mobile only */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around border-t" style={{ background: "#0D1230", borderColor: "rgba(245,200,66,0.15)", height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex items-center justify-around border-t" style={{ background: "var(--muted)", borderColor: "rgba(245,200,66,0.15)", height: 'calc(64px + env(safe-area-inset-bottom))', paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {bottomNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -195,7 +195,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
       {moreOpen && (
         <>
           <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm md:hidden" onClick={() => setMoreOpen(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-[61] md:hidden rounded-t-2xl" style={{ background: "#111827", height: "70vh" }}>
+          <div className="fixed bottom-0 left-0 right-0 z-[61] md:hidden rounded-t-2xl" style={{ background: "var(--card)", height: "70vh" }}>
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-primary/10">
               <span className="text-sm font-bold text-foreground">More</span>
               <button onClick={() => setMoreOpen(false)} className="text-primary text-xs font-semibold flex items-center gap-1">

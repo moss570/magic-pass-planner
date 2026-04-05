@@ -81,7 +81,7 @@ const stats = [
 const Index = () => {
   const { user, loading } = useAuth();
   return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
       <Header />
 
       {/* Hero */}

@@ -128,7 +128,7 @@ export default function GroupCoordinator() {
             <Map className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm font-semibold text-foreground mb-2">No trips yet</p>
             <p className="text-xs text-muted-foreground mb-6">Create a trip in Trip Planner to coordinate with your group</p>
-            <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+            <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[var(--background)] inline-block" style={{ background: "#F5C842" }}>
               Plan a Trip →
             </Link>
           </div>
@@ -141,7 +141,7 @@ export default function GroupCoordinator() {
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {trips.map(trip => (
                   <button key={trip.id} onClick={() => loadTrip(trip)}
-                    className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors ${selectedTrip?.id === trip.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors ${selectedTrip?.id === trip.id ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                     {trip.name}
                   </button>
                 ))}
@@ -150,7 +150,7 @@ export default function GroupCoordinator() {
 
             {/* Group members summary */}
             {members.length > 0 && (
-              <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+              <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs font-bold text-foreground">Travel Party ({members.length})</p>
                   <Link to="/trip-planner" className="text-xs text-primary hover:underline">Manage →</Link>
@@ -217,7 +217,7 @@ export default function GroupCoordinator() {
                       </div>
                     )}
                     {itinerary.slice(0, 10).map((item: any, i: number) => (
-                      <div key={i} className="rounded-xl p-3 border border-white/8 flex gap-3" style={{ background: "#111827" }}>
+                      <div key={i} className="rounded-xl p-3 border border-white/8 flex gap-3" style={{ background: "var(--card)" }}>
                         <div>
                           <p className="text-xs text-muted-foreground font-mono">{item.time}</p>
                           <p className="text-sm font-semibold text-foreground leading-tight mt-0.5">{item.activity}</p>
@@ -287,7 +287,7 @@ export default function GroupCoordinator() {
                 ) : (
                   <div className="space-y-2">
                     {diningAlerts.map(alert => (
-                      <div key={alert.id} className="rounded-xl p-3 border border-white/8 flex items-center justify-between" style={{ background: "#111827" }}>
+                      <div key={alert.id} className="rounded-xl p-3 border border-white/8 flex items-center justify-between" style={{ background: "var(--card)" }}>
                         <div>
                           <p className="text-sm font-semibold text-foreground">{alert.restaurant?.name}</p>
                           <p className="text-xs text-muted-foreground">{alert.alert_date} · Party of {alert.party_size}</p>
@@ -307,22 +307,22 @@ export default function GroupCoordinator() {
             {activeSection === "members" && (
               <div className="space-y-4">
                 <button onClick={() => setShowPollForm(s => !s)}
-                  className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+                  className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
                   style={{ background: "#F5C842" }}>
                   <Plus className="w-4 h-4" /> Create Group Poll
                 </button>
 
                 {showPollForm && (
-                  <div className="rounded-xl p-4 border border-white/10" style={{ background: "#111827" }}>
+                  <div className="rounded-xl p-4 border border-white/10" style={{ background: "var(--card)" }}>
                     <input value={pollQuestion} onChange={e => setPollQuestion(e.target.value)} placeholder="Poll question (e.g. Which park on Day 2?)"
-                      className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" />
+                      className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" />
                     {pollOptions.map((opt, i) => (
                       <input key={i} value={opt} onChange={e => { const n = [...pollOptions]; n[i] = e.target.value; setPollOptions(n); }}
                         placeholder={`Option ${i + 1}`}
-                        className="w-full px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground mb-2 focus:outline-none focus:border-primary/40" />
+                        className="w-full px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground mb-2 focus:outline-none focus:border-primary/40" />
                     ))}
                     <button onClick={() => setPollOptions(p => [...p, ""])} className="text-xs text-primary hover:underline mb-3 block">+ Add option</button>
-                    <button onClick={createPoll} className="w-full py-2 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Create Poll</button>
+                    <button onClick={createPoll} className="w-full py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Create Poll</button>
                   </div>
                 )}
 
@@ -338,7 +338,7 @@ export default function GroupCoordinator() {
                   const totalVotes = poll.options.reduce((s: number, o: any) => s + o.votes, 0);
                   const myVote = poll.votes[session?.user.id || ""];
                   return (
-                    <div key={poll.id} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+                    <div key={poll.id} className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
                       <p className="text-sm font-bold text-foreground mb-3">🗳️ {poll.question}</p>
                       <div className="space-y-2 mb-2">
                         {poll.options.map((opt: any, i: number) => {

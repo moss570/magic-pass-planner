@@ -231,7 +231,7 @@ export default function DiningAlerts() {
       <div className="space-y-6">
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
-        <div className="rounded-xl border p-5 md:p-6" style={{ background: "#111827", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
+        <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
           <h2 className="text-base font-bold text-foreground mb-4">🔔 Set a New Alert</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,7 +245,7 @@ export default function DiningAlerts() {
                   <button
                     key={f}
                     onClick={() => setLocationFilter(f)}
-                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${locationFilter === f ? "bg-primary text-[#080E1E]" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${locationFilter === f ? "bg-primary text-[var(--background)]" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                   >
                     {f}
                   </button>
@@ -279,7 +279,7 @@ export default function DiningAlerts() {
                   </p>
 
                   {showRestaurantDropdown && filteredRestaurants.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-white/10 overflow-hidden shadow-xl" style={{ background: "#111827", maxHeight: 280 }}>
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-white/10 overflow-hidden shadow-xl" style={{ background: "var(--card)", maxHeight: 280 }}>
                       <div className="overflow-y-auto" style={{ maxHeight: 280 }}>
                         {filteredRestaurants.slice(0, 30).map(r => (
                           <button
@@ -313,7 +313,7 @@ export default function DiningAlerts() {
                     {date ? format(date, "MMM d, yyyy") : "Select date"}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start" style={{ background: "#111827", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <PopoverContent className="w-auto p-0" align="start" style={{ background: "var(--card)", border: "1px solid rgba(255,255,255,0.1)" }}>
                   <Calendar mode="single" selected={date} onSelect={d => { setDate(d); setDateOpen(false); }} disabled={d => d < new Date()} initialFocus />
                 </PopoverContent>
               </Popover>
@@ -337,7 +337,7 @@ export default function DiningAlerts() {
                   <button
                     key={meal}
                     onClick={() => toggleMeal(meal)}
-                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedMeals.includes(meal) ? "bg-primary text-[#080E1E]" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${selectedMeals.includes(meal) ? "bg-primary text-[var(--background)]" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                   >
                     {meal}
                   </button>
@@ -351,13 +351,13 @@ export default function DiningAlerts() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setAlertEmail(e => !e)}
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${alertEmail ? "bg-primary text-[#080E1E]" : "bg-muted/30 text-muted-foreground"}`}
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${alertEmail ? "bg-primary text-[var(--background)]" : "bg-muted/30 text-muted-foreground"}`}
                 >
                   <Mail className="w-3 h-3" /> Email
                 </button>
                 <button
                   onClick={() => setAlertSms(s => !s)}
-                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${alertSms ? "bg-primary text-[#080E1E]" : "bg-muted/30 text-muted-foreground"}`}
+                  className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${alertSms ? "bg-primary text-[var(--background)]" : "bg-muted/30 text-muted-foreground"}`}
                 >
                   <MessageSquare className="w-3 h-3" /> SMS
                 </button>
@@ -368,7 +368,7 @@ export default function DiningAlerts() {
           <button
             onClick={handleCreateAlert}
             disabled={submitting || !selectedRestaurant || !date}
-            className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[#080E1E] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "#F5C842" }}
           >
             {submitting ? "Creating Alert..." : "🔔 Start Watching This Restaurant"}
@@ -388,11 +388,11 @@ export default function DiningAlerts() {
           </div>
 
           {loadingAlerts ? (
-            <div className="rounded-xl p-8 text-center" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-8 text-center" style={{ background: "var(--card)" }}>
               <p className="text-muted-foreground text-sm">Loading your alerts...</p>
             </div>
           ) : activeAlerts.length === 0 ? (
-            <div className="rounded-xl p-8 text-center border border-dashed border-white/10" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-8 text-center border border-dashed border-white/10" style={{ background: "var(--card)" }}>
               <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm font-medium text-foreground mb-1">No active alerts</p>
               <p className="text-xs text-muted-foreground">Set an alert above and we'll watch 24/7 for availability</p>
@@ -400,7 +400,7 @@ export default function DiningAlerts() {
           ) : (
             <div className="space-y-3">
               {activeAlerts.map(alert => (
-                <div key={alert.id} className="rounded-xl p-4 md:p-5 border" style={{ background: "#111827", borderColor: alert.status === "found" ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.08)" }}>
+                <div key={alert.id} className="rounded-xl p-4 md:p-5 border" style={{ background: "var(--card)", borderColor: alert.status === "found" ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.08)" }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -441,7 +441,7 @@ export default function DiningAlerts() {
                         href={alert.availability_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-bold text-sm text-[#080E1E] transition-opacity hover:opacity-90"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity hover:opacity-90"
                         style={{ background: "#F5C842" }}
                       >
                         🍽️ Book This Reservation →
@@ -460,7 +460,7 @@ export default function DiningAlerts() {
         {pastAlerts.length > 0 && (
           <div>
             <h2 className="text-base font-bold text-foreground mb-3">Recent Alert History</h2>
-            <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "var(--card)" }}>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>

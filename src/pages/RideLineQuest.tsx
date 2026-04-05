@@ -253,7 +253,7 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
 
   // ─── MENU ────────────────────────────────────────────────────────────────────
   if (screen === "menu") return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "#080E1E" }}>
+    <div className="fixed inset-0 z-50 flex flex-col overflow-y-auto" style={{ background: "var(--background)" }}>
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-5 h-5" />
@@ -296,12 +296,12 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
         </div>
 
         {mode === "party" && (
-          <div className="mb-4 p-4 rounded-xl border border-white/10" style={{ background: "#111827" }}>
+          <div className="mb-4 p-4 rounded-xl border border-white/10" style={{ background: "var(--card)" }}>
             <p className="text-xs text-muted-foreground mb-2">Have a party code from a friend?</p>
             <div className="flex gap-2">
               <input value={partyInput} onChange={e => setPartyInput(e.target.value.toUpperCase())}
                 placeholder="Enter code..." maxLength={6}
-                className="flex-1 px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground uppercase tracking-widest focus:outline-none focus:border-primary/40" />
+                className="flex-1 px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground uppercase tracking-widest focus:outline-none focus:border-primary/40" />
               <button className="px-4 py-2 rounded-lg text-xs font-bold border border-primary text-primary">Join</button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">Or start a new party and share the code!</p>
@@ -309,7 +309,7 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
         )}
 
         {/* How to Play */}
-        <div className="p-4 rounded-xl border border-white/8 mb-5" style={{ background: "#111827" }}>
+        <div className="p-4 rounded-xl border border-white/8 mb-5" style={{ background: "var(--card)" }}>
           <p className="text-xs font-bold text-foreground mb-2">How to Play</p>
           <div className="space-y-1.5 text-xs text-muted-foreground">
             <p>🏺 Tap <span className="text-primary">artifacts</span> for bonus points + combo</p>
@@ -320,7 +320,7 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
         </div>
 
         <button onClick={startGame}
-          className="w-full py-4 rounded-2xl font-black text-lg text-[#080E1E] flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-2"
           style={{ background: "#F5C842" }}>
           🚀 START QUEST
         </button>
@@ -406,7 +406,7 @@ export default function RideLineQuest({ onClose }: { onClose: () => void }) {
 
         <div className="flex gap-3 justify-center">
           <button onClick={startGame}
-            className="px-8 py-3 rounded-2xl font-black text-[#080E1E]"
+            className="px-8 py-3 rounded-2xl font-black text-[var(--background)]"
             style={{ background: theme.accent }}>
             🔄 PLAY AGAIN
           </button>

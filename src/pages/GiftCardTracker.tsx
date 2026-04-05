@@ -97,7 +97,7 @@ export default function GiftCardTracker() {
           {loading ? (
             <div className="text-center py-8"><div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto" /></div>
           ) : liveDeals.length === 0 ? (
-            <div className="rounded-xl p-6 text-center border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-6 text-center border border-white/8" style={{ background: "var(--card)" }}>
               <ShoppingBag className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
               <p className="text-sm text-muted-foreground">No live deals right now</p>
               <p className="text-xs text-muted-foreground mt-1">Set an alert to be notified when deals appear</p>
@@ -107,7 +107,7 @@ export default function GiftCardTracker() {
               {liveDeals.map(deal => {
                 const retailer = RETAILER_COLORS[deal.retailer] || { bg: "bg-muted", color: "text-foreground", emoji: "🏪" };
                 return (
-                  <div key={deal.id} className="rounded-xl border border-green-500/30 overflow-hidden" style={{ background: "#111827" }}>
+                  <div key={deal.id} className="rounded-xl border border-green-500/30 overflow-hidden" style={{ background: "var(--card)" }}>
                     <div className="flex items-center gap-3 p-4">
                       <div className={`w-12 h-12 rounded-xl ${retailer.bg} flex items-center justify-center text-xl shrink-0`}>
                         {retailer.emoji}
@@ -129,7 +129,7 @@ export default function GiftCardTracker() {
                     </div>
                     <div className="px-4 pb-4">
                       <a href={deal.deal_url} target="_blank" rel="noopener noreferrer"
-                        className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                        className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
                         style={{ background: "#F5C842" }}>
                         🛒 Shop This Deal <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -149,7 +149,7 @@ export default function GiftCardTracker() {
               {watchDeals.map(deal => {
                 const retailer = RETAILER_COLORS[deal.retailer] || { bg: "bg-muted", color: "text-foreground", emoji: "🏪" };
                 return (
-                  <div key={deal.id} className="rounded-xl p-3 border border-white/8 flex items-center gap-3" style={{ background: "#111827" }}>
+                  <div key={deal.id} className="rounded-xl p-3 border border-white/8 flex items-center gap-3" style={{ background: "var(--card)" }}>
                     <div className={`w-10 h-10 rounded-lg ${retailer.bg} flex items-center justify-center text-lg shrink-0 opacity-60`}>
                       {retailer.emoji}
                     </div>
@@ -166,7 +166,7 @@ export default function GiftCardTracker() {
         )}
 
         {/* Set Alert */}
-        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-primary" />
@@ -180,21 +180,21 @@ export default function GiftCardTracker() {
             <div className="flex gap-2">
               {[5, 10, 15, 20].map(v => (
                 <button key={v} onClick={() => setAlertPrefs(p => ({ ...p, minSavings: v }))}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${alertPrefs.minSavings === v ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${alertPrefs.minSavings === v ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                   ${v}
                 </button>
               ))}
             </div>
           </div>
           <button onClick={saveAlert} disabled={settingAlert}
-            className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-60"
+            className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] disabled:opacity-60"
             style={{ background: "#F5C842" }}>
             {settingAlert ? "Saving..." : alertPrefs.active ? "✅ Update Alert Settings" : "🔔 Set Alert"}
           </button>
         </div>
 
         {/* Savings Calculator */}
-        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
           <div className="flex items-center gap-2 mb-4">
             <Calculator className="w-4 h-4 text-primary" />
             <p className="text-sm font-bold text-foreground">Trip Savings Calculator</p>
@@ -217,7 +217,7 @@ export default function GiftCardTracker() {
               <div className="flex gap-1.5">
                 {[1, 2, 3, 5, 6].map(r => (
                   <button key={r} onClick={() => setCreditCardRate(r)}
-                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${creditCardRate === r ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${creditCardRate === r ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                     {r}%
                   </button>
                 ))}
@@ -255,7 +255,7 @@ export default function GiftCardTracker() {
         </div>
 
         {/* How it works */}
-        <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+        <div className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
           <p className="text-xs font-bold text-foreground mb-3">💡 How to maximize Disney gift card savings</p>
           <div className="space-y-2 text-xs text-muted-foreground">
             <p>1. 🎯 <strong className="text-foreground">Buy at Sam's Club</strong> — best consistent Disney gift card discounts for members</p>

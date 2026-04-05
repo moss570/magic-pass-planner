@@ -116,7 +116,7 @@ const CompassModal = ({ open, onClose, destination, land, walkTime, distance, di
       {/* Compass */}
       <div className="relative" style={{ width: compassSize, height: compassSize }}>
         {/* Outer ring */}
-        <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: "rgba(245,200,66,0.3)", background: "#111827", boxShadow: `0 0 40px ${glowColor}` }}>
+        <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: "rgba(245,200,66,0.3)", background: "var(--card)", boxShadow: `0 0 40px ${glowColor}` }}>
           {/* Concentric circles */}
           {[0.75, 0.55, 0.35].map((scale) => (
             <div key={scale} className="absolute rounded-full border" style={{

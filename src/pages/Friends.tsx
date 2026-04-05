@@ -204,14 +204,14 @@ export default function Friends() {
                 <p className="text-sm font-semibold text-foreground mb-1">No friends yet</p>
                 <p className="text-xs text-muted-foreground mb-4">Add friends by email or QR code to plan trips together</p>
                 <button onClick={() => setTab("add")}
-                  className="px-5 py-2 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                  className="px-5 py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>
                   Add Your First Friend →
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
                 {friends.map(friend => (
-                  <div key={friend.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-white/15 transition-colors" style={{ background: "#111827" }}>
+                  <div key={friend.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/8 hover:border-white/15 transition-colors" style={{ background: "var(--card)" }}>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center text-sm font-bold text-primary">
                       {friend.first_name?.[0] || "?"}{friend.last_name?.[0] || ""}
                     </div>
@@ -253,7 +253,7 @@ export default function Friends() {
             </div>
 
             {/* By email */}
-            <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Mail className="w-4 h-4 text-primary" />
                 <p className="text-sm font-bold text-foreground">Add by Email</p>
@@ -268,11 +268,11 @@ export default function Friends() {
                   onChange={e => setAddEmail(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && addByEmail()}
                   placeholder="friend@email.com"
-                  className="flex-1 px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                  className="flex-1 px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
                   style={{ minHeight: 44 }}
                 />
                 <button onClick={addByEmail} disabled={addLoading || !addEmail.trim()}
-                  className="px-4 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
                   style={{ background: "#F5C842" }}>
                   {addLoading ? "..." : "Send"}
                 </button>
@@ -280,7 +280,7 @@ export default function Friends() {
             </div>
 
             {/* By QR code */}
-            <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+            <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <QrCode className="w-4 h-4 text-primary" />
                 <p className="text-sm font-bold text-foreground">Add by QR Code</p>
@@ -294,12 +294,12 @@ export default function Friends() {
                   value={qrInput}
                   onChange={e => setQrInput(e.target.value.toUpperCase())}
                   placeholder="Enter friend's code (e.g. A1B2C3D4)"
-                  className="flex-1 px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground font-mono tracking-widest focus:outline-none focus:border-primary/40"
+                  className="flex-1 px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground font-mono tracking-widest focus:outline-none focus:border-primary/40"
                   style={{ minHeight: 44 }}
                   maxLength={32}
                 />
                 <button onClick={addByQR} disabled={addLoading || !qrInput.trim()}
-                  className="px-4 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
                   style={{ background: "#F5C842" }}>
                   {addLoading ? "..." : "Add"}
                 </button>
@@ -313,7 +313,7 @@ export default function Friends() {
 
         {/* My QR code */}
         {tab === "qr" && (
-          <div className="rounded-xl p-6 border border-white/8 text-center" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-6 border border-white/8 text-center" style={{ background: "var(--card)" }}>
             <p className="text-sm font-bold text-foreground mb-1">Your Magic Pass QR Code</p>
             <p className="text-xs text-muted-foreground mb-6">Share this with friends so they can add you instantly. Your personal info stays private.</p>
             {myQrToken ? (

@@ -70,7 +70,7 @@ const AuthCallback = () => {
   }, [navigate, location.search]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#080E1E" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--background)" }}>
       <div className="flex flex-col items-center gap-4">
         <Castle className="w-10 h-10 text-primary animate-pulse" />
         <p className="text-sm text-muted-foreground">Completing sign in...</p>

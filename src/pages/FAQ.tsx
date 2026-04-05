@@ -183,8 +183,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function FAQ() {
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
-      <nav className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
+      <nav className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(245,200,66,0.15)", background: "var(--muted)" }}>
         <Link to="/" className="flex items-center gap-2">
           <Castle className="w-5 h-5 text-primary" />
           <span className="text-sm font-bold text-primary">Magic Pass Plus</span>
@@ -208,7 +208,7 @@ export default function FAQ() {
                 <span className="text-xl">{section.emoji}</span>
                 <h2 className="text-base font-bold text-foreground">{section.section}</h2>
               </div>
-              <div className="rounded-xl border border-white/8 overflow-hidden px-5" style={{ background: "#111827" }}>
+              <div className="rounded-xl border border-white/8 overflow-hidden px-5" style={{ background: "var(--card)" }}>
                 {section.questions.map(item => (
                   <FAQItem key={item.q} q={item.q} a={item.a} />
                 ))}
@@ -217,12 +217,12 @@ export default function FAQ() {
           ))}
         </div>
 
-        <div className="mt-12 p-6 rounded-xl border border-primary/20 text-center" style={{ background: "#111827" }}>
+        <div className="mt-12 p-6 rounded-xl border border-primary/20 text-center" style={{ background: "var(--card)" }}>
           <p className="text-foreground font-semibold mb-1">Still have questions?</p>
           <p className="text-sm text-muted-foreground mb-4">We're here to help. Reach out anytime.</p>
           <a
             href="mailto:support@magicpassplus.com"
-            className="inline-block px-6 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]"
+            className="inline-block px-6 py-2.5 rounded-lg font-bold text-sm text-[var(--background)]"
             style={{ background: "#F5C842" }}
           >
             Contact Support →

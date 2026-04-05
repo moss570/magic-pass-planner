@@ -84,7 +84,7 @@ function DayCard({ plan, dayNum }: { plan: DayPlan; dayNum: number }) {
   const dateFormatted = new Date(plan.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
   return (
-    <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+    <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "var(--card)" }}>
       {/* Day Header */}
       <button
         onClick={() => setExpanded(e => !e)}
@@ -124,7 +124,7 @@ function DayCard({ plan, dayNum }: { plan: DayPlan; dayNum: number }) {
                 {plan.items.map((item, i) => (
                   <div key={i} className="flex gap-3 relative">
                     {/* Icon dot */}
-                    <div className="w-11 h-11 rounded-full bg-[#0D1230] border border-white/10 flex items-center justify-center shrink-0 z-10 text-base">
+                    <div className="w-11 h-11 rounded-full bg-[var(--muted)] border border-white/10 flex items-center justify-center shrink-0 z-10 text-base">
                       {typeIcons[item.type] || "📍"}
                     </div>
 
@@ -519,7 +519,7 @@ export default function TripPlanner() {
       <div className="space-y-6">
 
         {/* ── FORM ─────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-white/8 p-5" style={{ background: "#111827" }}>
+        <div className="rounded-xl border border-white/8 p-5" style={{ background: "var(--card)" }}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-foreground">Plan Your Trip</h2>
             {session && (
@@ -529,7 +529,7 @@ export default function TripPlanner() {
             )}
           </div>
           {showSavedTrips && savedTrips.length > 0 && (
-            <div className="mb-4 rounded-xl border border-white/10 overflow-hidden" style={{ background: "#0D1230" }}>
+            <div className="mb-4 rounded-xl border border-white/10 overflow-hidden" style={{ background: "var(--muted)" }}>
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/8">
                 <p className="text-xs font-semibold text-foreground">Your Saved Trips</p>
                 <button onClick={() => setShowSavedTrips(false)} className="text-xs text-muted-foreground hover:text-foreground">Close</button>
@@ -554,7 +554,7 @@ export default function TripPlanner() {
               <div className="flex flex-wrap gap-2">
                 {PARKS.map(park => (
                   <button key={park} onClick={() => togglePark(park)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${selectedParks.includes(park) ? "bg-primary text-[#080E1E] border-primary" : "border-white/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border ${selectedParks.includes(park) ? "bg-primary text-[var(--background)] border-primary" : "border-white/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"}`}>
                     {park}
                   </button>
                 ))}
@@ -568,12 +568,12 @@ export default function TripPlanner() {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Start</p>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} min={new Date().toISOString().split("T")[0]}
-                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+                    className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">End</p>
                   <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate || new Date().toISOString().split("T")[0]}
-                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+                    className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
                 </div>
               </div>
             </div>
@@ -586,19 +586,19 @@ export default function TripPlanner() {
                   { label: "Adults", value: adults, set: setAdults },
                   { label: "Children", value: children, set: setChildren },
                 ].map(row => (
-                  <div key={row.label} className="flex items-center justify-between bg-[#0D1230] rounded-lg px-3 py-2 border border-white/10">
+                  <div key={row.label} className="flex items-center justify-between bg-[var(--muted)] rounded-lg px-3 py-2 border border-white/10">
                     <span className="text-sm text-foreground">{row.label}</span>
                     <div className="flex items-center gap-3">
                       <button onClick={() => row.set(Math.max(0, row.value - 1))} className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center text-foreground hover:bg-white/20 text-lg leading-none">−</button>
                       <span className="text-sm font-bold text-primary w-4 text-center">{row.value}</span>
-                      <button onClick={() => row.set(row.value + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-[#080E1E] text-lg leading-none font-bold">+</button>
+                      <button onClick={() => row.set(row.value + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-[var(--background)] text-lg leading-none font-bold">+</button>
                     </div>
                   </div>
                 ))}
               </div>
               {children > 0 && (
                 <input type="text" placeholder="Children's ages (e.g. 8, 6, 3)" value={ages} onChange={e => setAges(e.target.value)}
-                  className="mt-2 w-full px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40" />
+                  className="mt-2 w-full px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40" />
               )}
             </div>
 
@@ -608,7 +608,7 @@ export default function TripPlanner() {
               <div className="grid grid-cols-2 gap-2">
                 {RIDE_PREFS.map(p => (
                   <button key={p.value} onClick={() => setRidePreference(p.value)}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors text-center border ${ridePreference === p.value ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
+                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors text-center border ${ridePreference === p.value ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
                     {p.label}
                   </button>
                 ))}
@@ -633,7 +633,7 @@ export default function TripPlanner() {
               <div className="flex gap-2">
                 {LL_OPTIONS.map(opt => (
                   <button key={opt.value} onClick={() => setLlOption(opt.value)}
-                    className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors text-center border ${llOption === opt.value ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
+                    className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-colors text-center border ${llOption === opt.value ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
                     {opt.label}
                   </button>
                 ))}
@@ -644,10 +644,10 @@ export default function TripPlanner() {
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Park Hopper Pass</label>
               <div className="flex gap-2">
-                <button onClick={() => setParkHopper(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!parkHopper ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                <button onClick={() => setParkHopper(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!parkHopper ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                   No Park Hopper
                 </button>
-                <button onClick={() => setParkHopper(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${parkHopper ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                <button onClick={() => setParkHopper(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${parkHopper ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                   ✅ Yes (+$65/person)
                 </button>
               </div>
@@ -658,10 +658,10 @@ export default function TripPlanner() {
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Are You Staying at a Disney Resort?</label>
               <div className="flex gap-2">
-                <button onClick={() => setResortStay(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!resortStay ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                <button onClick={() => setResortStay(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!resortStay ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                   Off-Site / Not Sure
                 </button>
-                <button onClick={() => setResortStay(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${resortStay ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                <button onClick={() => setResortStay(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${resortStay ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                   ✅ Disney Resort (+Early Entry)
                 </button>
               </div>
@@ -673,10 +673,10 @@ export default function TripPlanner() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
                 Non-Park Days: <span className="text-primary">{nonParkDays}</span>
               </label>
-              <div className="flex items-center gap-3 bg-[#0D1230] rounded-lg px-3 py-2 border border-white/10">
+              <div className="flex items-center gap-3 bg-[var(--muted)] rounded-lg px-3 py-2 border border-white/10">
                 <button onClick={() => setNonParkDays(Math.max(0, nonParkDays - 1))} className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center text-lg leading-none hover:bg-white/20">−</button>
                 <span className="flex-1 text-center text-sm font-semibold text-foreground">{nonParkDays} day{nonParkDays !== 1 ? "s" : ""}</span>
-                <button onClick={() => setNonParkDays(nonParkDays + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-lg leading-none font-bold text-[#080E1E]">+</button>
+                <button onClick={() => setNonParkDays(nonParkDays + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-lg leading-none font-bold text-[var(--background)]">+</button>
               </div>
               {nonParkDays > 0 && <p className="text-xs text-muted-foreground mt-1">We'll suggest: Universal Studios, Kennedy Space Center, Clearwater Beach, SeaWorld + more</p>}
             </div>
@@ -686,7 +686,7 @@ export default function TripPlanner() {
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Special Notes (optional)</label>
               <textarea value={specialNotes} onChange={e => setSpecialNotes(e.target.value)} rows={2}
                 placeholder="e.g. celebrating a birthday, grandparents joining, must ride Tron, first trip..."
-                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none" />
+                className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none" />
             </div>
 
             {/* Travel Party */}
@@ -709,37 +709,37 @@ export default function TripPlanner() {
                 </div>
               )}
               {showAddMember && (
-                <div className="rounded-xl border border-white/10 p-4 space-y-3" style={{ background: "#0D1230" }}>
+                <div className="rounded-xl border border-white/10 p-4 space-y-3" style={{ background: "var(--muted)" }}>
                   <div className="grid grid-cols-2 gap-2">
                     <input value={memberFirstName} onChange={e => setMemberFirstName(e.target.value)} placeholder="First name *"
-                      className="px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                      className="px-3 py-2 rounded-lg bg-[var(--background)] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
                     <input value={memberLastName} onChange={e => setMemberLastName(e.target.value)} placeholder="Last name *"
-                      className="px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                      className="px-3 py-2 rounded-lg bg-[var(--background)] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setMemberIsAdult(true)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${memberIsAdult ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>👤 Adult</button>
-                    <button onClick={() => setMemberIsAdult(false)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${!memberIsAdult ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>👶 Child</button>
+                    <button onClick={() => setMemberIsAdult(true)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${memberIsAdult ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>👤 Adult</button>
+                    <button onClick={() => setMemberIsAdult(false)} className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border ${!memberIsAdult ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>👶 Child</button>
                   </div>
                   {memberIsAdult && (
                     <input value={memberEmail} onChange={e => setMemberEmail(e.target.value)} placeholder="Email (required for adults)"
-                      type="email" className="w-full px-3 py-2 rounded-lg bg-[#080E1E] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
+                      type="email" className="w-full px-3 py-2 rounded-lg bg-[var(--background)] border border-white/10 text-xs text-foreground focus:outline-none focus:border-primary/40" />
                   )}
                   {memberIsAdult && (
                     <button onClick={() => setMemberIsSplitting(s => !s)} className={`w-full py-1.5 rounded-lg text-xs font-semibold border transition-all ${memberIsSplitting ? "bg-green-500/20 text-green-400 border-green-500/30" : "border-white/10 text-muted-foreground"}`}>
                       {memberIsSplitting ? "✅ Splitting expenses" : "❌ Not splitting expenses"}
                     </button>
                   )}
-                  <button onClick={addTripMember} className="w-full py-2 rounded-lg text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Add to Trip</button>
+                  <button onClick={addTripMember} className="w-full py-2 rounded-lg text-xs font-bold text-[var(--background)]" style={{ background: "#F5C842" }}>Add to Trip</button>
                   <p className="text-xs text-muted-foreground text-center">Adults will receive an email invite to join Magic Pass Plus and your trip</p>
                 </div>
               )}
             </div>
 
             <button onClick={generateItinerary} disabled={generating || !selectedParks.length || !startDate}
-              className="w-full py-3.5 rounded-xl font-bold text-[#080E1E] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-xl font-bold text-[var(--background)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ background: "#F5C842" }}>
               {generating ? (
-                <><span className="w-4 h-4 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Generating your itinerary...</>
+                <><span className="w-4 h-4 rounded-full border-2 border-[var(--background)] border-t-transparent animate-spin" /> Generating your itinerary...</>
               ) : (
                 <><Sparkles className="w-4 h-4" /> ✨ Generate My Itinerary</>
               )}
@@ -933,7 +933,7 @@ export default function TripPlanner() {
 
         {/* Empty state */}
         {!generated && (
-          <div className="rounded-xl p-10 text-center border border-dashed border-white/10" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-10 text-center border border-dashed border-white/10" style={{ background: "var(--card)" }}>
             <Castle className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm font-semibold text-foreground mb-1">Your personalized itinerary will appear here</p>
             <p className="text-xs text-muted-foreground">Fill in your trip details above and hit Generate</p>

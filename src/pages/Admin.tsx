@@ -276,7 +276,7 @@ export default function Admin() {
 
   if (loading || !user || !ADMIN_EMAILS.includes(user.email || "")) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#080E1E" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--background)" }}>
         <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
       </div>
     );
@@ -295,7 +295,7 @@ export default function Admin() {
   const totalMRR = stats ? estimatedMRR + (stats.trialUsers * 0) : 0; // trials not counted yet
 
   return (
-    <div className="min-h-screen pb-12" style={{ background: "#080E1E" }}>
+    <div className="min-h-screen pb-12" style={{ background: "var(--background)" }}>
       {/* Header */}
       <div className="px-4 md:px-8 pt-8 pb-6 border-b" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
         <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -332,7 +332,7 @@ export default function Admin() {
               { label: "Trial Users", value: stats?.trialUsers ?? "—", sub: "7-day trials", color: "text-yellow-400" },
               { label: "Churned This Month", value: "0", sub: "cancelled", color: "text-red-400" },
             ].map(card => (
-              <div key={card.label} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+              <div key={card.label} className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
                 <p className="text-xs text-muted-foreground mb-1">{card.label}</p>
                 <p className={`text-2xl font-bold ${card.color}`}>{card.value}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{card.sub}</p>
@@ -342,7 +342,7 @@ export default function Admin() {
         </div>
 
         {/* Plan Breakdown */}
-        <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+        <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "var(--card)" }}>
           <div className="px-5 py-4 border-b border-white/8">
             <h2 className="text-sm font-bold text-foreground">Subscription Breakdown</h2>
           </div>
@@ -379,7 +379,7 @@ export default function Admin() {
           <h2 className="text-sm font-bold text-primary uppercase tracking-wider mb-3">3rd Party Services</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {THIRD_PARTY_SERVICES.map(svc => (
-              <div key={svc.name} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
+              <div key={svc.name} className="rounded-xl p-4 border border-white/8" style={{ background: "var(--card)" }}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <svc.icon className="w-4 h-4 text-muted-foreground" />
@@ -398,7 +398,7 @@ export default function Admin() {
         {/* Two columns: Dining Alerts + User Activity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Dining Alerts Operations */}
-          <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
             <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
               <Bell className="w-4 h-4 text-primary" /> Dining Alert Operations
             </h2>
@@ -418,7 +418,7 @@ export default function Admin() {
           </div>
 
           {/* User Activity */}
-          <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
             <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" /> User Activity
             </h2>
@@ -439,7 +439,7 @@ export default function Admin() {
         </div>
 
         {/* System Health */}
-        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
           <h2 className="text-sm font-bold text-foreground mb-4">System Health</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
@@ -467,7 +467,7 @@ export default function Admin() {
         </div>
 
         {/* VIP Accounts */}
-        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
           <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
             🎁 VIP Free Forever Accounts
           </h2>
@@ -475,18 +475,18 @@ export default function Admin() {
           {/* Invite Form */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             <input type="email" placeholder="Email address *" value={vipEmail} onChange={e => setVipEmail(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+              className="px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
             <input type="text" placeholder="First name" value={vipFirstName} onChange={e => setVipFirstName(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+              className="px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
             <input type="text" placeholder="Last name" value={vipLastName} onChange={e => setVipLastName(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+              className="px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
             <input type="text" placeholder="Reason (e.g. Disney blogger, beta tester)" value={vipReason} onChange={e => setVipReason(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+              className="px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
             <input type="text" placeholder="Internal notes (optional)" value={vipNotes} onChange={e => setVipNotes(e.target.value)}
-              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 md:col-span-2" style={{ minHeight: 44 }} />
+              className="px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 md:col-span-2" style={{ minHeight: 44 }} />
           </div>
           <button onClick={sendVipInvite} disabled={sendingInvite || !vipEmail}
-            className="px-6 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] mb-5 disabled:opacity-50"
+            className="px-6 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] mb-5 disabled:opacity-50"
             style={{ background: "#F5C842" }}>
             {sendingInvite ? "Sending..." : "🎁 Send VIP Invite"}
           </button>
@@ -534,7 +534,7 @@ export default function Admin() {
         </div>
 
         {/* Clark's Daily Notes */}
-        <div className="rounded-xl p-5 border" style={{ background: "#111827", borderColor: "rgba(245,200,66,0.2)" }}>
+        <div className="rounded-xl p-5 border" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.2)" }}>
           <h2 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">
             📋 Clark's Daily Notes
           </h2>
@@ -544,11 +544,11 @@ export default function Admin() {
             onChange={e => setNotes(e.target.value)}
             placeholder="Daily observations, recommended actions, and flags..."
             rows={6}
-            className="w-full px-4 py-3 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none"
+            className="w-full px-4 py-3 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none"
           />
           <button
             onClick={saveNotes}
-            className="mt-2 px-5 py-2 rounded-lg font-bold text-sm text-[#080E1E]"
+            className="mt-2 px-5 py-2 rounded-lg font-bold text-sm text-[var(--background)]"
             style={{ background: "#F5C842" }}
           >
             Save Notes

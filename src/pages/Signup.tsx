@@ -65,7 +65,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, #080E1E 0%, #0D1230 100%)" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md">
         <div className="rounded-xl bg-card gold-border p-8">

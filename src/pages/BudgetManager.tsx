@@ -132,7 +132,7 @@ export default function BudgetManager() {
           <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-sm font-semibold text-foreground mb-2">No trips yet</p>
           <p className="text-xs text-muted-foreground mb-6">Create a trip in Trip Planner to start tracking expenses</p>
-          <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+          <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[var(--background)] inline-block" style={{ background: "#F5C842" }}>
             Create My First Trip →
           </Link>
         </div>
@@ -149,7 +149,7 @@ export default function BudgetManager() {
           <div className="flex gap-2 overflow-x-auto pb-1">
             {trips.map(trip => (
               <button key={trip.id} onClick={() => selectTrip(trip)}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${selectedTrip?.id === trip.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-white/20"}`}>
+                className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${selectedTrip?.id === trip.id ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground hover:border-white/20"}`}>
                 {trip.name}
               </button>
             ))}
@@ -158,7 +158,7 @@ export default function BudgetManager() {
 
         {/* Budget overview */}
         {selectedTrip && (
-          <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-5 border border-white/8" style={{ background: "var(--card)" }}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-xs text-muted-foreground mb-0.5">Total Trip Budget (from Trip Planner)</p>
@@ -206,34 +206,34 @@ export default function BudgetManager() {
         {/* Add Expense */}
         <div>
           <button onClick={() => setShowAddExpense(e => !e)}
-            className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
             style={{ background: "#F5C842" }}>
             <Plus className="w-4 h-4" /> Log New Expense
           </button>
         </div>
 
         {showAddExpense && (
-          <div className="rounded-xl p-5 border border-white/10" style={{ background: "#111827" }}>
+          <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
             <h3 className="text-sm font-bold text-foreground mb-4">Add Expense</h3>
             <div className="space-y-3">
               {/* Description */}
               <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description (e.g. Be Our Guest dinner)"
-                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+                className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
 
               {/* Amount */}
               <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount ($)"
-                className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+                className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
 
               {/* Expense Type */}
               <div>
                 <p className="text-xs font-semibold text-muted-foreground mb-2">Type</p>
                 <div className="flex gap-2">
                   <button onClick={() => setExpenseType("personal")}
-                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "personal" ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "personal" ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                     👤 Personal (just me)
                   </button>
                   <button onClick={() => setExpenseType("shared")}
-                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "shared" ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                    className={`flex-1 py-2.5 rounded-lg text-xs font-semibold border transition-all ${expenseType === "shared" ? "bg-primary text-[var(--background)] border-primary" : "border-white/10 text-muted-foreground"}`}>
                     👥 Shared (split it)
                   </button>
                 </div>
@@ -259,7 +259,7 @@ export default function BudgetManager() {
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground mb-2">Who paid?</p>
                   <select value={paidByMember} onChange={e => setPaidByMember(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }}>
+                    className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }}>
                     <option value="">Select person...</option>
                     {members.filter(m => m.is_splitting_expenses).map(m => (
                       <option key={m.id} value={m.id}>{m.first_name} {m.last_name}</option>
@@ -269,7 +269,7 @@ export default function BudgetManager() {
               )}
 
               <button onClick={addExpense} disabled={saving || !desc || !amount}
-                className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50"
+                className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] disabled:opacity-50"
                 style={{ background: "#F5C842" }}>
                 {saving ? "Saving..." : "Add Expense"}
               </button>
@@ -281,7 +281,7 @@ export default function BudgetManager() {
         {expenses.length > 0 ? (
           <div>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">All Expenses ({expenses.length})</p>
-            <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+            <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "var(--card)" }}>
               {expenses.map((exp, i) => {
                 const cat = CATEGORIES.find(c => c.value === exp.category);
                 const paidBy = members.find(m => m.id === exp.paid_by_member_id);
@@ -316,7 +316,7 @@ export default function BudgetManager() {
 
         {/* Trip members */}
         {selectedTrip && (
-          <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+          <div className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "var(--card)" }}>
             <div className="px-4 py-3 border-b border-white/8 flex items-center justify-between">
               <p className="text-sm font-bold text-foreground">Travel Party ({members.length})</p>
               <Link to={`/trip-planner`} className="text-xs text-primary hover:underline">Manage →</Link>

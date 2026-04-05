@@ -158,7 +158,7 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center" style={{ background: "#080E1E" }}>
+    <div className="min-h-screen flex flex-col items-center" style={{ background: "var(--background)" }}>
       {/* Logo */}
       <div className="pt-8 pb-4 flex items-center gap-2">
         <Castle className="w-7 h-7 text-primary" />

@@ -3,8 +3,8 @@ import { Castle, ArrowLeft } from "lucide-react";
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
-      <nav className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
+      <nav className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(245,200,66,0.15)", background: "var(--muted)" }}>
         <Link to="/" className="flex items-center gap-2">
           <Castle className="w-5 h-5 text-primary" />
           <span className="text-sm font-bold text-primary">Magic Pass Plus</span>
@@ -160,7 +160,7 @@ export default function TermsOfService() {
 
           <section>
             <h2 className="text-lg font-bold text-foreground mb-3">15. Contact</h2>
-            <div className="p-4 rounded-xl border border-white/10" style={{ background: "#111827" }}>
+            <div className="p-4 rounded-xl border border-white/10" style={{ background: "var(--card)" }}>
               <p className="text-foreground font-semibold">Magic Pass Plus LLC</p>
               <p>Clermont, FL</p>
               <p><a href="mailto:legal@magicpassplus.com" className="text-primary hover:underline">legal@magicpassplus.com</a></p>
