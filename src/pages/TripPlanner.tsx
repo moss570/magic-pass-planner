@@ -477,34 +477,43 @@ export default function TripPlanner() {
             }),
           });
           const saveData = await saveResp.json();
-          if (saveData.trip?.id) setSavedTripId(saveData.trip.id);
+          const newTripId = saveData.trip?.id;
+          if (newTripId) setSavedTripId(newTripId);
+          
+          // Invite trip members using the ID from the response (not state, which is async)
+          if (newTripId && tripMembers.length > 0) {
+            console.log(`Inviting ${tripMembers.length} member(s) to trip ${newTripId}`);
+            for (const member of tripMembers) {
+              try {
+                const inviteResp = await fetch(`${SUPABASE_URL}/functions/v1/social?action=add-trip-member`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session.access_token}`,
+                    "x-client-authorization": `Bearer ${session.access_token}`,
+                    "apikey": SUPABASE_ANON,
+                  },
+                  body: JSON.stringify({
+                    tripId: newTripId,
+                    firstName: member.firstName,
+                    lastName: member.lastName,
+                    email: member.email || null,
+                    isAdult: member.isAdult,
+                    isSplittingExpenses: member.isSplitting,
+                  }),
+                });
+                const inviteData = await inviteResp.json();
+                if (inviteData.success) {
+                  console.log(`Invited ${member.firstName} ${member.lastName}`);
+                }
+              } catch (inviteErr) {
+                console.log("Member invite failed:", inviteErr);
+              }
+            }
+            toast({ title: `📧 Invites sent to ${tripMembers.length} travel party member(s)!` });
+          }
         } catch (saveErr) {
           console.log("Auto-save failed:", saveErr);
-        }
-        
-        // Invite trip members
-        if (savedTripId && tripMembers.length > 0) {
-          for (const member of tripMembers) {
-            try {
-              await fetch(`${SUPABASE_URL}/functions/v1/social?action=add-trip-member`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "Authorization": `Bearer ${session.access_token}`,
-                  "x-client-authorization": `Bearer ${session.access_token}`,
-                  "apikey": SUPABASE_ANON,
-                },
-                body: JSON.stringify({
-                  tripId: savedTripId,
-                  firstName: member.firstName,
-                  lastName: member.lastName,
-                  email: member.email || null,
-                  isAdult: member.isAdult,
-                  isSplittingExpenses: member.isSplitting,
-                }),
-              });
-            } catch (_) {}
-          }
         }
       }
     } catch (err) {
