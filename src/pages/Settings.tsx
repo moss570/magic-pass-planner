@@ -510,72 +510,36 @@ function DisneyConnectSection() {
       .finally(() => setLoading(false));
   }, [session]);
 
+  const [manualToken, setManualToken] = useState("");
+  const [showTokenInstructions, setShowTokenInstructions] = useState(false);
+
   const handleConnect = async () => {
+    if (!manualToken.trim()) {
+      setShowTokenInstructions(true);
+      return;
+    }
     setConnecting(true);
     try {
-      // Open Disney login in a popup
-      const popup = window.open(
-        "https://disneyworld.disney.go.com/dine-res/availability/",
-        "disney-login",
-        "width=900,height=700,scrollbars=yes,resizable=yes"
-      );
-
-      if (!popup) {
-        toastFn({ title: "Popup blocked", description: "Please allow popups for magicpassplus.com", variant: "destructive" });
-        setConnecting(false);
-        return;
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=save`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ access_token: manualToken.trim() }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        setConnected(true);
+        setManualToken("");
+        setShowTokenInstructions(false);
+        toastFn({
+          title: "✅ Disney account connected!",
+          description: "Real-time dining alerts are now active.",
+        });
+      } else {
+        throw new Error(data.error || "Token rejected");
       }
-
-      // Poll until popup closes or we get a token
-      const checkPopup = setInterval(async () => {
-        if (popup.closed) {
-          clearInterval(checkPopup);
-          setConnecting(false);
-          return;
-        }
-        
-        try {
-          // Try to get the token from the popup's page
-          const popupDoc = popup.document;
-          const tokenResult = null; // Popup approach removed - using server proxy
-          
-          if (tokenResult) {
-            clearInterval(checkPopup);
-            popup.close();
-            
-            // Save token to backend
-            const saveResp = await fetch(`\${SUPABASE_URL}/functions/v1/disney-auth?action=save`, {
-              method: "POST",
-              headers: getHeaders(),
-              body: JSON.stringify({ access_token: tokenResult }),
-            });
-            const saveData = await saveResp.json();
-            
-            if (saveData.success) {
-              setConnected(true);
-              toastFn({ 
-                title: saveData.hasFullScope ? "✅ Disney account connected!" : "⚠️ Connected (limited scope)",
-                description: saveData.hasFullScope 
-                  ? "Real-time dining alerts are now active" 
-                  : "Connected but may need login for full dining access"
-              });
-            }
-            setConnecting(false);
-          }
-        } catch (_) {
-          // Cross-origin, popup still on Disney login page - keep waiting
-        }
-      }, 2000);
-
-      // Timeout after 5 minutes
-      setTimeout(() => {
-        clearInterval(checkPopup);
-        if (!popup.closed) popup.close();
-        setConnecting(false);
-      }, 300000);
-
     } catch (err) {
-      toastFn({ title: "Connection failed", variant: "destructive" });
+      toastFn({ title: "Connection failed", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
+    } finally {
       setConnecting(false);
     }
   };
