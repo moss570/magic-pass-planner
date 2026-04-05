@@ -40,7 +40,7 @@ const Login = () => {
     const postAuthRedirect = preparePostAuthRedirect(location.search);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "https://magic-pass-planner.lovable.app/auth/callback" },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
 
     if (error) {
