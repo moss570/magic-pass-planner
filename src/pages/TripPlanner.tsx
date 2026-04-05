@@ -148,7 +148,37 @@ function DayCard({ plan, dayNum }: { plan: DayPlan; dayNum: number }) {
                           )}
                         </div>
                       </div>
+                      {/* Walk/Wait/Ride time badges */}
+                      {(item as any).walkMinutes > 0 || (item as any).waitMinutes > 0 ? (
+                        <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
+                          {(item as any).walkMinutes > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400">
+                              🚶 {(item as any).walkMinutes} min walk
+                            </span>
+                          )}
+                          {(item as any).waitMinutes > 0 && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${(item as any).waitMinutes <= 15 ? "bg-green-500/15 text-green-400" : (item as any).waitMinutes <= 45 ? "bg-yellow-500/15 text-yellow-400" : "bg-red-500/15 text-red-400"}`}>
+                              ⏱️ {(item as any).waitMinutes} min wait
+                            </span>
+                          )}
+                          {(item as any).rideMinutes > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400">
+                              🎢 {(item as any).rideMinutes} min ride
+                            </span>
+                          )}
+                          {(item as any).durationMinutes > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">
+                              Total: ~{(item as any).durationMinutes} min
+                            </span>
+                          )}
+                        </div>
+                      ) : null}
                       <p className="text-xs text-muted-foreground leading-relaxed">{item.tip}</p>
+                      {(item as any).alternativeDining?.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Also nearby: {(item as any).alternativeDining.join(", ")}
+                        </p>
+                      )}
                       {item.location && (
                         <div className="mt-2">
                           <CompassButton destination={item.location} context={item.land || plan.park} size="inline" />
