@@ -42,7 +42,7 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
     { name: "Pirates of the Caribbean", type: "ride", area: "Adventureland" },
     { name: "Jungle Cruise", type: "ride", area: "Adventureland" },
     { name: "Peter Pan's Flight", type: "ride", area: "Fantasyland" },
-    { name: ""it's a small world"", type: "ride", area: "Fantasyland" },
+    { name: "it's a small world", type: "ride", area: "Fantasyland" },
     { name: "Mad Tea Party", type: "ride", area: "Fantasyland" },
     { name: "Dumbo the Flying Elephant", type: "ride", area: "Fantasyland" },
     { name: "The Barnstormer", type: "ride", area: "Fantasyland" },
