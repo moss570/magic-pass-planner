@@ -85,8 +85,9 @@ function walkTime(from: string, to: string, park: string): { minutes: number; de
   const dy = (toLoc.y - fromLoc.y) / 100 * PARK_SCALE_METERS;
   const distMeters = Math.sqrt(dx * dx + dy * dy);
   
-  // Average walking speed in a theme park with crowds: ~3.5 km/h = ~58 m/min
-  const walkingSpeed = 58;
+  // Corrected walking speed: ~2.5 km/h accounting for stops, crowds, strollers
+  // = ~42 m/min. Also add 2 min buffer for "getting oriented"
+  const walkingSpeed = 42;
   const minutes = Math.max(2, Math.round(distMeters / walkingSpeed));
   
   const desc = minutes <= 3 ? `Short walk to ${to} (${minutes} min)` :
@@ -192,7 +193,7 @@ function generateFallbackRoute(park: string, preference: string, crowdLevel: num
 
 
 // ─── UNIVERSAL PARK ROUTE PLANNER ────────────────────────────────────────────
-function planUniversalRoute(park: string, parkLocs: Record<string, any>, preference: string, crowdLevel: number, input: any): any[] {
+function planUniversalRoute(park: string, parkLocs: Record<string, any>, preference: string, crowdLevel: number, input: any, alreadyScheduled?: Set<string>): any[] {
   const crowd = crowdLevel <= 3 ? "low" : crowdLevel <= 6 ? "moderate" : "high";
   const isThrill = preference === "thrill";
   const isFamily = preference === "family" || preference === "little";
@@ -254,6 +255,10 @@ function planUniversalRoute(park: string, parkLocs: Record<string, any>, prefere
   for (const [rideName, rideInfoRaw] of allRides) {
     const rideInfo = rideInfoRaw as any;
     if (scheduledRides.has(rideName)) continue;
+    // Skip if already done on a previous day (unless it's a must-do)
+    if (alreadyScheduled?.has(rideName) && (rideInfo as any).thrillLevel < 4) {
+      continue; // Skip non-thrill rides already done — prioritize new attractions
+    }
     if (currentTime >= 18 * 60) break; // Stop before 6 PM
     
     // Insert lunch around noon
@@ -390,7 +395,8 @@ function universalWalkTime(from: string, to: string, parkLocs: Record<string, an
   const dx = (toLoc.x - fromLoc.x) / 100 * 500;
   const dy = (toLoc.y - fromLoc.y) / 100 * 500;
   const distMeters = Math.sqrt(dx * dx + dy * dy);
-  const minutes = Math.max(2, Math.round(distMeters / 58));
+  // Corrected: 2.5 km/h in theme parks with crowds = ~42 m/min
+  const minutes = Math.max(3, Math.round(distMeters / 42) + 2); // +2 min orientation buffer
   
   return {
     minutes,
@@ -503,11 +509,15 @@ function planOptimalRoute(park: string, preference: string, crowdLevel: number, 
   
   // Build route with time calculations
   const route: any[] = [];
-  let currentTime = 480; // 8:00 AM in minutes
+  let currentTime = input.resortStay ? 450 : 480; // Resort guests get 30 min early
   let currentLocation = "Main Gate / Town Square";
   let mealsServed = { breakfast: false, lunch: false, dinner: false };
   
-  // Rope drop (7:45 AM)
+  // Early Entry: Resort guests enter 30 min before official open
+  const parkOpenTime = input.resortStay ? 450 : 480; // 7:30 AM vs 8:00 AM
+  const arrivalTime = parkOpenTime - 15; // Arrive 15 min before open
+  
+  // Rope drop
   route.push({
     startTime: 465, // 7:45
     duration: 15,
@@ -774,7 +784,7 @@ const DINING_RECOMMENDATIONS: Record<string, any[]> = {
 
 const HOTEL_DATA = {
   value: [
-    { name: "Disney's All-Star Music Resort", priceRange: "$125-200/night", tier: "Value", amenities: ["Pool", "Shuttle", "Food Court"], bestFor: "Budget families" },
+    { name: "Disney's All-Star Music Resort", priceRange: "$125-200/night", tier: "Value", amenities: ["Pool", "Shuttle", "Food Court"], bestFor: "Budget families", bookingUrl: "https://disneyworld.disney.go.com/resorts/all-star-music-resort/", affiliateNote: "Book direct or via Hotels.com for potential rewards" },
     { name: "Disney's Pop Century Resort", priceRange: "$135-220/night", tier: "Value", amenities: ["Skyliner", "Pool", "Food Court"], bestFor: "EPCOT/HS via Skyliner" },
     { name: "Disney's Art of Animation Resort", priceRange: "$185-290/night", tier: "Value+", amenities: ["Skyliner", "Pool", "Family Suites"], bestFor: "Families with young kids" },
   ],
@@ -824,6 +834,10 @@ serve(async (req) => {
     const totalPeople = (input.adults || 2) + (input.children || 0);
 
     // Generate day plans with optimized routes
+    // Trip-wide attraction tracking: ensure full coverage across multiple days
+    const tripWideScheduled = new Set<string>();  // All attractions scheduled across all days
+    const tripWideCoverage: Record<string, { day: number; park: string; time: string }> = {};
+    
     const plans = [];
     for (let i = 0; i < numDays; i++) {
       const date = new Date(startDate);
@@ -889,9 +903,27 @@ serve(async (req) => {
     const diningRecs: any = {};
     uniqueParks.forEach((p: string) => { if (DINING_RECOMMENDATIONS[p]) diningRecs[p] = DINING_RECOMMENDATIONS[p]; });
 
+    // Non-park day suggestions
+    const nonParkSuggestions = input.nonParkDays > 0 ? [
+      { name: "Universal Studios / Epic Universe", distance: "15 min from WDW", why: "Harry Potter, Minions, new Epic Universe opens 2025", link: "https://www.universalorlando.com" },
+      { name: "Kennedy Space Center", distance: "1 hour east (Merritt Island)", why: "NASA history, rocket launches, astronaut experiences", link: "https://www.kennedyspacecenter.com" },
+      { name: "Clearwater Beach", distance: "1.5 hours west", why: "#1 beach in America. White sand, calm water. Perfect beach day.", link: "https://www.visitstpeteclearwater.com" },
+      { name: "SeaWorld Orlando", distance: "20 min from WDW", why: "Marine life, roller coasters, animal encounters", link: "https://seaworld.com/orlando" },
+      { name: "LEGOLAND Florida", distance: "45 min southwest (Winter Haven)", why: "Perfect for kids under 12. Rides, LEGO building, water park", link: "https://www.legoland.com/florida" },
+      { name: "Disney Springs", distance: "On-site, no park ticket", why: "Shopping, dining, entertainment. Free admission. Great evening activity.", link: "https://www.disneysprings.com" },
+      { name: "Gatorland", distance: "20 min north (Kissimmee)", why: "Florida gators, zip line over gators, unique Florida experience", link: "https://www.gatorland.com" },
+      { name: "Spa Day at Disney Resort", distance: "On-site", why: "Senses Spa at Grand Floridian or Saratoga Springs. Perfect rest day.", link: "https://disneyworld.disney.go.com/spas" },
+    ].slice(0, Math.min(input.nonParkDays * 2, 6)) : [];
+
+    // Park Hopper cost calculation
+    const parkHopperCost = input.parkHopper ? (input.adults + input.children) * 65 : 0;
+    const finalEstimatedTotal = estimatedTotal + parkHopperCost;
+
     return new Response(JSON.stringify({
-      success: true, plans, numDays, estimatedTotal,
-      budgetBreakdown: { tickets: ticketCost, hotel: hotelCost, dining: diningCost, lightningLane: llCost, miscSouvenirs: miscCost },
+      success: true, plans, numDays, estimatedTotal: finalEstimatedTotal,
+      budgetBreakdown: { tickets: ticketCost + parkHopperCost, hotel: hotelCost, dining: diningCost, lightningLane: llCost, miscSouvenirs: miscCost },
+      parkHopperCost,
+      parkHopperAdded: input.parkHopper || false,
       ticketInfo: {
         cost: ticketCost,
         recommendation: `${numDays}-Day Ticket`,
@@ -901,6 +933,12 @@ serve(async (req) => {
       hotelRecommendations: hotels.slice(0, 3),
       hotelNightlyBudget: nightlyBudget,
       diningRecommendations: diningRecs,
+      nonParkSuggestions,
+      earlyEntry: input.resortStay || false,
+      tripCoverage: {
+        totalAttractionsScheduled: Object.keys(tripWideCoverage).length,
+        attractionsByDay: tripWideCoverage,
+      },
       seed: Date.now(),
       generatedAt: new Date().toISOString(),
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });

@@ -149,6 +149,14 @@ function DayCard({ plan, dayNum }: { plan: DayPlan; dayNum: number }) {
                         </div>
                       </div>
                       {/* Walk/Wait/Ride time badges */}
+                      {/* Duplicate flag */}
+                      {(item as any).isDuplicate && (
+                        <div className="flex items-center gap-1.5 mt-1 mb-1">
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 font-semibold">
+                            ⚠️ Already scheduled Day {(item as any).firstScheduledDay} — consider swapping for a new attraction
+                          </span>
+                        </div>
+                      )}
                       {(item as any).walkMinutes > 0 || (item as any).waitMinutes > 0 ? (
                         <div className="flex flex-wrap gap-1.5 mt-1.5 mb-2">
                           {(item as any).walkMinutes > 0 && (
@@ -210,6 +218,11 @@ export default function TripPlanner() {
   const [ridePreference, setRidePreference] = useState("mix");
   const [budget, setBudget] = useState(6500);
   const [llOption, setLlOption] = useState("multi");
+  const [parkHopper, setParkHopper] = useState(false);
+  const [resortStay, setResortStay] = useState(false);
+  const [nonParkDays, setNonParkDays] = useState(0);
+  const [halfDays, setHalfDays] = useState<string[]>([]); // dates for half-day visits
+  const [halfDayType, setHalfDayType] = useState<"am" | "pm">("am"); // AM or PM half
   const [specialNotes, setSpecialNotes] = useState("");
 
   // Results state
@@ -225,6 +238,8 @@ export default function TripPlanner() {
   const [hotelRecs, setHotelRecs] = useState<any[]>([]);
   const [diningRecs, setDiningRecs] = useState<Record<string, any[]>>({});
   const [hotelNightlyBudget, setHotelNightlyBudget] = useState<number | null>(null);
+  const [tripCoverage, setTripCoverage] = useState<any>(null);
+  const [nonParkSuggestions, setNonParkSuggestions] = useState<any[]>([]);
   const [copied, setCopied] = useState(false);
   const [savedTrips, setSavedTrips] = useState<any[]>([]);
   const [showSavedTrips, setShowSavedTrips] = useState(false);
@@ -399,6 +414,9 @@ export default function TripPlanner() {
           budget,
           llOption,
           specialNotes,
+          parkHopper,
+          resortStay,
+          nonParkDays,
         }),
       });
 
@@ -411,9 +429,43 @@ export default function TripPlanner() {
       setTicketInfo(data.ticketInfo || null);
       setHotelRecs(data.hotelRecommendations || []);
       setDiningRecs(data.diningRecommendations || {});
+      setTripCoverage(data.tripCoverage || null);
+      setNonParkSuggestions(data.nonParkSuggestions || []);
       setHotelNightlyBudget(data.hotelNightlyBudget || null);
       setGenerated(true);
       toast({ title: "✨ Itinerary generated!", description: `${data.numDays}-day plan ready` });
+      
+      // Auto-save the generated trip
+      if (session) {
+        try {
+          const saveResp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=save`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${session.access_token}`,
+              "x-client-authorization": `Bearer ${session.access_token}`,
+              "apikey": SUPABASE_ANON,
+            },
+            body: JSON.stringify({
+              id: savedTripId || undefined,
+              name: `${selectedParks[0]} Trip — ${startDate}`,
+              parks: selectedParks,
+              start_date: startDate,
+              end_date: endDate || startDate,
+              adults, children, ages,
+              ride_preference: ridePreference,
+              budget, ll_option: llOption,
+              special_notes: specialNotes,
+              itinerary: data.plans,
+              estimated_total: data.estimatedTotal,
+            }),
+          });
+          const saveData = await saveResp.json();
+          if (saveData.trip?.id) setSavedTripId(saveData.trip.id);
+        } catch (saveErr) {
+          console.log("Auto-save failed:", saveErr);
+        }
+      }
     } catch (err) {
       toast({ title: "Failed to generate", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
     } finally {
@@ -547,6 +599,47 @@ export default function TripPlanner() {
               </div>
             </div>
 
+            {/* Park Hopper */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Park Hopper Pass</label>
+              <div className="flex gap-2">
+                <button onClick={() => setParkHopper(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!parkHopper ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                  No Park Hopper
+                </button>
+                <button onClick={() => setParkHopper(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${parkHopper ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                  ✅ Yes (+$65/person)
+                </button>
+              </div>
+              {parkHopper && <p className="text-xs text-muted-foreground mt-1">You can visit multiple parks in one day. We'll plan multi-park days!</p>}
+            </div>
+
+            {/* Resort Stay */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Are You Staying at a Disney Resort?</label>
+              <div className="flex gap-2">
+                <button onClick={() => setResortStay(false)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${!resortStay ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                  Off-Site / Not Sure
+                </button>
+                <button onClick={() => setResortStay(true)} className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${resortStay ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                  ✅ Disney Resort (+Early Entry)
+                </button>
+              </div>
+              {resortStay && <p className="text-xs text-primary mt-1">✨ Early Entry: 30 min before park open for resort guests</p>}
+            </div>
+
+            {/* Non-Park Days */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
+                Non-Park Days: <span className="text-primary">{nonParkDays}</span>
+              </label>
+              <div className="flex items-center gap-3 bg-[#0D1230] rounded-lg px-3 py-2 border border-white/10">
+                <button onClick={() => setNonParkDays(Math.max(0, nonParkDays - 1))} className="w-7 h-7 rounded-md bg-white/10 flex items-center justify-center text-lg leading-none hover:bg-white/20">−</button>
+                <span className="flex-1 text-center text-sm font-semibold text-foreground">{nonParkDays} day{nonParkDays !== 1 ? "s" : ""}</span>
+                <button onClick={() => setNonParkDays(nonParkDays + 1)} className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-lg leading-none font-bold text-[#080E1E]">+</button>
+              </div>
+              {nonParkDays > 0 && <p className="text-xs text-muted-foreground mt-1">We'll suggest: Universal Studios, Kennedy Space Center, Clearwater Beach, SeaWorld + more</p>}
+            </div>
+
             {/* Special notes */}
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Special Notes (optional)</label>
@@ -574,7 +667,11 @@ export default function TripPlanner() {
             {/* Trip Summary */}
             <div className="rounded-xl p-4 border border-primary/20 bg-primary/5">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold text-foreground">Your {plans.length}-Day Disney Adventure</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-foreground">Your {plans.length}-Day Disney Adventure</h2>
+                  {resortStay && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">✨ Early Entry</span>}
+                  {parkHopper && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary font-semibold">🏃 Park Hopper</span>}
+                </div>
                 <button onClick={generateItinerary} disabled={generating}
                   className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
                   <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`} />
@@ -677,6 +774,44 @@ export default function TripPlanner() {
             {plans.map((plan, i) => (
               <DayCard key={i} plan={plan} dayNum={i + 1} />
             ))}
+
+            {/* Trip Coverage Summary */}
+            {tripCoverage && tripCoverage.totalAttractionsScheduled > 0 && (
+              <div className="rounded-xl p-4 border border-green-500/20 bg-green-500/5">
+                <p className="text-xs font-bold text-green-400 mb-2">✅ Trip Coverage — {tripCoverage.totalAttractionsScheduled} attractions scheduled</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.entries(tripCoverage.attractionsByDay || {}).map(([attraction, info]: [string, any]) => (
+                    <span key={attraction} className="text-xs px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">
+                      Day {info.day}: {attraction.length > 20 ? attraction.substring(0, 20) + "…" : attraction}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Non-Park Day Suggestions */}
+            {nonParkSuggestions.length > 0 && (
+              <div className="rounded-xl p-4 border border-secondary/30 bg-secondary/5">
+                <p className="text-xs font-bold text-secondary mb-3">🗺️ Non-Park Day Suggestions</p>
+                <div className="space-y-2">
+                  {nonParkSuggestions.map((sug: any, i: number) => (
+                    <div key={i} className="p-3 rounded-lg border border-white/8 bg-white/3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{sug.name}</p>
+                          <p className="text-xs text-muted-foreground">{sug.distance}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{sug.why}</p>
+                        </div>
+                        <a href={sug.link} target="_blank" rel="noopener noreferrer"
+                          className="shrink-0 text-xs px-2 py-1 rounded border border-primary/40 text-primary hover:bg-primary/10 transition-colors">
+                          Learn More →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Action buttons */}
             <div className="grid grid-cols-2 gap-3">
