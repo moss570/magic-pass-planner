@@ -14,6 +14,175 @@ export type Database = {
   }
   public: {
     Tables: {
+      dining_alerts: {
+        Row: {
+          alert_date: string
+          alert_email: boolean | null
+          alert_push: boolean | null
+          alert_sms: boolean | null
+          availability_found_at: string | null
+          availability_url: string | null
+          check_count: number | null
+          created_at: string | null
+          id: string
+          last_checked_at: string | null
+          meal_periods: string[] | null
+          party_size: number
+          preferred_time: string | null
+          restaurant_id: string
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alert_date: string
+          alert_email?: boolean | null
+          alert_push?: boolean | null
+          alert_sms?: boolean | null
+          availability_found_at?: string | null
+          availability_url?: string | null
+          check_count?: number | null
+          created_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          meal_periods?: string[] | null
+          party_size?: number
+          preferred_time?: string | null
+          restaurant_id: string
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alert_date?: string
+          alert_email?: boolean | null
+          alert_push?: boolean | null
+          alert_sms?: boolean | null
+          availability_found_at?: string | null
+          availability_url?: string | null
+          check_count?: number | null
+          created_at?: string | null
+          id?: string
+          last_checked_at?: string | null
+          meal_periods?: string[] | null
+          party_size?: number
+          preferred_time?: string | null
+          restaurant_id?: string
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dining_alerts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dining_notifications: {
+        Row: {
+          alert_date: string | null
+          alert_id: string | null
+          availability_url: string | null
+          id: string
+          notification_type: string | null
+          party_size: number | null
+          restaurant_name: string | null
+          sent_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          alert_date?: string | null
+          alert_id?: string | null
+          availability_url?: string | null
+          id?: string
+          notification_type?: string | null
+          party_size?: number | null
+          restaurant_name?: string | null
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          alert_date?: string | null
+          alert_id?: string | null
+          availability_url?: string | null
+          id?: string
+          notification_type?: string | null
+          party_size?: number | null
+          restaurant_name?: string | null
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dining_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "dining_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurants: {
+        Row: {
+          accepts_walk_ins: boolean | null
+          area: string | null
+          created_at: string | null
+          cuisine: string | null
+          dining_plan: boolean | null
+          disney_url: string | null
+          id: string
+          is_active: boolean | null
+          location: string
+          location_type: string
+          meal_periods: string[] | null
+          name: string
+          phone: string | null
+          price_range: string | null
+          requires_reservation: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepts_walk_ins?: boolean | null
+          area?: string | null
+          created_at?: string | null
+          cuisine?: string | null
+          dining_plan?: boolean | null
+          disney_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          location: string
+          location_type: string
+          meal_periods?: string[] | null
+          name: string
+          phone?: string | null
+          price_range?: string | null
+          requires_reservation?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepts_walk_ins?: boolean | null
+          area?: string | null
+          created_at?: string | null
+          cuisine?: string | null
+          dining_plan?: boolean | null
+          disney_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          location_type?: string
+          meal_periods?: string[] | null
+          name?: string
+          phone?: string | null
+          price_range?: string | null
+          requires_reservation?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string | null
