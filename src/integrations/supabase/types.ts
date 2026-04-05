@@ -165,6 +165,141 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_requests: {
+        Row: {
+          created_at: string | null
+          from_name: string | null
+          from_user_id: string
+          id: string
+          responded_at: string | null
+          status: string | null
+          to_email: string | null
+          to_user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          from_name?: string | null
+          from_user_id: string
+          id?: string
+          responded_at?: string | null
+          status?: string | null
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          from_name?: string | null
+          from_user_id?: string
+          id?: string
+          responded_at?: string | null
+          status?: string | null
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id_1?: string
+          user_id_2?: string
+        }
+        Relationships: []
+      }
+      gift_card_alerts: {
+        Row: {
+          alert_email: boolean | null
+          alert_sms: boolean | null
+          card_values: string[] | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          min_savings: number | null
+          retailers: string[] | null
+          user_id: string
+        }
+        Insert: {
+          alert_email?: boolean | null
+          alert_sms?: boolean | null
+          card_values?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_savings?: number | null
+          retailers?: string[] | null
+          user_id: string
+        }
+        Update: {
+          alert_email?: boolean | null
+          alert_sms?: boolean | null
+          card_values?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_savings?: number | null
+          retailers?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gift_card_deals: {
+        Row: {
+          card_value: number
+          created_at: string | null
+          deal_url: string | null
+          expires_at: string | null
+          id: string
+          is_live: boolean | null
+          last_verified: string | null
+          notes: string | null
+          retailer: string
+          sale_price: number
+          savings: number | null
+          savings_pct: number | null
+        }
+        Insert: {
+          card_value: number
+          created_at?: string | null
+          deal_url?: string | null
+          expires_at?: string | null
+          id?: string
+          is_live?: boolean | null
+          last_verified?: string | null
+          notes?: string | null
+          retailer: string
+          sale_price: number
+          savings?: number | null
+          savings_pct?: number | null
+        }
+        Update: {
+          card_value?: number
+          created_at?: string | null
+          deal_url?: string | null
+          expires_at?: string | null
+          id?: string
+          is_live?: boolean | null
+          last_verified?: string | null
+          notes?: string | null
+          retailer?: string
+          sale_price?: number
+          savings?: number | null
+          savings_pct?: number | null
+        }
+        Relationships: []
+      }
       restaurants: {
         Row: {
           accepts_walk_ins: boolean | null
@@ -333,6 +468,122 @@ export type Database = {
         }
         Relationships: []
       }
+      trip_expenses: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          date: string | null
+          description: string
+          expense_type: string
+          id: string
+          paid_by_member_id: string | null
+          receipt_url: string | null
+          split_with: string[] | null
+          trip_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category?: string
+          created_at?: string | null
+          date?: string | null
+          description: string
+          expense_type?: string
+          id?: string
+          paid_by_member_id?: string | null
+          receipt_url?: string | null
+          split_with?: string[] | null
+          trip_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          date?: string | null
+          description?: string
+          expense_type?: string
+          id?: string
+          paid_by_member_id?: string | null
+          receipt_url?: string | null
+          split_with?: string[] | null
+          trip_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_expenses_paid_by_member_id_fkey"
+            columns: ["paid_by_member_id"]
+            isOneToOne: false
+            referencedRelation: "trip_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_expenses_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_members: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          first_name: string
+          id: string
+          invite_sent_at: string | null
+          is_adult: boolean | null
+          is_splitting_expenses: boolean | null
+          joined_at: string | null
+          last_name: string
+          status: string | null
+          trip_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          first_name: string
+          id?: string
+          invite_sent_at?: string | null
+          is_adult?: boolean | null
+          is_splitting_expenses?: boolean | null
+          joined_at?: string | null
+          last_name: string
+          status?: string | null
+          trip_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string
+          id?: string
+          invite_sent_at?: string | null
+          is_adult?: boolean | null
+          is_splitting_expenses?: boolean | null
+          joined_at?: string | null
+          last_name?: string
+          status?: string | null
+          trip_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_members_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users_profile: {
         Row: {
           ap_expiration: string | null
@@ -348,6 +599,7 @@ export type Database = {
           last_name: string | null
           onboarding_complete: boolean | null
           phone: string | null
+          qr_token: string | null
         }
         Insert: {
           ap_expiration?: string | null
@@ -363,6 +615,7 @@ export type Database = {
           last_name?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
+          qr_token?: string | null
         }
         Update: {
           ap_expiration?: string | null
@@ -378,6 +631,7 @@ export type Database = {
           last_name?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
+          qr_token?: string | null
         }
         Relationships: []
       }
