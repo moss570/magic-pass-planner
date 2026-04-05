@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -111,6 +111,13 @@ export default function Admin() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [notes, setNotes] = useState(() => localStorage.getItem("clark_admin_notes") || "");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [vips, setVips] = useState<any[]>([]);
+  const [vipEmail, setVipEmail] = useState("");
+  const [vipFirstName, setVipFirstName] = useState("");
+  const [vipLastName, setVipLastName] = useState("");
+  const [vipReason, setVipReason] = useState("");
+  const [vipNotes, setVipNotes] = useState("");
+  const [sendingInvite, setSendingInvite] = useState(false);
 
   // Access control
   useEffect(() => {
@@ -186,8 +193,81 @@ export default function Admin() {
   useEffect(() => {
     if (user && ADMIN_EMAILS.includes(user.email || "")) {
       loadStats();
+      loadVips();
     }
   }, [user]);
+
+  const loadVips = async () => {
+    if (!user || !ADMIN_EMAILS.includes(user.email || "")) return;
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=list`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "x-client-authorization": `Bearer ${token}`,
+          "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+        },
+      });
+      const data = await resp.json();
+      setVips(data.vips || []);
+    } catch (err) {
+      console.error("Failed to load VIPs:", err);
+    }
+  };
+
+  const sendVipInvite = async () => {
+    if (!vipEmail) return;
+    setSendingInvite(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=invite`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "x-client-authorization": `Bearer ${token}`,
+          "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: vipEmail, first_name: vipFirstName, last_name: vipLastName, reason: vipReason, notes: vipNotes }),
+      });
+      const data = await resp.json();
+      if (data.success) {
+        toast({ title: `✅ VIP invite sent to ${vipEmail}`, description: data.emailSent ? "Email delivered" : "Saved (email may need Brevo config)" });
+        setVipEmail(""); setVipFirstName(""); setVipLastName(""); setVipReason(""); setVipNotes("");
+        loadVips();
+      } else {
+        toast({ title: "Failed", description: data.error, variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error sending invite", variant: "destructive" });
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
+  const revokeVip = async (vip: any) => {
+    if (!confirm(`Revoke VIP access for ${vip.email}?`)) return;
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=revoke`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC", "Content-Type": "application/json" },
+      body: JSON.stringify({ vip_id: vip.id }),
+    });
+    toast({ title: `VIP access revoked for ${vip.email}` });
+    loadVips();
+  };
+
+  const deleteVip = async (vip: any) => {
+    if (!confirm(`DELETE account for ${vip.email}? This cannot be undone.`)) return;
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=delete`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC", "Content-Type": "application/json" },
+      body: JSON.stringify({ vip_id: vip.id }),
+    });
+    toast({ title: `Account deleted for ${vip.email}` });
+    loadVips();
+  };
 
   const saveNotes = () => {
     localStorage.setItem("clark_admin_notes", notes);
@@ -384,6 +464,73 @@ export default function Admin() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* VIP Accounts */}
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+          <h2 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+            🎁 VIP Free Forever Accounts
+          </h2>
+
+          {/* Invite Form */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            <input type="email" placeholder="Email address *" value={vipEmail} onChange={e => setVipEmail(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+            <input type="text" placeholder="First name" value={vipFirstName} onChange={e => setVipFirstName(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+            <input type="text" placeholder="Last name" value={vipLastName} onChange={e => setVipLastName(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+            <input type="text" placeholder="Reason (e.g. Disney blogger, beta tester)" value={vipReason} onChange={e => setVipReason(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ minHeight: 44 }} />
+            <input type="text" placeholder="Internal notes (optional)" value={vipNotes} onChange={e => setVipNotes(e.target.value)}
+              className="px-3 py-2 rounded-lg bg-[#0D1230] border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 md:col-span-2" style={{ minHeight: 44 }} />
+          </div>
+          <button onClick={sendVipInvite} disabled={sendingInvite || !vipEmail}
+            className="px-6 py-2.5 rounded-lg font-bold text-sm text-[#080E1E] mb-5 disabled:opacity-50"
+            style={{ background: "#F5C842" }}>
+            {sendingInvite ? "Sending..." : "🎁 Send VIP Invite"}
+          </button>
+
+          {/* VIP List */}
+          {vips.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No VIP accounts yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/8">
+                    <th className="text-left px-3 py-2 text-xs text-primary">Email</th>
+                    <th className="text-left px-3 py-2 text-xs text-primary">Name</th>
+                    <th className="text-left px-3 py-2 text-xs text-primary">Reason</th>
+                    <th className="text-left px-3 py-2 text-xs text-primary">Status</th>
+                    <th className="text-left px-3 py-2 text-xs text-primary">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vips.map((vip, i) => (
+                    <tr key={vip.id} className={i < vips.length - 1 ? "border-b border-white/5" : ""}>
+                      <td className="px-3 py-2 text-foreground text-xs">{vip.email}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{vip.first_name} {vip.last_name}</td>
+                      <td className="px-3 py-2 text-muted-foreground text-xs">{vip.reason || "—"}</td>
+                      <td className="px-3 py-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${vip.status === "active" ? "bg-green-500/20 text-green-400" : vip.status === "revoked" ? "bg-red-500/20 text-red-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                          {vip.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-2">
+                          {vip.status !== "revoked" && (
+                            <button onClick={() => revokeVip(vip)} className="text-xs text-yellow-400 hover:text-yellow-300">Revoke</button>
+                          )}
+                          <button onClick={() => deleteVip(vip)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Clark's Daily Notes */}
