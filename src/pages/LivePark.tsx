@@ -129,7 +129,7 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
 
 // LINE GAMES — mini games to play while waiting
 // Supabase connection for trivia
-const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+// SUPABASE_URL already declared above
 const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
 const LINE_GAMES = [

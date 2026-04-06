@@ -521,9 +521,10 @@ export default function Admin() {
                         <div className="flex gap-2">
                           {vip.status !== "revoked" && (
                             <button onClick={() => revokeVip(vip)} className="text-xs text-yellow-400 hover:text-yellow-300">Revoke</button>
+                          )}
                           <button onClick={async () => {
                             const token = (await supabase.auth.getSession()).data.session?.access_token;
-                            await fetch(`${SUPABASE_URL}/functions/v1/vip-invite?action=toggle-game-dev`, {
+                            await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=toggle-game-dev`, {
                               method: "POST", headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC", "Content-Type": "application/json" },
                               body: JSON.stringify({ vip_id: vip.id }),
                             });
@@ -531,7 +532,6 @@ export default function Admin() {
                           }} className={`text-xs ${vip.is_game_developer ? "text-green-400 hover:text-green-300" : "text-blue-400 hover:text-blue-300"}`}>
                             {vip.is_game_developer ? "🎮 Game Dev ON" : "🎮 Make Dev"}
                           </button>
-                          )}
                           <button onClick={() => deleteVip(vip)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
                         </div>
                       </td>

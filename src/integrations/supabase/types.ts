@@ -231,6 +231,60 @@ export type Database = {
         }
         Relationships: []
       }
+      game_content: {
+        Row: {
+          clue_description: string | null
+          correct_answer: number | null
+          created_at: string | null
+          game_type: string
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string
+          image_url: string | null
+          location_name: string | null
+          multiple_choice: string[] | null
+          park: string | null
+          queue_name: string | null
+          status: string | null
+          submitted_by: string | null
+          title: string
+        }
+        Insert: {
+          clue_description?: string | null
+          correct_answer?: number | null
+          created_at?: string | null
+          game_type: string
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          image_url?: string | null
+          location_name?: string | null
+          multiple_choice?: string[] | null
+          park?: string | null
+          queue_name?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          title: string
+        }
+        Update: {
+          clue_description?: string | null
+          correct_answer?: number | null
+          created_at?: string | null
+          game_type?: string
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string
+          image_url?: string | null
+          location_name?: string | null
+          multiple_choice?: string[] | null
+          park?: string | null
+          queue_name?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       gift_card_alerts: {
         Row: {
           alert_email: boolean | null
@@ -596,6 +650,42 @@ export type Database = {
           },
         ]
       }
+      trivia_questions: {
+        Row: {
+          category: string
+          correct_answer: number
+          created_at: string | null
+          difficulty: string | null
+          id: string
+          is_active: boolean | null
+          options: string[]
+          park: string | null
+          question: string
+        }
+        Insert: {
+          category?: string
+          correct_answer: number
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          options: string[]
+          park?: string | null
+          question: string
+        }
+        Update: {
+          category?: string
+          correct_answer?: number
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          is_active?: boolean | null
+          options?: string[]
+          park?: string | null
+          question?: string
+        }
+        Relationships: []
+      }
       users_profile: {
         Row: {
           ap_expiration: string | null
@@ -656,6 +746,7 @@ export type Database = {
           invite_accepted_at: string | null
           invite_sent_at: string | null
           invited_by: string | null
+          is_game_developer: boolean | null
           last_name: string | null
           notes: string | null
           reason: string | null
@@ -671,6 +762,7 @@ export type Database = {
           invite_accepted_at?: string | null
           invite_sent_at?: string | null
           invited_by?: string | null
+          is_game_developer?: boolean | null
           last_name?: string | null
           notes?: string | null
           reason?: string | null
@@ -686,6 +778,7 @@ export type Database = {
           invite_accepted_at?: string | null
           invite_sent_at?: string | null
           invited_by?: string | null
+          is_game_developer?: boolean | null
           last_name?: string | null
           notes?: string | null
           reason?: string | null
