@@ -57,6 +57,7 @@ export default function DiningAlerts() {
   const [dateOpen, setDateOpen] = useState(false);
   const [partySize, setPartySize] = useState(2);
   const [selectedMeals, setSelectedMeals] = useState<string[]>(["Dinner"]);
+  const [preferredTime, setPreferredTime] = useState("");
   const [alertEmail, setAlertEmail] = useState(true);
   const [alertSms, setAlertSms] = useState(false);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
@@ -157,6 +158,7 @@ export default function DiningAlerts() {
           alert_date: format(date, "yyyy-MM-dd"),
           party_size: partySize,
           meal_periods: selectedMeals,
+          preferred_time: preferredTime || null,
           alert_email: alertEmail,
           alert_sms: alertSms,
         }),
@@ -169,6 +171,7 @@ export default function DiningAlerts() {
       setSelectedRestaurant(null);
       setDate(undefined);
       setSearchQuery("");
+      setPreferredTime("");
       loadAlerts();
     } catch (err) {
       toast({ title: "Failed to create alert", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
@@ -343,6 +346,20 @@ export default function DiningAlerts() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Preferred Time (optional) */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Preferred Time <span className="text-muted-foreground/60">(optional)</span></label>
+              <input
+                type="text"
+                placeholder="e.g. around 6 PM"
+                value={preferredTime}
+                onChange={e => setPreferredTime(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-[#1a2235] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                style={{ minHeight: 44 }}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">We'll highlight times near your preference in notifications</p>
             </div>
 
             {/* Notification Channels */}

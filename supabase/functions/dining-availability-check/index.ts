@@ -11,19 +11,16 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Transform a Disney info URL (/dining/...) into the reservation URL (/dine-res/restaurant/...)
-function transformToReservationUrl(infoUrl: string, date: string, partySize: number, mealPeriods: string[]): string {
+// Transform a Disney info URL (/dining/...) into the bare reservation URL (/dine-res/restaurant/...)
+// The Disney SPA ignores query params — all interaction is JS-driven via the Railway poller
+function transformToReservationUrl(infoUrl: string): string {
   try {
     const url = new URL(infoUrl);
     const segments = url.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
     const slug = segments[segments.length - 1];
     if (!slug) return infoUrl;
 
-    const mealTime = mealPeriods?.includes("Dinner") ? "dinner" :
-                     mealPeriods?.includes("Lunch") ? "lunch" :
-                     mealPeriods?.includes("Breakfast") ? "breakfast" : "dinner";
-
-    return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}?date=${date}&time=${mealTime}&partySize=${partySize}`;
+    return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}`;
   } catch {
     return infoUrl;
   }
@@ -37,7 +34,7 @@ async function checkAvailability(
   mealPeriods: string[]
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
   // Transform info URL to reservation URL before sending to poller
-  const reservationUrl = transformToReservationUrl(restaurantUrl, date, partySize, mealPeriods);
+  const reservationUrl = transformToReservationUrl(restaurantUrl);
   logStep("Transformed URL", { from: restaurantUrl, to: reservationUrl });
 
   const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
@@ -48,10 +45,6 @@ async function checkAvailability(
     return { available: false, times: [], bookingUrls: [] };
   }
 
-  const mealPeriod = mealPeriods?.includes("Dinner") ? "Dinner" :
-                     mealPeriods?.includes("Lunch") ? "Lunch" :
-                     mealPeriods?.includes("Breakfast") ? "Breakfast" : "Dinner";
-
   try {
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
@@ -59,7 +52,7 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriod }),
+      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriods }),
     });
 
     if (!res.ok) {
