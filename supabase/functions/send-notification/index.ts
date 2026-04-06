@@ -16,7 +16,28 @@ serve(async (req) => {
   );
 
   try {
-    const { notification_id } = await req.json();
+    const body = await req.json();
+    let notification_id = body.notification_id;
+
+    // Test mode: create a notification record inline for E2E testing
+    if (body.test_mode && body.user_id && body.alert_id) {
+      const { data: inserted, error: insertErr } = await supabase
+        .from("dining_notifications")
+        .insert({
+          alert_id: body.alert_id,
+          user_id: body.user_id,
+          restaurant_name: body.restaurant_name || "Test Restaurant",
+          alert_date: body.alert_date || new Date().toISOString().split("T")[0],
+          party_size: body.party_size || 2,
+          availability_url: body.availability_url || "https://disneyworld.disney.go.com/dining",
+          notification_type: "email",
+        })
+        .select()
+        .single();
+      if (insertErr) throw new Error("Test insert failed: " + insertErr.message);
+      notification_id = inserted.id;
+      console.log("[SEND-NOTIFICATION] Test mode - created notification", notification_id);
+    }
 
     const { data: notification } = await supabase
       .from("dining_notifications")
