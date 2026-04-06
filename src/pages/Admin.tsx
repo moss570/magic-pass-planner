@@ -532,7 +532,6 @@ export default function Admin() {
                           }} className={`text-xs ${vip.is_game_developer ? "text-green-400 hover:text-green-300" : "text-blue-400 hover:text-blue-300"}`}>
                             {vip.is_game_developer ? "🎮 Game Dev ON" : "🎮 Make Dev"}
                           </button>
-                          )}
                           <button onClick={() => deleteVip(vip)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
                         </div>
                       </td>
