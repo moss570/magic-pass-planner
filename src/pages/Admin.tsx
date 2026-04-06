@@ -521,6 +521,7 @@ export default function Admin() {
                         <div className="flex gap-2">
                           {vip.status !== "revoked" && (
                             <button onClick={() => revokeVip(vip)} className="text-xs text-yellow-400 hover:text-yellow-300">Revoke</button>
+                          )}
                           <button onClick={async () => {
                             const token = (await supabase.auth.getSession()).data.session?.access_token;
                             await fetch(`${SUPABASE_URL}/functions/v1/vip-invite?action=toggle-game-dev`, {
