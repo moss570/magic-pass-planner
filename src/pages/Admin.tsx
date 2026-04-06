@@ -524,7 +524,7 @@ export default function Admin() {
                           )}
                           <button onClick={async () => {
                             const token = (await supabase.auth.getSession()).data.session?.access_token;
-                            await fetch(`${SUPABASE_URL}/functions/v1/vip-invite?action=toggle-game-dev`, {
+                            await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=toggle-game-dev`, {
                               method: "POST", headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC", "Content-Type": "application/json" },
                               body: JSON.stringify({ vip_id: vip.id }),
                             });
