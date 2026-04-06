@@ -1,31 +1,53 @@
 
 
-## Fix 4 Build Errors in Edge Functions
+## Rewrite Dining Availability Check to Use Railway Puppeteer Poller
 
-### Error 1-3: `ai-trip-planner/index.ts` line 168 — undefined `preference`, `crowdLevel`, `input`
+### Overview
+Replace the current direct-fetch approach (blocked by Akamai) with a two-part architecture: a **Railway-hosted Puppeteer service** that scrapes Disney's dining pages, and the existing **Supabase Edge Function** that calls it.
 
-The `nearbyDining` function (line 101) has signature `(location: string, park: string): string[]` — it only takes two parameters and returns a string array of nearby dining names. But line 168 calls `planUniversalRoute(park, locations, preference, crowdLevel, input)` which requires variables that don't exist in `nearbyDining`'s scope.
+### Architecture
 
-The `nearbyDining` function is meant to return nearby dining names, not a full itinerary. For non-MK parks, it should simply filter the park locations for dining entries and return them sorted by distance, same as it does for MK (lines 170-190).
-
-**Fix**: Remove the `planUniversalRoute` call at line 168. Instead, for non-MK parks, replicate the same distance-based dining lookup logic that lines 170+ do for MK — iterate `locations`, filter for `category === "dining"`, sort by proximity, and return names. Since there's no `location` reference point for non-MK, return all dining options for that park.
-
-### Error 4: `social/index.ts` line 219 — `.catch()` on PostgREST builder
-
-Supabase PostgREST builders don't have `.catch()`. The upsert call returns a promise-like object but `.catch()` isn't available.
-
-**Fix**: Wrap the upsert in a try/catch or just ignore the error by not chaining `.catch()`. Replace:
-```typescript
-await supabase.from("friendships").upsert([...]).catch(() => {});
+```text
+pg_cron (every 5 min)
+  └─► dining-availability-check (Edge Function)
+        └─► POST https://your-railway-app.up.railway.app/check
+              └─► Puppeteer on Railway
+                    └─► Loads disneyworld.disney.go.com/dine-res/availability/
+                    └─► Fills in date, party size, restaurant
+                    └─► Extracts available time slots
+                    └─► Returns JSON { available, times, bookingUrls }
 ```
-with:
-```typescript
-try {
-  await supabase.from("friendships").upsert([...]);
-} catch {}
-```
+
+### What Gets Built
+
+**1. Railway Puppeteer Service** (`/mnt/documents/railway-dining-poller/`)
+- A standalone Node.js + Puppeteer project deployable to Railway
+- Single `POST /check` endpoint accepting `{ restaurantUrl, date, partySize, mealPeriod }`
+- Uses `puppeteer-core` with Chromium (Railway supports this via their Docker buildpack)
+- Navigates to the restaurant's Disney booking page, fills the form, waits for results, scrapes available times
+- Returns `{ available: boolean, times: string[], bookingUrls: string[] }`
+- Includes `GET /health` for uptime monitoring
+- Secured with a shared `API_KEY` header so only your Edge Function can call it
+
+**2. Update `dining-availability-check` Edge Function**
+- Remove all Akamai PoW code and direct Disney fetch logic
+- Replace `checkAvailability()` with a single `fetch()` call to the Railway service
+- Pass the restaurant's `disney_url`, date, party size, and meal period
+- Parse the response and continue with existing notification logic (unchanged)
+- Add a new secret `RAILWAY_POLLER_URL` and `RAILWAY_POLLER_API_KEY`
 
 ### Files Changed
-1. `supabase/functions/ai-trip-planner/index.ts` — Fix `nearbyDining` to handle non-MK parks without calling `planUniversalRoute`
-2. `supabase/functions/social/index.ts` — Replace `.catch()` with try/catch
+1. `supabase/functions/dining-availability-check/index.ts` — Rewrite `checkAvailability()` and remove `getDisneySession()`/`solvePoWChallenge()`
+2. `/mnt/documents/railway-dining-poller/` — New standalone project (package.json, index.js, Dockerfile) for the user to deploy to Railway
+
+### Secrets Needed
+- `RAILWAY_POLLER_URL` — The Railway service URL (e.g., `https://dining-poller-production.up.railway.app`)
+- `RAILWAY_POLLER_API_KEY` — Shared secret for authenticating requests
+
+### Deployment Steps (User)
+1. Push the Railway poller project to a GitHub repo
+2. Connect it to Railway, set `API_KEY` env var
+3. Copy the Railway URL and set it as `RAILWAY_POLLER_URL` in Supabase Edge Function secrets
+4. Set `RAILWAY_POLLER_API_KEY` to match the Railway `API_KEY`
+5. Edge function auto-deploys; pg_cron picks up the new logic automatically
 
