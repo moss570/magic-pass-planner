@@ -171,6 +171,7 @@ export default function DiningAlerts() {
       setSelectedRestaurant(null);
       setDate(undefined);
       setSearchQuery("");
+      setPreferredTime("");
       loadAlerts();
     } catch (err) {
       toast({ title: "Failed to create alert", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
