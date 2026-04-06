@@ -127,6 +127,10 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
 
 
 // LINE GAMES — mini games to play while waiting
+// Supabase connection for trivia
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
+
 const LINE_GAMES = [
   {
     id: "disney-trivia",
@@ -166,11 +170,22 @@ const LINE_GAMES = [
     ],
   },
   {
-    id: "speed-tapper",
-    name: "Castle Tapper",
-    icon: "🏰",
-    description: "Tap the castle as fast as you can in 10 seconds!",
-    type: "tapper",
+    id: "scavenger-hunt",
+    name: "Queue Scavenger Hunt",
+    icon: "🔍",
+    description: "Find hidden items in the ride queue!",
+    type: "coming-soon",
+    comingSoon: true,
+    badge: "🚧 Coming Soon",
+  },
+  {
+    id: "where-am-i",
+    name: "Where Am I?",
+    icon: "📸",
+    description: "Guess the Disney location from a close-up photo!",
+    type: "coming-soon",
+    comingSoon: true,
+    badge: "🚧 Coming Soon",
   },
 ];
 
@@ -218,6 +233,8 @@ type SortMode = "distance" | "wait" | "area" | "name";
 function LineGames() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const [triviaQ, setTriviaQ] = useState(0);
+  const [triviaQuestions, setTriviaQuestions] = useState(LINE_GAMES[0].questions || []);
+  const [triviaLoaded, setTriviaLoaded] = useState(false);
   const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState<number | null>(null);
   const [gameOver, setGameOver] = useState(false);
@@ -234,10 +251,10 @@ function LineGames() {
   const handleTriviaAnswer = (idx: number) => {
     if (answered !== null) return;
     setAnswered(idx);
-    const q = LINE_GAMES[0].questions[triviaQ];
+    const q = (triviaQuestions[triviaQ] || LINE_GAMES[0].questions[triviaQ]);
     if (idx === q.answer) setScore(s => s + 1);
     setTimeout(() => {
-      if (triviaQ + 1 >= LINE_GAMES[0].questions.length) {
+      if (triviaQ + 1 >= triviaQuestions.length) {
         setGameOver(true);
       } else {
         setTriviaQ(q => q + 1);
@@ -280,6 +297,26 @@ function LineGames() {
     }, 1200);
   };
 
+    // Load trivia from Supabase when game starts
+  const loadTrivia = async () => {
+    if (triviaLoaded) return;
+    try {
+      const resp = await fetch(
+        `${SUPABASE_URL}/rest/v1/trivia_questions?is_active=eq.true&order=random()&limit=10`,
+        { headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${SUPABASE_ANON}` } }
+      );
+      const data = await resp.json();
+      if (data && data.length > 0) {
+        setTriviaQuestions(data.map((q: any) => ({
+          q: q.question,
+          options: q.options,
+          answer: q.correct_answer,
+        })));
+        setTriviaLoaded(true);
+      }
+    } catch (_) {}
+  };
+
   if (!activeGame) {
     return (
       <div className="rounded-xl p-5 border border-white/10" style={{ background: "var(--card)" }}>
@@ -293,12 +330,23 @@ function LineGames() {
           {LINE_GAMES.map(g => (
             <button
               key={g.id}
-              onClick={() => { setActiveGame(g.id); setScore(0); setTriviaQ(0); setAnswered(null); setGameOver(false); setScrambleIdx(0); setScrambleInput(""); setScrambleCorrect(null); }}
-              className="text-left p-3 rounded-lg border border-white/10 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+              onClick={() => {
+                if ((g as any).comingSoon) return;
+                if (g.id === "disney-trivia") loadTrivia();
+                setActiveGame(g.id); setScore(0); setTriviaQ(0); setAnswered(null); setGameOver(false); setScrambleIdx(0); setScrambleInput(""); setScrambleCorrect(null);
+              }}
+              disabled={(g as any).comingSoon}
+              className={`text-left p-3 rounded-lg border transition-colors ${(g as any).comingSoon ? "border-white/5 opacity-60 cursor-not-allowed" : "border-white/10 hover:border-primary/40 hover:bg-primary/5"}`}
             >
               <div className="text-2xl mb-1">{g.icon}</div>
-              <p className="text-sm font-semibold text-foreground">{g.name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{g.description}</p>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <p className="text-sm font-semibold text-foreground">{g.name}</p>
+              </div>
+              {(g as any).comingSoon ? (
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 font-semibold">{(g as any).badge}</span>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-0.5">{g.description}</p>
+              )}
             </button>
           ))}
         </div>
@@ -320,15 +368,15 @@ function LineGames() {
       {activeGame === "disney-trivia" && !gameOver && (
         <div>
           <div className="flex justify-between text-xs text-muted-foreground mb-3">
-            <span>Question {triviaQ + 1} of {LINE_GAMES[0].questions.length}</span>
+            <span>Question {triviaQ + 1} of {triviaQuestions.length}</span>
             <span className="text-primary font-bold">Score: {score}</span>
           </div>
-          <p className="text-sm font-semibold text-foreground mb-4">{LINE_GAMES[0].questions[triviaQ].q}</p>
+          <p className="text-sm font-semibold text-foreground mb-4">{(triviaQuestions[triviaQ] || LINE_GAMES[0].questions[triviaQ]).q}</p>
           <div className="grid grid-cols-1 gap-2">
-            {LINE_GAMES[0].questions[triviaQ].options.map((opt, i) => {
+            {(triviaQuestions[triviaQ] || LINE_GAMES[0].questions[triviaQ]).options.map((opt, i) => {
               let bg = "bg-muted/20 border-white/10 text-muted-foreground";
               if (answered !== null) {
-                if (i === LINE_GAMES[0].questions[triviaQ].answer) bg = "bg-green-500/20 border-green-500/40 text-green-400";
+                if (i === (triviaQuestions[triviaQ] || LINE_GAMES[0].questions[triviaQ]).answer) bg = "bg-green-500/20 border-green-500/40 text-green-400";
                 else if (i === answered) bg = "bg-red-500/20 border-red-500/40 text-red-400";
               }
               return (
@@ -411,7 +459,7 @@ function LineGames() {
         <div className="text-center py-4">
           <div className="text-4xl mb-2">🏆</div>
           <p className="text-xl font-bold text-primary mb-1">Game Over!</p>
-          <p className="text-muted-foreground text-sm mb-4">Final Score: {score}/{activeGame === "disney-trivia" ? LINE_GAMES[0].questions.length : LINE_GAMES[2].words.length}</p>
+          <p className="text-muted-foreground text-sm mb-4">Final Score: {score}/{activeGame === "disney-trivia" ? triviaQuestions.length : LINE_GAMES[2].words.length}</p>
           <button onClick={() => { setActiveGame(null); }} className="px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Play Again</button>
         </div>
       )}
