@@ -1,0 +1,1 @@
+UPDATE dining_alerts SET last_checked_at = NULL, check_count = 0, status = 'watching', updated_at = now() WHERE id = '5969609b-5528-4cb9-98c5-82b8f889126a';
