@@ -11,6 +11,24 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
+// Transform a Disney info URL (/dining/...) into the reservation URL (/dine-res/restaurant/...)
+function transformToReservationUrl(infoUrl: string, date: string, partySize: number, mealPeriods: string[]): string {
+  try {
+    const url = new URL(infoUrl);
+    const segments = url.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+    const slug = segments[segments.length - 1];
+    if (!slug) return infoUrl;
+
+    const mealTime = mealPeriods?.includes("Dinner") ? "dinner" :
+                     mealPeriods?.includes("Lunch") ? "lunch" :
+                     mealPeriods?.includes("Breakfast") ? "breakfast" : "dinner";
+
+    return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}?date=${date}&time=${mealTime}&partySize=${partySize}`;
+  } catch {
+    return infoUrl;
+  }
+}
+
 // Check availability via Railway Puppeteer poller
 async function checkAvailability(
   restaurantUrl: string,
@@ -18,6 +36,10 @@ async function checkAvailability(
   partySize: number,
   mealPeriods: string[]
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
+  // Transform info URL to reservation URL before sending to poller
+  const reservationUrl = transformToReservationUrl(restaurantUrl, date, partySize, mealPeriods);
+  logStep("Transformed URL", { from: restaurantUrl, to: reservationUrl });
+
   const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
   const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
 
@@ -37,7 +59,7 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriod }),
+      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriod }),
     });
 
     if (!res.ok) {
