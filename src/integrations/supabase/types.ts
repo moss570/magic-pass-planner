@@ -790,10 +790,54 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      game_content_public: {
+        Row: {
+          clue_description: string | null
+          created_at: string | null
+          game_type: string | null
+          gps_lat: number | null
+          gps_lng: number | null
+          id: string | null
+          image_url: string | null
+          location_name: string | null
+          multiple_choice: string[] | null
+          park: string | null
+          queue_name: string | null
+          title: string | null
+        }
+        Insert: {
+          clue_description?: string | null
+          created_at?: string | null
+          game_type?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string | null
+          image_url?: string | null
+          location_name?: string | null
+          multiple_choice?: string[] | null
+          park?: string | null
+          queue_name?: string | null
+          title?: string | null
+        }
+        Update: {
+          clue_description?: string | null
+          created_at?: string | null
+          game_type?: string | null
+          gps_lat?: number | null
+          gps_lng?: number | null
+          id?: string | null
+          image_url?: string | null
+          location_name?: string | null
+          multiple_choice?: string[] | null
+          park?: string | null
+          queue_name?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      is_game_developer: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
