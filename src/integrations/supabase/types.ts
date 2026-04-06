@@ -90,10 +90,13 @@ export type Database = {
           alert_date: string | null
           alert_id: string | null
           availability_url: string | null
+          delivery_details: Json | null
+          delivery_status: string | null
           id: string
           notification_type: string | null
           party_size: number | null
           restaurant_name: string | null
+          retry_count: number | null
           sent_at: string | null
           user_id: string | null
         }
@@ -101,10 +104,13 @@ export type Database = {
           alert_date?: string | null
           alert_id?: string | null
           availability_url?: string | null
+          delivery_details?: Json | null
+          delivery_status?: string | null
           id?: string
           notification_type?: string | null
           party_size?: number | null
           restaurant_name?: string | null
+          retry_count?: number | null
           sent_at?: string | null
           user_id?: string | null
         }
@@ -112,10 +118,13 @@ export type Database = {
           alert_date?: string | null
           alert_id?: string | null
           availability_url?: string | null
+          delivery_details?: Json | null
+          delivery_status?: string | null
           id?: string
           notification_type?: string | null
           party_size?: number | null
           restaurant_name?: string | null
+          retry_count?: number | null
           sent_at?: string | null
           user_id?: string | null
         }
