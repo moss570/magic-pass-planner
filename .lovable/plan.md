@@ -1,33 +1,31 @@
 
-# Magic Pass — Premium Disney World Vacation Planning Platform (Prompt 1)
 
-## Design System Setup
-- Update CSS variables and Tailwind config with the Magic Pass color palette (midnight navy, magic gold, enchanted purple, etc.)
-- Import Plus Jakarta Sans from Google Fonts
-- Set global dark theme with gold-bordered cards, 12px card radius, 8px button radius
-- Add subtle gradient background, animated green pulse for live indicators
+## Fix 4 Build Errors in Edge Functions
 
-## Page 1: Landing Page (/)
-- **Sticky Header**: Castle icon + "Magic Pass" gold logo, nav links (Features, Pricing, For Annual Passholders, Login), "Start Free Trial" gold CTA, backdrop blur on scroll
-- **Hero Section**: Bold headline + subheadline, dual CTAs (gold filled + outlined), subtle star/particle animation background, 3 inline trust badges
-- **Features Grid**: 6 cards in 3×2 layout with icons, titles, and descriptions (AI Trip Planner, Dining Alerts, Gift Card Tracker, Wait Times, AP Hub, Group Coordinator)
-- **Social Proof Bar**: Tagline + 3 stat badges (1,200+ members, $480 savings, 4.9★ rating)
+### Error 1-3: `ai-trip-planner/index.ts` line 168 — undefined `preference`, `crowdLevel`, `input`
 
-## Page 2: Pricing Page (/pricing)
-- Monthly/Annual toggle with "Save up to 42%" badge on annual
-- 4 pricing tier cards: Pre-Trip Planner ($6.99/mo), Magic Pass ($12.99/mo, "Most Popular" gold badge), AP Command Center ($7.99/mo), AP Command Center PLUS ($10.99/mo)
-- Each card lists features with checkmarks, gold CTA button
-- Footer note: cancel anytime, no contracts
+The `nearbyDining` function (line 101) has signature `(location: string, park: string): string[]` — it only takes two parameters and returns a string array of nearby dining names. But line 168 calls `planUniversalRoute(park, locations, preference, crowdLevel, input)` which requires variables that don't exist in `nearbyDining`'s scope.
 
-## Page 3: Auth Pages
-- **/signup**: Centered card with logo, email/password fields, "Create Account" gold button, Google social login, free trial note
-- **/login**: Centered card with logo, email/password fields, "Log In" gold button, forgot password link, Google option
+The `nearbyDining` function is meant to return nearby dining names, not a full itinerary. For non-MK parks, it should simply filter the park locations for dining entries and return them sorted by distance, same as it does for MK (lines 170-190).
 
-## Routing
-- `/` → Landing Page
-- `/pricing` → Pricing Page
-- `/signup` → Sign Up
-- `/login` → Login
-- `/dashboard` → Placeholder "Dashboard coming in next build"
+**Fix**: Remove the `planUniversalRoute` call at line 168. Instead, for non-MK parks, replicate the same distance-based dining lookup logic that lines 170+ do for MK — iterate `locations`, filter for `category === "dining"`, sort by proximity, and return names. Since there's no `location` reference point for non-MK, return all dining options for that park.
 
-All pages are static with placeholder data — no backend or Supabase integration yet.
+### Error 4: `social/index.ts` line 219 — `.catch()` on PostgREST builder
+
+Supabase PostgREST builders don't have `.catch()`. The upsert call returns a promise-like object but `.catch()` isn't available.
+
+**Fix**: Wrap the upsert in a try/catch or just ignore the error by not chaining `.catch()`. Replace:
+```typescript
+await supabase.from("friendships").upsert([...]).catch(() => {});
+```
+with:
+```typescript
+try {
+  await supabase.from("friendships").upsert([...]);
+} catch {}
+```
+
+### Files Changed
+1. `supabase/functions/ai-trip-planner/index.ts` — Fix `nearbyDining` to handle non-MK parks without calling `planUniversalRoute`
+2. `supabase/functions/social/index.ts` — Replace `.catch()` with try/catch
+
