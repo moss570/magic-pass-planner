@@ -57,6 +57,7 @@ export default function DiningAlerts() {
   const [dateOpen, setDateOpen] = useState(false);
   const [partySize, setPartySize] = useState(2);
   const [selectedMeals, setSelectedMeals] = useState<string[]>(["Dinner"]);
+  const [preferredTime, setPreferredTime] = useState("");
   const [alertEmail, setAlertEmail] = useState(true);
   const [alertSms, setAlertSms] = useState(false);
   const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
