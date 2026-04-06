@@ -158,6 +158,7 @@ export default function DiningAlerts() {
           alert_date: format(date, "yyyy-MM-dd"),
           party_size: partySize,
           meal_periods: selectedMeals,
+          preferred_time: preferredTime || null,
           alert_email: alertEmail,
           alert_sms: alertSms,
         }),
