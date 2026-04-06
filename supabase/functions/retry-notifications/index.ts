@@ -101,7 +101,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error("[RETRY-NOTIFICATIONS] FATAL:", msg);
+    console.error("[RETRY-NOTIFICATIONS] FATAL:", JSON.stringify(error));
     return new Response(
       JSON.stringify({ error: msg }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

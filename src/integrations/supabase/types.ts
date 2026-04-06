@@ -90,6 +90,7 @@ export type Database = {
           alert_date: string | null
           alert_id: string | null
           availability_url: string | null
+          created_at: string | null
           delivery_details: Json | null
           delivery_status: string | null
           id: string
@@ -104,6 +105,7 @@ export type Database = {
           alert_date?: string | null
           alert_id?: string | null
           availability_url?: string | null
+          created_at?: string | null
           delivery_details?: Json | null
           delivery_status?: string | null
           id?: string
@@ -118,6 +120,7 @@ export type Database = {
           alert_date?: string | null
           alert_id?: string | null
           availability_url?: string | null
+          created_at?: string | null
           delivery_details?: Json | null
           delivery_status?: string | null
           id?: string
