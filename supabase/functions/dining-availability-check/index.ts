@@ -11,186 +11,50 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Solve Akamai's proof-of-work challenge
-// Disney uses this to block simple bots - but we can solve it mathematically
-async function solvePoWChallenge(nonce: string, difficulty: number): Promise<string> {
-  const encoder = new TextEncoder();
-  const target = BigInt(2 ** 256) / BigInt(difficulty);
-  
-  for (let i = 0; i < 1000000; i++) {
-    const attempt = `${nonce}${i}`;
-    const data = encoder.encode(attempt);
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    const hashArray = new Uint8Array(hashBuffer);
-    
-    // Convert to BigInt for comparison
-    let hashVal = BigInt(0);
-    for (const byte of hashArray) {
-      hashVal = (hashVal << BigInt(8)) | BigInt(byte);
-    }
-    
-    if (hashVal < target) {
-      logStep("PoW solved", { attempts: i, nonce: attempt.slice(0, 30) });
-      return attempt;
-    }
-  }
-  throw new Error("Could not solve PoW challenge");
-}
-
-// Get a valid Disney session by solving the Akamai PoW challenge
-async function getDisneySession(): Promise<string | null> {
-  const headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Origin": "https://disneyworld.disney.go.com",
-    "Referer": "https://disneyworld.disney.go.com/dine-res/availability/",
-    "x-correlation-id": crypto.randomUUID(),
-    "x-conversation-id": crypto.randomUUID(),
-  };
-
-  try {
-    // Step 1: Hit the availability endpoint to get the challenge
-    const challengeRes = await fetch(
-      "https://disneyworld.disney.go.com/dine-res/api/availability/2/2026-05-01,2026-05-01/00:00:00,23:59:59?trim=facets,media,webLinks,mediaGalleries,sortProductName&trimExclude=dining-events,diningEvent",
-      { headers }
-    );
-
-    const challengeText = await challengeRes.text();
-    
-    // Check if we got a PoW challenge
-    if (challengeRes.status === 428 || challengeText.includes("sec-cp-challenge")) {
-      const challenge = JSON.parse(challengeText);
-      logStep("Got PoW challenge", { difficulty: challenge.difficulty, provider: challenge.provider });
-
-      // Step 2: Solve the PoW
-      const solution = await solvePoWChallenge(challenge.nonce, challenge.difficulty);
-      
-      // Step 3: Submit the solution to Disney's verify endpoint
-      const verifyRes = await fetch(`https://disneyworld.disney.go.com${challenge.verify_url}`, {
-        method: "POST",
-        headers: {
-          ...headers,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nonce: challenge.nonce,
-          solution: solution,
-          token: challenge.token,
-          timestamp: challenge.timestamp,
-        }),
-      });
-
-      const verifyCookies = verifyRes.headers.get("set-cookie");
-      logStep("PoW verification", { status: verifyRes.status, hasCookie: !!verifyCookies });
-      
-      if (verifyRes.ok && verifyCookies) {
-        return verifyCookies;
-      }
-      
-      // Try getting cookies from the response body
-      const verifyData = await verifyRes.text();
-      logStep("Verify response", { body: verifyData.slice(0, 200) });
-      return verifyCookies;
-    }
-
-    // If no challenge, we might already have access
-    if (challengeRes.ok) {
-      logStep("No challenge needed - direct access");
-      return challengeRes.headers.get("set-cookie");
-    }
-
-    logStep("Unexpected response", { status: challengeRes.status, body: challengeText.slice(0, 200) });
-    return null;
-
-  } catch (err) {
-    logStep("Session error", { error: err instanceof Error ? err.message : String(err) });
-    return null;
-  }
-}
-
-// Check availability for a specific restaurant, date, party size
+// Check availability via Railway Puppeteer poller
 async function checkAvailability(
-  restaurantId: string,
+  restaurantUrl: string,
   date: string,
   partySize: number,
-  mealPeriods: string[],
-  session: string | null
+  mealPeriods: string[]
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
-  
-  const mealPeriodCode = mealPeriods.includes("Dinner") ? "80000714" :
-                          mealPeriods.includes("Lunch") ? "80000712" :
-                          mealPeriods.includes("Breakfast") ? "80000711" : "80000714";
+  const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
+  const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
 
-  const headers: Record<string, string> = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-    "Accept": "application/json",
-    "Origin": "https://disneyworld.disney.go.com",
-    "Referer": "https://disneyworld.disney.go.com/dine-res/availability/",
-    "x-correlation-id": crypto.randomUUID(),
-  };
-
-  if (session) {
-    headers["Cookie"] = session;
+  if (!railwayUrl || !railwayApiKey) {
+    logStep("ERROR: Missing RAILWAY_POLLER_URL or RAILWAY_POLLER_API_KEY secrets");
+    return { available: false, times: [], bookingUrls: [] };
   }
 
-  // Try the new dine-res API first
-  const endpoint = `https://disneyworld.disney.go.com/dine-res/api/availability/${partySize}/${date},${date}/00:00:00,23:59:59?trim=facets,media,webLinks,mediaGalleries,sortProductName&trimExclude=dining-events,diningEvent`;
-  
+  const mealPeriod = mealPeriods?.includes("Dinner") ? "Dinner" :
+                     mealPeriods?.includes("Lunch") ? "Lunch" :
+                     mealPeriods?.includes("Breakfast") ? "Breakfast" : "Dinner";
+
   try {
-    const res = await fetch(endpoint, { headers });
-    
-    if (res.ok) {
-      const data = await res.json();
-      logStep("Got availability data", { keys: Object.keys(data).slice(0, 5) });
-      
-      // Parse the response for this specific restaurant
-      const results = data?.availability || data?.results || data;
-      
-      // Look for the restaurant in results
-      if (results && typeof results === 'object') {
-        const restaurantData = results[restaurantId] || 
-          Object.values(results).find((r: any) => 
-            r?.id === restaurantId || r?.entityId?.includes(restaurantId)
-          );
-        
-        if (restaurantData && (restaurantData as any).hasAvailability) {
-          const offers = (restaurantData as any).offers || (restaurantData as any).singleLocation?.offers || [];
-          const times = offers.map((o: any) => o.label || o.time || "Available");
-          const urls = offers.map((o: any) => 
-            `https://disneyworld.disney.go.com/dining-reservation/setup-order/table-service/?offerId[]=${o.url || o.id}`
-          );
-          return { available: true, times, bookingUrls: urls };
-        }
-      }
-      
+    const res = await fetch(`${railwayUrl}/check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": railwayApiKey,
+      },
+      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriod }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      logStep("Railway poller error", { status: res.status, body: errText.slice(0, 200) });
       return { available: false, times: [], bookingUrls: [] };
     }
-    
-    // If new endpoint fails, try the old ADRFinder endpoint  
-    const oldEndpoint = `https://disneyworld.disney.go.com/finder/api/v1/explorer-service/dining-availability-list/false/wdw/80007798;entityType=destination/${date}/${partySize}/?mealPeriod=${mealPeriodCode}`;
-    
-    const oldRes = await fetch(oldEndpoint, { headers });
-    logStep("Old endpoint response", { status: oldRes.status });
-    
-    if (oldRes.ok) {
-      const oldData = await oldRes.json();
-      const restaurantAvail = oldData?.availability?.[restaurantId];
-      
-      if (restaurantAvail?.hasAvailability) {
-        const offers = restaurantAvail?.singleLocation?.offers || [];
-        const times = offers.map((o: any) => o.label);
-        const urls = offers.map((o: any) => 
-          `https://disneyworld.disney.go.com/dining-reservation/setup-order/table-service/?offerId[]=${o.url}`
-        );
-        return { available: true, times, bookingUrls: urls };
-      }
-    }
-    
-    return { available: false, times: [], bookingUrls: [] };
-    
+
+    const data = await res.json();
+    logStep("Railway poller response", { available: data.available, timesCount: data.times?.length || 0 });
+    return {
+      available: data.available || false,
+      times: data.times || [],
+      bookingUrls: data.bookingUrls || [],
+    };
   } catch (err) {
-    logStep("Availability check error", { error: err instanceof Error ? err.message : String(err) });
+    logStep("Railway poller fetch error", { error: err instanceof Error ? err.message : String(err) });
     return { available: false, times: [], bookingUrls: [] };
   }
 }
@@ -232,11 +96,6 @@ serve(async (req) => {
       });
     }
 
-    // Get a Disney session (solve PoW once, reuse for all checks)
-    logStep("Getting Disney session...");
-    const session = await getDisneySession();
-    logStep("Session status", { hasSession: !!session });
-
     let checked = 0;
     let found = 0;
 
@@ -245,19 +104,19 @@ serve(async (req) => {
         const restaurant = alert.restaurant;
         if (!restaurant) continue;
 
-        // Use the Disney entity ID from the external ID if available, or extract from URL
-        const restaurantId = restaurant.disney_url
-          ? restaurant.disney_url.split("/").filter(Boolean).pop() || ""
-          : "";
+        const restaurantUrl = restaurant.disney_url || "";
+        if (!restaurantUrl) {
+          logStep("Skipping - no disney_url", { name: restaurant.name });
+          continue;
+        }
 
-        logStep("Checking restaurant", { name: restaurant.name, id: restaurantId, date: alert.alert_date });
+        logStep("Checking restaurant", { name: restaurant.name, url: restaurantUrl, date: alert.alert_date });
 
         const { available, times, bookingUrls } = await checkAvailability(
-          restaurantId,
+          restaurantUrl,
           alert.alert_date,
           alert.party_size,
-          alert.meal_periods || ["Dinner"],
-          session
+          alert.meal_periods || ["Dinner"]
         );
 
         const updateData: any = {
@@ -270,7 +129,7 @@ serve(async (req) => {
           found++;
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
-          updateData.availability_url = bookingUrls[0] || restaurant.disney_url;
+          updateData.availability_url = bookingUrls[0] || restaurantUrl;
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
@@ -282,7 +141,6 @@ serve(async (req) => {
           // Get user email and send notification
           const { data: userData } = await supabase.auth.admin.getUserById(alert.user_id);
           if (userData?.user) {
-            // Log notification to database
             const { data: notifData, error: notifError } = await supabase
               .from("dining_notifications")
               .insert({
@@ -291,15 +149,14 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: bookingUrls[0] || restaurant.disney_url,
+                availability_url: bookingUrls[0] || restaurantUrl,
                 notification_type: alert.alert_sms ? "sms" : "email",
-                sent_at: null, // Will be set by send-notification after delivery
+                sent_at: null,
               })
               .select()
               .single();
 
             if (notifData && !notifError) {
-              // Actually SEND the notification via email/SMS/push
               try {
                 const sendResponse = await fetch(
                   `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification`,
@@ -320,11 +177,8 @@ serve(async (req) => {
                 });
               } catch (sendErr) {
                 logStep("Notification send failed (will retry)", {
-                  email: userData.user.email,
-                  restaurant: restaurant.name,
                   error: sendErr instanceof Error ? sendErr.message : String(sendErr),
                 });
-                // Don't throw — notification is logged in DB, retry logic will pick it up
               }
             } else {
               logStep("Failed to log notification", { error: notifError?.message });
