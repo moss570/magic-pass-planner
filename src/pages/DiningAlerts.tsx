@@ -348,6 +348,20 @@ export default function DiningAlerts() {
               </div>
             </div>
 
+            {/* Preferred Time (optional) */}
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Preferred Time <span className="text-muted-foreground/60">(optional)</span></label>
+              <input
+                type="text"
+                placeholder="e.g. around 6 PM"
+                value={preferredTime}
+                onChange={e => setPreferredTime(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg bg-[#1a2235] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                style={{ minHeight: 44 }}
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">We'll highlight times near your preference in notifications</p>
+            </div>
+
             {/* Notification Channels */}
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Alert me via</label>

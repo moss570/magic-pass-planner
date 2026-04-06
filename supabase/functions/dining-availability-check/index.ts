@@ -34,7 +34,7 @@ async function checkAvailability(
   mealPeriods: string[]
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
   // Transform info URL to reservation URL before sending to poller
-  const reservationUrl = transformToReservationUrl(restaurantUrl, date, partySize, mealPeriods);
+  const reservationUrl = transformToReservationUrl(restaurantUrl);
   logStep("Transformed URL", { from: restaurantUrl, to: reservationUrl });
 
   const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
@@ -45,10 +45,6 @@ async function checkAvailability(
     return { available: false, times: [], bookingUrls: [] };
   }
 
-  const mealPeriod = mealPeriods?.includes("Dinner") ? "Dinner" :
-                     mealPeriods?.includes("Lunch") ? "Lunch" :
-                     mealPeriods?.includes("Breakfast") ? "Breakfast" : "Dinner";
-
   try {
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
@@ -56,7 +52,7 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriod }),
+      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriods }),
     });
 
     if (!res.ok) {
