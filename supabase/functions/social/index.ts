@@ -213,10 +213,12 @@ serve(async (req) => {
         const { data: allUsers } = await supabase.auth.admin.listUsers();
         const targetUser = allUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
         if (targetUser && targetUser.id !== userId) {
-          await supabase.from("friendships").upsert([
-            { user_id_1: userId, user_id_2: targetUser.id },
-            { user_id_1: targetUser.id, user_id_2: userId },
-          ]).catch(() => {});
+          try {
+            await supabase.from("friendships").upsert([
+              { user_id_1: userId, user_id_2: targetUser.id },
+              { user_id_1: targetUser.id, user_id_2: userId },
+            ]);
+          } catch {}
           await supabase.from("trip_members").update({ user_id: targetUser.id, status: "joined" }).eq("id", member.id);
         }
       }
