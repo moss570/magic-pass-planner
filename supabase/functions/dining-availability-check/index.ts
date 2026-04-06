@@ -282,18 +282,53 @@ serve(async (req) => {
           // Get user email and send notification
           const { data: userData } = await supabase.auth.admin.getUserById(alert.user_id);
           if (userData?.user) {
-            // Log notification
-            await supabase.from("dining_notifications").insert({
-              alert_id: alert.id,
-              user_id: alert.user_id,
-              restaurant_name: restaurant.name,
-              alert_date: alert.alert_date,
-              party_size: alert.party_size,
-              availability_url: bookingUrls[0] || restaurant.disney_url,
-              notification_type: "email",
-            });
+            // Log notification to database
+            const { data: notifData, error: notifError } = await supabase
+              .from("dining_notifications")
+              .insert({
+                alert_id: alert.id,
+                user_id: alert.user_id,
+                restaurant_name: restaurant.name,
+                alert_date: alert.alert_date,
+                party_size: alert.party_size,
+                availability_url: bookingUrls[0] || restaurant.disney_url,
+                notification_type: alert.alert_sms ? "sms" : "email",
+                sent_at: null, // Will be set by send-notification after delivery
+              })
+              .select()
+              .single();
 
-            logStep("Notification logged for", { email: userData.user.email, restaurant: restaurant.name });
+            if (notifData && !notifError) {
+              // Actually SEND the notification via email/SMS/push
+              try {
+                const sendResponse = await fetch(
+                  `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ notification_id: notifData.id }),
+                  }
+                );
+                const sendResult = await sendResponse.json();
+                logStep("Notification SENT", {
+                  email: userData.user.email,
+                  restaurant: restaurant.name,
+                  results: sendResult,
+                });
+              } catch (sendErr) {
+                logStep("Notification send failed (will retry)", {
+                  email: userData.user.email,
+                  restaurant: restaurant.name,
+                  error: sendErr instanceof Error ? sendErr.message : String(sendErr),
+                });
+                // Don't throw — notification is logged in DB, retry logic will pick it up
+              }
+            } else {
+              logStep("Failed to log notification", { error: notifError?.message });
+            }
           }
         }
 

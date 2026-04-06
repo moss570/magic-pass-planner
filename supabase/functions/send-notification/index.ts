@@ -114,12 +114,19 @@ serve(async (req) => {
       results.push({ channel: "sms", success: smsResp.ok, status: smsResp.status });
     }
 
-    // Mark notification as sent
-    const allSuccess = results.every(r => r.success);
+    // Mark notification as sent with delivery status tracking
+    const allSuccess = results.length > 0 && results.every(r => r.success);
+    const anySuccess = results.some(r => r.success);
+    const deliveryStatus = allSuccess ? "delivered" : anySuccess ? "partial_failure" : "failed";
+
     await supabase.from("dining_notifications").update({
-      sent_at: allSuccess ? new Date().toISOString() : null,
+      sent_at: anySuccess ? new Date().toISOString() : null,
+      delivery_status: deliveryStatus,
       delivery_details: JSON.stringify(results),
+      retry_count: (notification.retry_count || 0) + 1,
     }).eq("id", notification_id);
+
+    console.log(`[SEND-NOTIFICATION] ${deliveryStatus}`, { notification_id, results });
 
     return new Response(JSON.stringify({ success: allSuccess, results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
