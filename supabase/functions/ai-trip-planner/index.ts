@@ -163,9 +163,11 @@ function nearbyDining(location: string, park: string): string[] {
   const locations = parkLocations[park];
   if (!locations) return []; // No park data
   
-  // For non-MK parks, use the universal route planner
+  // For non-MK parks, return all dining options from that park's locations
   if (park !== "Magic Kingdom") {
-    return planUniversalRoute(park, locations, preference, crowdLevel, input);
+    return Object.entries(locations)
+      .filter(([_, info]: [string, any]) => info.category === "dining")
+      .map(([name]: [string, any]) => name);
   }
   const loc = MK_LOCATIONS[location];
   if (!loc) return [];
