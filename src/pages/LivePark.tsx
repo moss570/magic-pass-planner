@@ -7,6 +7,7 @@ import {
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import RideLineQuest from "@/pages/RideLineQuest";
+import WhereAmI from "@/components/WhereAmI";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -486,6 +487,7 @@ export default function LivePark() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
   const [rideLineQuestOpen, setRideLineQuestOpen] = useState(false);
+  const [whereAmIOpen, setWhereAmIOpen] = useState(false);
   const [navigateOpen, setNavigateOpen] = useState(false);
   const [navigateSearch, setNavigateSearch] = useState("");
   const [navigateTarget, setNavigateTarget] = useState<{name: string; area: string} | null>(null);
@@ -1058,6 +1060,12 @@ export default function LivePark() {
         {activeTab === "games" && (
           <div className="space-y-4">
             <button
+              onClick={() => setWhereAmIOpen(true)}
+              className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
+            >
+              📸 Where Am I? — Play Now!
+            </button>
+            <button
               onClick={() => setRideLineQuestOpen(true)}
               className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-3"
               style={{ background: "#F5C842" }}
@@ -1068,6 +1076,7 @@ export default function LivePark() {
           </div>
         )}
         {rideLineQuestOpen && <RideLineQuest onClose={() => setRideLineQuestOpen(false)} />}
+        {whereAmIOpen && <WhereAmI onClose={() => setWhereAmIOpen(false)} />}
 
         {/* ── PARK INFO TAB ───────────────────────────────────── */}
         {activeTab === "info" && (
