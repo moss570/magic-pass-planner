@@ -291,6 +291,42 @@ export type Database = {
         }
         Relationships: []
       }
+      game_sessions: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          duration_seconds: number | null
+          game_id: string
+          game_name: string | null
+          id: string
+          questions_answered: number | null
+          score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          game_id: string
+          game_name?: string | null
+          id?: string
+          questions_answered?: number | null
+          score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          game_id?: string
+          game_name?: string | null
+          id?: string
+          questions_answered?: number | null
+          score?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       gift_card_alerts: {
         Row: {
           alert_email: boolean | null
@@ -769,6 +805,48 @@ export type Database = {
           options?: string[]
           park?: string | null
           question?: string
+        }
+        Relationships: []
+      }
+      user_messages: {
+        Row: {
+          admin_reply: string | null
+          created_at: string | null
+          id: string
+          message: string
+          replied_at: string | null
+          replied_by: string | null
+          status: string | null
+          subject: string | null
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: string | null
+          subject?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          replied_at?: string | null
+          replied_by?: string | null
+          status?: string | null
+          subject?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
         }
         Relationships: []
       }
