@@ -58,6 +58,8 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
   const [fireworksTime, setFireworksTime] = useState("21:00");
   const [nearbyPhotoPass, setNearbyPhotoPass] = useState<any[]>([]);
   const [sunsetTime, setSunsetTime] = useState("");
+  const [expandedRide, setExpandedRide] = useState<string | null>(null);
+  const [sunsetTime, setSunsetTime] = useState("");
 
   // Calculate sunset time for today in Orlando
   useEffect(() => {
