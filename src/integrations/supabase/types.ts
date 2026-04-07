@@ -679,6 +679,39 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_type: string
+          receiver_id: string
+          reference_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string
+          receiver_id: string
+          reference_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string
+          receiver_id?: string
+          reference_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: []
+      }
       photo_submissions: {
         Row: {
           created_at: string | null
