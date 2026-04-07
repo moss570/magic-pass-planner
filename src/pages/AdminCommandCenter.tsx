@@ -62,8 +62,8 @@ export default function AdminCommandCenter() {
     try {
       if (t === "games") {
         // Get game session stats
-        const { data } = await supabase.from("game_sessions")
-          .select("game_id, game_name, score, duration_seconds, completed, created_at")
+        const { data } = await (supabase.from("game_sessions" as any)
+          .select("game_id, game_name, score, duration_seconds, completed, created_at") as any)
           .order("created_at", { ascending: false })
           .limit(500);
         

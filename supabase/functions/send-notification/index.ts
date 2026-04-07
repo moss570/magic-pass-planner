@@ -18,6 +18,7 @@ serve(async (req) => {
   try {
     const body = await req.json();
     let notification_id = body.notification_id;
+    const notificationSource = body.notification_source || "dining"; // "dining" or "event"
 
     // Test mode: create a notification record inline for E2E testing
     if (body.test_mode && body.user_id && body.alert_id) {
