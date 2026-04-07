@@ -292,27 +292,33 @@ export default function MagicBeacon() {
               <p className="text-xs text-muted-foreground">Official events organized by Magic Pass — free for all subscribers. RSVP to let others know you're coming!</p>
             </div>
 
-            {MAGIC_PASS_EVENTS.map(event => {
+            {dbEvents.length === 0 && (
+              <div className="text-center py-8">
+                <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-foreground font-semibold">No upcoming events yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Check back soon for community meetups!</p>
+              </div>
+            )}
+
+            {dbEvents.map(event => {
               const going = rsvps.has(event.id);
+              const count = rsvpCounts[event.id] || 0;
               return (
                 <div key={event.id} className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
                   <div className="px-4 py-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${event.badgeColor}`}>{event.badge}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${event.badge_color}`}>{event.badge}</span>
                         <p className="text-base font-black text-foreground mt-1">{event.emoji} {event.title}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-primary font-bold">{event.daysUntil} days</p>
                       </div>
                     </div>
                     <p className="text-xs text-primary mb-0.5">📍 {event.park} · {event.location}</p>
-                    <p className="text-xs text-muted-foreground mb-0.5">📅 {event.date}</p>
-                    <p className="text-xs text-muted-foreground mb-3">🕐 {event.time}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{event.description}</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">📅 {event.event_date}</p>
+                    <p className="text-xs text-muted-foreground mb-3">🕐 {event.event_time}</p>
+                    {event.description && <p className="text-xs text-muted-foreground leading-relaxed mb-3">{event.description}</p>}
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">
-                        {event.rsvpCount + (going ? 1 : 0)} {going ? "members" : "members"} going
+                        {count} member{count !== 1 ? "s" : ""} going
                         {going && " (including you! ✅)"}
                       </p>
                       <button onClick={() => rsvpEvent(event.id)}
