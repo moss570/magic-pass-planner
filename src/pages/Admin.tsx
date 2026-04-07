@@ -110,6 +110,9 @@ export default function Admin() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [notes, setNotes] = useState(() => localStorage.getItem("clark_admin_notes") || "");
+  const [stripeReport, setStripeReport] = useState<any>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripePeriod, setStripePeriod] = useState("month");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [vips, setVips] = useState<any[]>([]);
   const [vipEmail, setVipEmail] = useState("");
@@ -267,6 +270,24 @@ export default function Admin() {
     });
     toast({ title: `Account deleted for ${vip.email}` });
     loadVips();
+  };
+
+  const loadStripeReport = async () => {
+    if (!session) return;
+    setStripeLoading(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const resp = await fetch(
+        `https://wknelhrmgspuztehetpa.supabase.co/functions/v1/stripe-reports?period=${stripePeriod}`,
+        { headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC" } }
+      );
+      const data = await resp.json();
+      setStripeReport(data);
+    } catch (err) {
+      toast({ title: "Failed to load Stripe report", variant: "destructive" });
+    } finally {
+      setStripeLoading(false);
+    }
   };
 
   const saveNotes = () => {
@@ -524,11 +545,18 @@ export default function Admin() {
                           )}
                           <button onClick={async () => {
                             const token = (await supabase.auth.getSession()).data.session?.access_token;
-                            await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=toggle-game-dev`, {
-                              method: "POST", headers: { "Authorization": `Bearer ${token}`, "x-client-authorization": `Bearer ${token}`, "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC", "Content-Type": "application/json" },
-                              body: JSON.stringify({ vip_id: vip.id }),
-                            });
-                            loadVips();
+                            // Toggle game developer status directly
+                            const newVal = !vip.is_game_developer;
+                            const { error } = await supabase
+                              .from("vip_accounts")
+                              .update({ is_game_developer: newVal })
+                              .eq("id", vip.id);
+                            if (!error) {
+                              toast({ title: newVal ? "🎮 Game Developer enabled!" : "🎮 Game Developer disabled" });
+                              loadVips();
+                            } else {
+                              toast({ title: "Update failed", description: error.message, variant: "destructive" });
+                            }
                           }} className={`text-xs ${vip.is_game_developer ? "text-green-400 hover:text-green-300" : "text-blue-400 hover:text-blue-300"}`}>
                             {vip.is_game_developer ? "🎮 Game Dev ON" : "🎮 Make Dev"}
                           </button>
@@ -539,6 +567,142 @@ export default function Admin() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </div>
+
+        {/* Stripe Financial Reports */}
+        <div className="rounded-xl p-5 border border-white/8" style={{ background: "#111827" }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground">Stripe Financial Report</h2>
+              {stripeReport && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${stripeReport.stripeMode === "LIVE" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                  {stripeReport.stripeMode || "TEST"} MODE
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <select value={stripePeriod} onChange={e => setStripePeriod(e.target.value)}
+                className="text-xs px-2 py-1 rounded border border-white/10 bg-muted/20 text-foreground">
+                <option value="day">Today</option>
+                <option value="week">Last 7 Days</option>
+                <option value="month">Last 30 Days</option>
+                <option value="year">Last Year</option>
+              </select>
+              <button onClick={loadStripeReport} disabled={stripeLoading}
+                className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 flex items-center gap-1">
+                <RefreshCw className={`w-3 h-3 ${stripeLoading ? "animate-spin" : ""}`} />
+                {stripeLoading ? "Loading..." : "Run Report"}
+              </button>
+            </div>
+          </div>
+
+          {!stripeReport ? (
+            <p className="text-xs text-muted-foreground">Click "Run Report" to load Stripe financial data</p>
+          ) : (
+            <div className="space-y-5">
+              {/* Summary grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: "Gross Revenue", value: `$${stripeReport.summary?.grossRevenue?.toFixed(2) || "0.00"}`, color: "text-primary", sub: `${stripeReport.summary?.chargeCount || 0} charges` },
+                  { label: "Processing Fees", value: `-$${stripeReport.summary?.processingFees?.toFixed(2) || "0.00"}`, color: "text-red-400", sub: "2.9% + $0.30/txn" },
+                  { label: "Net Revenue", value: `$${stripeReport.summary?.netRevenue?.toFixed(2) || "0.00"}`, color: "text-green-400", sub: "After Stripe fees" },
+                  { label: "Paid to Bank", value: `$${stripeReport.summary?.totalPayouts?.toFixed(2) || "0.00"}`, color: "text-blue-400", sub: `$${stripeReport.summary?.pendingPayouts?.toFixed(2) || "0"} pending` },
+                  { label: "Available Balance", value: `$${stripeReport.summary?.availableBalance?.toFixed(2) || "0.00"}`, color: "text-foreground", sub: "In Stripe account" },
+                  { label: "Total Refunds", value: `-$${stripeReport.summary?.totalRefunds?.toFixed(2) || "0.00"}`, color: "text-orange-400", sub: "Period refunds" },
+                  { label: "Active Subs", value: String(stripeReport.summary?.activeSubscriptions || 0), color: "text-foreground", sub: "Paying subscribers" },
+                  { label: "Est. MRR", value: `$${stripeReport.summary?.estimatedMRR?.toFixed(2) || "0.00"}`, color: "text-primary", sub: "Monthly recurring" },
+                ].map(s => (
+                  <div key={s.label} className="p-3 rounded-xl bg-white/5 border border-white/5">
+                    <p className="text-xs text-muted-foreground mb-0.5">{s.label}</p>
+                    <p className={`text-lg font-bold ${s.color}`}>{s.value}</p>
+                    <p className="text-xs text-muted-foreground">{s.sub}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Net summary */}
+              <div className="p-4 rounded-xl border border-green-500/20 bg-green-500/5">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Net after refunds</span>
+                  <span className="text-xl font-black text-green-400">${stripeReport.summary?.netAfterRefunds?.toFixed(2) || "0.00"}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Gross ${stripeReport.summary?.grossRevenue?.toFixed(2)} − Fees ${stripeReport.summary?.processingFees?.toFixed(2)} − Refunds ${stripeReport.summary?.totalRefunds?.toFixed(2)}</p>
+              </div>
+
+              {/* Plan breakdown */}
+              {Object.keys(stripeReport.planBreakdown || {}).length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-primary mb-2">Revenue by Plan</p>
+                  <div className="space-y-1">
+                    {Object.entries(stripeReport.planBreakdown || {}).map(([plan, data]: [string, any]) => (
+                      <div key={plan} className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/5 text-sm">
+                        <span className="text-muted-foreground truncate flex-1">{plan}</span>
+                        <span className="text-muted-foreground ml-2">{data.count}x</span>
+                        <span className="text-foreground font-semibold ml-3">${data.revenue.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Upcoming payouts */}
+              {stripeReport.upcomingPayouts?.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-primary mb-2">Upcoming Bank Transfers</p>
+                  {stripeReport.upcomingPayouts.map((p: any) => (
+                    <div key={p.id} className="flex justify-between items-center px-3 py-2 rounded-lg bg-white/5 mb-1 text-sm">
+                      <div>
+                        <p className="text-foreground">${p.amount.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{p.arrivalDate}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.status === "paid" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                        {p.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Recent transactions */}
+              {stripeReport.recentTransactions?.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold text-primary mb-2">Recent Transactions</p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-white/8">
+                          <th className="text-left px-3 py-2 text-primary">Date</th>
+                          <th className="text-left px-3 py-2 text-primary">Description</th>
+                          <th className="text-left px-3 py-2 text-primary">Gross</th>
+                          <th className="text-left px-3 py-2 text-primary">Fee</th>
+                          <th className="text-left px-3 py-2 text-primary">Net</th>
+                          <th className="text-left px-3 py-2 text-primary">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stripeReport.recentTransactions.map((t: any, i: number) => (
+                          <tr key={t.id} className={i < stripeReport.recentTransactions.length - 1 ? "border-b border-white/5" : ""}>
+                            <td className="px-3 py-2 text-muted-foreground">{t.date}</td>
+                            <td className="px-3 py-2 text-foreground max-w-[120px] truncate">{t.description || t.email}</td>
+                            <td className="px-3 py-2 text-foreground">${t.amount.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-red-400">-${t.fee.toFixed(2)}</td>
+                            <td className="px-3 py-2 text-green-400">${t.net.toFixed(2)}</td>
+                            <td className="px-3 py-2">
+                              <span className={`px-1.5 py-0.5 rounded text-xs ${t.status === "paid" ? "bg-green-500/20 text-green-400" : t.status === "refunded" ? "bg-orange-500/20 text-orange-400" : "bg-red-500/20 text-red-400"}`}>
+                                {t.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Report generated {new Date(stripeReport.generatedAt).toLocaleString()}</p>
+                </div>
+              )}
             </div>
           )}
         </div>
