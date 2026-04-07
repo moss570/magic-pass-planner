@@ -4,28 +4,28 @@ import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 
 // Best sunset photo spots per park (researched from Disney photography guides)
-const SUNSET_SPOTS: Record<string, Array<{ name: string; description: string; tip: string; bestTime: string; direction: string }>> = {
+const SUNSET_SPOTS: Record<string, Array<{ name: string; description: string; tip: string; bestTime: string; direction: string; lat: number; lng: number }>> = {
   "Magic Kingdom": [
-    { name: "Main Street U.S.A. Hub", description: "Classic shot: Cinderella Castle silhouetted against a pink and gold sky", tip: "Face west — the castle catches the warm light perfectly from the hub", bestTime: "30-45 min before sunset", direction: "West-facing" },
-    { name: "Tomorrowland Terrace", description: "Elevated view with castle in the background and glowing sky overhead", tip: "Get here early to claim a spot — it gets crowded on clear evenings", bestTime: "20-40 min before sunset", direction: "Southwest" },
-    { name: "Prince Charming Regal Carrousel", description: "Golden hour hits the carousel horses beautifully — fairy tale shot", tip: "Photograph through the spires for framing depth", bestTime: "45 min before sunset", direction: "West" },
-    { name: "Liberty Square Bridge", description: "Reflects sunset colors in the waterway with the Hall of Presidents in distance", tip: "Unique angle — most guests walk past without noticing this spot", bestTime: "30 min before sunset", direction: "Southwest" },
+    { name: "Main Street U.S.A. Hub", description: "Classic shot: Cinderella Castle silhouetted against a pink and gold sky", tip: "Face west — the castle catches the warm light perfectly from the hub", bestTime: "30-45 min before sunset", direction: "West-facing", lat: 28.4177, lng: -81.5812 },
+    { name: "Tomorrowland Terrace", description: "Elevated view with castle in the background and glowing sky overhead", tip: "Get here early to claim a spot — it gets crowded on clear evenings", bestTime: "20-40 min before sunset", direction: "Southwest", lat: 28.4181, lng: -81.5798 },
+    { name: "Prince Charming Regal Carrousel", description: "Golden hour hits the carousel horses beautifully — fairy tale shot", tip: "Photograph through the spires for framing depth", bestTime: "45 min before sunset", direction: "West", lat: 28.4213, lng: -81.5825 },
+    { name: "Liberty Square Bridge", description: "Reflects sunset colors in the waterway with the Hall of Presidents in distance", tip: "Unique angle — most guests walk past without noticing this spot", bestTime: "30 min before sunset", direction: "Southwest", lat: 28.4200, lng: -81.5822 },
   ],
   "EPCOT": [
-    { name: "World Showcase Lagoon (Italy Side)", description: "The lagoon becomes a mirror for the sky — stunning reflections", tip: "Italy and Germany pavilions frame the shot perfectly", bestTime: "30-45 min before sunset", direction: "West over the lagoon" },
-    { name: "Japan Pagoda", description: "The red pagoda against a pink sky is one of Disney's most photographed shots", tip: "Include some Japanese maple trees in the foreground for depth", bestTime: "45 min before sunset", direction: "West" },
-    { name: "France Pavilion Bridge", description: "Eiffel Tower replica glows pink and gold — ultra Instagrammable", tip: "Shoot from the Morocco side looking toward France", bestTime: "30 min before sunset", direction: "West" },
-    { name: "Spaceship Earth (from World Nature)", description: "The geodesic sphere reflects warm orange and pink from the west", tip: "Use a wide angle — get the full sphere with sky behind it", bestTime: "45-60 min before sunset", direction: "West" },
+    { name: "World Showcase Lagoon (Italy Side)", description: "The lagoon becomes a mirror for the sky — stunning reflections", tip: "Italy and Germany pavilions frame the shot perfectly", bestTime: "30-45 min before sunset", direction: "West over the lagoon", lat: 28.3705, lng: -81.5480 },
+    { name: "Japan Pagoda", description: "The red pagoda against a pink sky is one of Disney's most photographed shots", tip: "Include some Japanese maple trees in the foreground for depth", bestTime: "45 min before sunset", direction: "West", lat: 28.3702, lng: -81.5470 },
+    { name: "France Pavilion Bridge", description: "Eiffel Tower replica glows pink and gold — ultra Instagrammable", tip: "Shoot from the Morocco side looking toward France", bestTime: "30 min before sunset", direction: "West", lat: 28.3695, lng: -81.5489 },
+    { name: "Spaceship Earth (from World Nature)", description: "The geodesic sphere reflects warm orange and pink from the west", tip: "Use a wide angle — get the full sphere with sky behind it", bestTime: "45-60 min before sunset", direction: "West", lat: 28.3747, lng: -81.5494 },
   ],
   "Hollywood Studios": [
-    { name: "Hollywood Boulevard (end)", description: "Chinese Theater with golden-hour light — Hollywood magic", tip: "Shoot from the far end looking toward the theater — warm light fills the frame", bestTime: "45 min before sunset", direction: "West" },
-    { name: "Sunset Boulevard (base)", description: "The street name says it all — warm light channeled down the whole boulevard", tip: "Face west — Tower of Terror and Rock 'n' Roller Coaster both lit golden", bestTime: "30-45 min before sunset", direction: "West" },
-    { name: "Echo Lake Waterfront", description: "Warm reflections in the lake with Gertie the Dinosaur lit by the setting sun", tip: "Kneel low to capture sky reflection in the water", bestTime: "30 min before sunset", direction: "Southwest" },
+    { name: "Hollywood Boulevard (end)", description: "Chinese Theater with golden-hour light — Hollywood magic", tip: "Shoot from the far end looking toward the theater — warm light fills the frame", bestTime: "45 min before sunset", direction: "West", lat: 28.3575, lng: -81.5597 },
+    { name: "Sunset Boulevard (base)", description: "The street name says it all — warm light channeled down the whole boulevard", tip: "Face west — Tower of Terror and Rock 'n' Roller Coaster both lit golden", bestTime: "30-45 min before sunset", direction: "West", lat: 28.3578, lng: -81.5588 },
+    { name: "Echo Lake Waterfront", description: "Warm reflections in the lake with Gertie the Dinosaur lit by the setting sun", tip: "Kneel low to capture sky reflection in the water", bestTime: "30 min before sunset", direction: "Southwest", lat: 28.3568, lng: -81.5595 },
   ],
   "Animal Kingdom": [
-    { name: "Discovery Island (Tree of Life View)", description: "The Tree of Life glows amber and gold — most dramatic at golden hour", tip: "Shoot from the bridge near the Flame Tree BBQ for the classic angle", bestTime: "45-60 min before sunset", direction: "West" },
-    { name: "Pandora Overlook (entering Pandora)", description: "The floating mountains catch warm pink light — otherworldly", tip: "Get above the crowd for a clear shot — use rocks as foreground", bestTime: "30-45 min before sunset", direction: "West" },
-    { name: "Asia Bridge (near Expedition Everest)", description: "Everest silhouetted against sunset sky — dramatic and powerful", tip: "Long shadows at golden hour add dimension to Everest", bestTime: "30-40 min before sunset", direction: "West" },
+    { name: "Discovery Island (Tree of Life View)", description: "The Tree of Life glows amber and gold — most dramatic at golden hour", tip: "Shoot from the bridge near the Flame Tree BBQ for the classic angle", bestTime: "45-60 min before sunset", direction: "West", lat: 28.3590, lng: -81.5903 },
+    { name: "Pandora Overlook (entering Pandora)", description: "The floating mountains catch warm pink light — otherworldly", tip: "Get above the crowd for a clear shot — use rocks as foreground", bestTime: "30-45 min before sunset", direction: "West", lat: 28.3594, lng: -81.5925 },
+    { name: "Asia Bridge (near Expedition Everest)", description: "Everest silhouetted against sunset sky — dramatic and powerful", tip: "Long shadows at golden hour add dimension to Everest", bestTime: "30-40 min before sunset", direction: "West", lat: 28.3580, lng: -81.5888 },
   ],
 };
 
@@ -159,7 +159,20 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Best Spots in {selectedPark}</p>
           {sunsetSpots.length === 0 ? (
             <p className="text-xs text-muted-foreground">Select a park to see sunset spots</p>
-          ) : sunsetSpots.map((spot, i) => (
+          ) : sunsetSpots.map((spot, i) => {
+            // Calculate walk time from user location
+            let walkMinutes: number | null = null;
+            let distanceFt: number | null = null;
+            if (userLat && userLng) {
+              const R = 6371000;
+              const dLat = (spot.lat - userLat) * Math.PI / 180;
+              const dLng = (spot.lng - userLng) * Math.PI / 180;
+              const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(spot.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+              const meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              walkMinutes = Math.round(meters / 80); // ~80 m/min standard walk
+              distanceFt = Math.round(meters * 3.281);
+            }
+            return (
             <div key={i} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
               <div className="flex items-start justify-between gap-2 mb-1">
                 <p className="text-sm font-bold text-foreground">{spot.name}</p>
@@ -168,13 +181,19 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
               <p className="text-xs text-muted-foreground mb-1">{spot.description}</p>
               <p className="text-xs text-primary">📸 {spot.tip}</p>
               <p className="text-xs text-muted-foreground mt-1">Facing: {spot.direction}</p>
-              {inPark && (
-                <div className="mt-2">
-                  <CompassButton destination={spot.name} context={`${selectedPark} · Sunset spot`} size="inline" />
+              {walkMinutes !== null && (
+                <div className="mt-2 pt-2 border-t border-white/8 flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">🚶</span>
+                  <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
+                  <span className="text-xs text-muted-foreground">({distanceFt! >= 1000 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
                 </div>
               )}
+              <div className="mt-2">
+                <CompassButton destination={spot.name} context={`${selectedPark} · Sunset spot`} size="inline" />
+              </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
 
