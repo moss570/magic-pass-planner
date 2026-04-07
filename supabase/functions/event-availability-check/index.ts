@@ -270,6 +270,7 @@ serve(async (req) => {
     const sixtySecondsAgo = new Date(Date.now() - 60 * 1000).toISOString();
     const today = new Date().toISOString().split("T")[0];
 
+    // Join with events table to check scrapable flag
     const { data: alerts, error: alertsErr } = await supabase
       .from("event_alerts")
       .select("*")
@@ -280,6 +281,18 @@ serve(async (req) => {
       .limit(10);
 
     if (alertsErr) throw alertsErr;
+
+    // Filter out non-scrapable events by checking events table
+    const eventUrls = [...new Set((alerts || []).map((a: any) => a.event_url))];
+    let nonScrapableUrls = new Set<string>();
+    if (eventUrls.length > 0) {
+      const { data: eventRows } = await supabase
+        .from("events")
+        .select("event_url, scrapable")
+        .in("event_url", eventUrls)
+        .eq("scrapable", false);
+      nonScrapableUrls = new Set((eventRows || []).map((e: any) => e.event_url));
+    }
 
     // Exclude priority alerts in active window (handled by priority cron)
     const standardAlerts = (alerts || []).filter((a: any) => {
