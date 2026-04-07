@@ -11,19 +11,30 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Convert a /dining/ info page URL to a /dine-res/ reservation URL
-// Disney's SPA does not honor query params for date/party pre-fill,
-// so we just link to the reservation page directly.
-function buildBookingUrl(infoUrl: string): string {
+// Convert a /dining/ info page URL to a /dine-res/ reservation URL slug
+// e.g. /dining/contemporary-resort/chef-mickeys/ → chef-mickeys
+// e.g. /dine-res/restaurant/tiffins/ → tiffins
+function extractSlug(url: string): string {
   try {
-    const url = new URL(infoUrl);
-    // e.g. /dining/contemporary-resort/chef-mickeys/ → chef-mickeys
-    const segments = url.pathname.replace(/\/+$/, "").split("/");
-    const slug = segments[segments.length - 1];
-    if (slug) {
-      return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
-    }
-  } catch { /* fall through */ }
+    const parsed = new URL(url);
+    const segments = parsed.pathname.replace(/\/+$/, "").split("/");
+    return segments[segments.length - 1] || "";
+  } catch { return ""; }
+}
+
+function buildBookingUrl(infoUrl: string): string {
+  const slug = extractSlug(infoUrl);
+  if (slug) return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
+  return infoUrl;
+}
+
+// Convert any Disney restaurant URL to the /dine-res/ reservation page
+// The old /dining/ info pages are now 404; the /dine-res/ pages show availability publicly
+function buildScrapingUrl(infoUrl: string): string {
+  // Already a /dine-res/ URL? Use as-is
+  if (infoUrl.includes("/dine-res/")) return infoUrl;
+  const slug = extractSlug(infoUrl);
+  if (slug) return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
   return infoUrl;
 }
 
@@ -43,9 +54,9 @@ async function checkAvailability(
   }
 
   try {
-    // Send the original /dining/ info page URL — no transform needed.
-    // The info page is public (no login wall) and has a "Check Available Days" button.
-    logStep("Sending to poller", { url: restaurantUrl, date, partySize, mealPeriods });
+    // Transform to /dine-res/ URL — old /dining/ info pages are 404 now
+    const scrapingUrl = buildScrapingUrl(restaurantUrl);
+    logStep("Sending to poller", { url: scrapingUrl, date, partySize, mealPeriods });
 
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
@@ -53,7 +64,7 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriods }),
+      body: JSON.stringify({ restaurantUrl: scrapingUrl, date, partySize, mealPeriods }),
     });
 
     if (!res.ok) {
