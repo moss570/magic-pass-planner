@@ -1001,12 +1001,10 @@ export default function LivePark() {
                           </div>
                         )}
 
-                        {/* Navigate button — only shown if in park */}
-                        {inPark && (
-                          <div className="mt-2">
-                            <CompassButton destination={ride.name} context={`${ride.area} · ${PARKS.find(p => p.slug === selectedPark)?.name}`} size="inline" />
-                          </div>
-                        )}
+                        {/* Navigate button */}
+                        <div className="mt-2">
+                          <CompassButton destination={ride.name} context={`${ride.area} · ${PARKS.find(p => p.slug === selectedPark)?.name}`} size="inline" />
+                        </div>
                       </>
                     ) : (
                       <p className="text-sm font-semibold text-muted-foreground">

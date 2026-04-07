@@ -18,11 +18,16 @@ const PARK_IDS: Record<string, string> = {
 // Magic Kingdom ride coordinates (lat/lng) for distance calc
 // Sourced from publicly available park maps
 const RIDE_COORDS: Record<string, { lat: number; lng: number; area: string; rideTime: number }> = {
+  // Tomorrowland
   "TRON Lightcycle / Run": { lat: 28.4195, lng: -81.5814, area: "Tomorrowland", rideTime: 1.5 },
   "Space Mountain": { lat: 28.4191, lng: -81.5793, area: "Tomorrowland", rideTime: 2.5 },
   "Tomorrowland Transit Authority PeopleMover": { lat: 28.4183, lng: -81.5793, area: "Tomorrowland", rideTime: 10 },
   "Tomorrowland Speedway": { lat: 28.4196, lng: -81.5783, area: "Tomorrowland", rideTime: 5 },
   "Buzz Lightyear's Space Ranger Spin": { lat: 28.4187, lng: -81.5801, area: "Tomorrowland", rideTime: 5 },
+  "Astro Orbiter": { lat: 28.4185, lng: -81.5798, area: "Tomorrowland", rideTime: 2 },
+  "Monsters Inc. Laugh Floor": { lat: 28.4184, lng: -81.5805, area: "Tomorrowland", rideTime: 15 },
+  "Walt Disney's Carousel of Progress": { lat: 28.4189, lng: -81.5786, area: "Tomorrowland", rideTime: 21 },
+  // Fantasyland
   "Seven Dwarfs Mine Train": { lat: 28.4214, lng: -81.5816, area: "Fantasyland", rideTime: 2.5 },
   "\"it's a small world\"": { lat: 28.4218, lng: -81.5830, area: "Fantasyland", rideTime: 11 },
   "Peter Pan's Flight": { lat: 28.4216, lng: -81.5821, area: "Fantasyland", rideTime: 3 },
@@ -32,12 +37,28 @@ const RIDE_COORDS: Record<string, { lat: number; lng: number; area: string; ride
   "Mad Tea Party": { lat: 28.4209, lng: -81.5822, area: "Fantasyland", rideTime: 2 },
   "Prince Charming Regal Carrousel": { lat: 28.4213, lng: -81.5825, area: "Fantasyland", rideTime: 2 },
   "Mickey's PhilharMagic": { lat: 28.4215, lng: -81.5815, area: "Fantasyland", rideTime: 12 },
+  "Enchanted Tales with Belle": { lat: 28.4220, lng: -81.5822, area: "Fantasyland", rideTime: 20 },
+  "The Many Adventures of Winnie the Pooh": { lat: 28.4210, lng: -81.5827, area: "Fantasyland", rideTime: 4 },
+  "Walt Disney World Railroad - Fantasyland": { lat: 28.4225, lng: -81.5820, area: "Fantasyland", rideTime: 20 },
+  "Casey Jr. Splash 'N' Soak Station": { lat: 28.4222, lng: -81.5830, area: "Fantasyland", rideTime: 0 },
+  // Frontierland
   "Big Thunder Mountain Railroad": { lat: 28.4203, lng: -81.5841, area: "Frontierland", rideTime: 3.5 },
   "Tiana's Bayou Adventure": { lat: 28.4193, lng: -81.5842, area: "Frontierland", rideTime: 11 },
+  "Country Bear Musical Jamboree": { lat: 28.4196, lng: -81.5838, area: "Frontierland", rideTime: 16 },
+  // Liberty Square
   "Haunted Mansion": { lat: 28.4198, lng: -81.5827, area: "Liberty Square", rideTime: 9 },
+  "The Hall of Presidents": { lat: 28.4200, lng: -81.5820, area: "Liberty Square", rideTime: 25 },
+  // Adventureland
   "Pirates of the Caribbean": { lat: 28.4188, lng: -81.5836, area: "Adventureland", rideTime: 9 },
   "Jungle Cruise": { lat: 28.4188, lng: -81.5829, area: "Adventureland", rideTime: 10 },
   "Walt Disney's Enchanted Tiki Room": { lat: 28.4185, lng: -81.5833, area: "Adventureland", rideTime: 12 },
+  "The Magic Carpets of Aladdin": { lat: 28.4186, lng: -81.5831, area: "Adventureland", rideTime: 2 },
+  "A Pirate's Adventure ~ Treasures of the Seven Seas": { lat: 28.4187, lng: -81.5835, area: "Adventureland", rideTime: 30 },
+  "Swiss Family Treehouse": { lat: 28.4186, lng: -81.5828, area: "Adventureland", rideTime: 15 },
+  // Main Street
+  "Walt Disney World Railroad - Main Street, U.S.A.": { lat: 28.4168, lng: -81.5812, area: "Main Street, U.S.A.", rideTime: 20 },
+  "Main Street Vehicles": { lat: 28.4170, lng: -81.5812, area: "Main Street, U.S.A.", rideTime: 5 },
+  "Cinderella Castle": { lat: 28.4197, lng: -81.5812, area: "Fantasyland", rideTime: 0 },
 };
 
 // Fireworks viewing spots from rides (researched from Disney Tourist Blog, WDWInfo)
