@@ -29,6 +29,7 @@ import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
 import AdminCommandCenter from "./pages/AdminCommandCenter";
+import MagicBeacon from "./pages/MagicBeacon";
 import EventAlerts from "./pages/EventAlerts";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/game-developer" element={<ProtectedRoute><GameDeveloper /></ProtectedRoute>} />
             <Route path="/photo-contest" element={<ProtectedRoute><PhotoContest /></ProtectedRoute>} />
             <Route path="/admin/command-center" element={<ProtectedRoute><AdminCommandCenter /></ProtectedRoute>} />
+            <Route path="/magic-beacon" element={<ProtectedRoute><MagicBeacon /></ProtectedRoute>} />
             <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
