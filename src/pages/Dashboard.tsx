@@ -132,13 +132,18 @@ const Dashboard = () => {
   const upcomingDates = (() => {
     if (mostRecentTrip?.start_date && daysToTrip !== null && daysToTrip <= 70 && mostRecentTrip.itinerary) {
       // Use trip dates
-      return mostRecentTrip.itinerary.slice(0, 5).map((day: any, i: number) => ({
-        date: day.date,
-        park: day.park,
-        parkEmoji: day.parkEmoji,
-        crowdLevel: day.crowdLevel,
-        weather: weatherForecast[i] || null,
-      }));
+      return mostRecentTrip.itinerary.slice(0, 5).map((day: any, i: number) => {
+        const w = weatherForecast[i] || null;
+        return {
+          date: day.date,
+          park: day.park,
+          parkEmoji: day.parkEmoji,
+          crowdLevel: w?.crowdLevel ?? day.crowdLevel,
+          crowdLabel: w?.crowdLabel ?? (day.crowdLevel <= 3 ? "Low" : day.crowdLevel <= 5 ? "Moderate" : day.crowdLevel <= 7 ? "Busy" : "Packed"),
+          crowdColor: w?.crowdColor ?? (day.crowdLevel <= 3 ? "green" : day.crowdLevel <= 5 ? "yellow" : day.crowdLevel <= 7 ? "orange" : "red"),
+          weather: w,
+        };
+      });
     }
     // Use next 5 days with weather
     return weatherForecast.slice(0, 5).map((w: any) => ({
