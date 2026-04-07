@@ -64,7 +64,7 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriods }),
+      body: JSON.stringify({ restaurantUrl: scrapingUrl, date, partySize, mealPeriods }),
     });
 
     if (!res.ok) {
