@@ -12,8 +12,6 @@ const logStep = (step: string, details?: any) => {
 };
 
 // Convert a /dining/ info page URL to a /dine-res/ reservation URL slug
-// e.g. /dining/contemporary-resort/chef-mickeys/ → chef-mickeys
-// e.g. /dine-res/restaurant/tiffins/ → tiffins
 function extractSlug(url: string): string {
   try {
     const parsed = new URL(url);
@@ -28,13 +26,14 @@ function buildBookingUrl(infoUrl: string): string {
   return infoUrl;
 }
 
-
 // Check availability via Railway Puppeteer poller
+// When cacheBust is true, appends a unique query param to force a fresh page load
 async function checkAvailability(
   restaurantUrl: string,
   date: string,
   partySize: number,
-  mealPeriods: string[]
+  mealPeriods: string[],
+  cacheBust = false
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
   const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
   const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
@@ -45,7 +44,15 @@ async function checkAvailability(
   }
 
   try {
-    logStep("Sending to poller", { url: restaurantUrl, date, partySize, mealPeriods });
+    // Cache-bust: add a unique timestamp param to the restaurant URL so Puppeteer
+    // fetches a completely fresh page (bypasses any CDN/edge caching)
+    let urlToCheck = restaurantUrl;
+    if (cacheBust) {
+      const separator = restaurantUrl.includes("?") ? "&" : "?";
+      urlToCheck = `${restaurantUrl}${separator}_cb=${Date.now()}`;
+    }
+
+    logStep("Sending to poller", { url: urlToCheck, date, partySize, mealPeriods, cacheBust });
 
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
@@ -53,7 +60,14 @@ async function checkAvailability(
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriods }),
+      body: JSON.stringify({
+        restaurantUrl: urlToCheck,
+        date,
+        partySize,
+        mealPeriods,
+        // Tell the poller to skip its own internal cache if any
+        noCache: cacheBust,
+      }),
     });
 
     if (!res.ok) {
@@ -75,6 +89,88 @@ async function checkAvailability(
   }
 }
 
+// Determine if the current time is within a priority launch window
+// Window: 5:59:45 AM ET to 6:15:00 AM ET on the day the reservation opens
+function isInPriorityWindow(windowOpensAt: string): boolean {
+  const opens = new Date(windowOpensAt);
+  const now = new Date();
+
+  // Priority window starts 15 seconds before the opening (5:59:45 AM ET)
+  const windowStart = new Date(opens.getTime() - 15 * 1000);
+  // Priority window ends 15 minutes after opening (6:15:00 AM ET)
+  const windowEnd = new Date(opens.getTime() + 15 * 60 * 1000);
+
+  return now >= windowStart && now <= windowEnd;
+}
+
+// Process a found-availability result: update alert, send notification
+async function handleAvailabilityFound(
+  supabase: any,
+  alert: any,
+  restaurant: any,
+  bookingUrls: string[],
+  restaurantUrl: string,
+  times: string[]
+) {
+  const bookingUrl = buildBookingUrl(bookingUrls[0] || restaurantUrl);
+
+  await supabase.from("dining_alerts").update({
+    status: "found",
+    availability_found_at: new Date().toISOString(),
+    availability_url: bookingUrl,
+    last_checked_at: new Date().toISOString(),
+    check_count: (alert.check_count || 0) + 1,
+    updated_at: new Date().toISOString(),
+  }).eq("id", alert.id);
+
+  logStep("AVAILABILITY FOUND!", {
+    restaurant: restaurant.name,
+    times,
+    date: alert.alert_date,
+    partySize: alert.party_size,
+    priority: alert.priority_launch || false,
+  });
+
+  const { data: userData } = await supabase.auth.admin.getUserById(alert.user_id);
+  if (userData?.user) {
+    const { data: notifData, error: notifError } = await supabase
+      .from("dining_notifications")
+      .insert({
+        alert_id: alert.id,
+        user_id: alert.user_id,
+        restaurant_name: restaurant.name,
+        alert_date: alert.alert_date,
+        party_size: alert.party_size,
+        availability_url: bookingUrl,
+        notification_type: alert.alert_sms ? "sms" : "email",
+        sent_at: null,
+      })
+      .select()
+      .single();
+
+    if (notifData && !notifError) {
+      try {
+        await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ notification_id: notifData.id }),
+          }
+        );
+        logStep("Notification SENT", { email: userData.user.email, restaurant: restaurant.name });
+      } catch (sendErr) {
+        logStep("Notification send failed (will retry)", {
+          error: sendErr instanceof Error ? sendErr.message : String(sendErr),
+        });
+      }
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -87,7 +183,6 @@ serve(async (req) => {
   );
 
   try {
-    // Direct test mode: check a single restaurant without needing a DB alert
     let body: any = {};
     try { body = await req.json(); } catch { /* empty body is fine */ }
 
@@ -122,7 +217,6 @@ serve(async (req) => {
         });
       }
 
-      // If URLs provided directly, use those; otherwise fetch from DB
       let urls: string[] = body.urls || [];
       if (urls.length === 0) {
         const { data: restaurants } = await supabase
@@ -150,9 +244,13 @@ serve(async (req) => {
       });
     }
 
+    // ── DIRECT TEST / INSTANT CHECK MODE ──
     if (body.test_url) {
       const isInstant = !!body.instant_alert_id;
-      logStep(isInstant ? "INSTANT FIRST CHECK" : "DIRECT TEST MODE", { url: body.test_url, date: body.date, partySize: body.party_size, mealPeriods: body.meal_periods, alertId: body.instant_alert_id });
+      logStep(isInstant ? "INSTANT FIRST CHECK" : "DIRECT TEST MODE", {
+        url: body.test_url, date: body.date, partySize: body.party_size,
+        mealPeriods: body.meal_periods, alertId: body.instant_alert_id,
+      });
       const { available, times, bookingUrls } = await checkAvailability(
         body.test_url,
         body.date || "2026-05-06",
@@ -160,12 +258,10 @@ serve(async (req) => {
         body.meal_periods || ["Dinner"]
       );
 
-      // If this is an instant check triggered on alert creation, update the alert
       if (isInstant && available) {
         const alertId = body.instant_alert_id;
         logStep("INSTANT CHECK - AVAILABILITY FOUND!", { alertId, times });
 
-        // Update the alert
         await supabase.from("dining_alerts").update({
           status: "found",
           availability_found_at: new Date().toISOString(),
@@ -175,7 +271,6 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         }).eq("id", alertId);
 
-        // Get alert details for notification
         const { data: alert } = await supabase.from("dining_alerts")
           .select("*, restaurant:restaurants(name, disney_url)")
           .eq("id", alertId).single();
@@ -207,7 +302,6 @@ serve(async (req) => {
           }
         }
       } else if (isInstant) {
-        // No availability found on instant check — just update last_checked_at
         await supabase.from("dining_alerts").update({
           last_checked_at: new Date().toISOString(),
           check_count: 1,
@@ -220,10 +314,135 @@ serve(async (req) => {
       });
     }
 
+    // ──────────────────────────────────────────────────────────────
+    // PRIORITY LAUNCH MODE
+    // Invoked by the 1-minute priority cron job.
+    // Finds priority_launch alerts whose window is active NOW,
+    // then performs two checks 30 seconds apart (cache-busted).
+    // ──────────────────────────────────────────────────────────────
+    if (body.priority_mode) {
+      logStep("⚡ PRIORITY LAUNCH MODE - Starting");
+      const startTime = Date.now();
+
+      // Find all priority alerts that are still watching and whose window is active
+      const { data: priorityAlerts, error: pErr } = await supabase
+        .from("dining_alerts")
+        .select(`*, restaurant:restaurants(id, name, location, disney_url)`)
+        .eq("status", "watching")
+        .eq("priority_launch", true)
+        .not("window_opens_at", "is", null)
+        .limit(25);
+
+      if (pErr) throw pErr;
+
+      // Filter to only those currently in their priority window
+      const activeAlerts = (priorityAlerts || []).filter(
+        (a: any) => a.window_opens_at && isInPriorityWindow(a.window_opens_at)
+      );
+
+      logStep("Priority alerts in active window", { total: priorityAlerts?.length || 0, active: activeAlerts.length });
+
+      if (activeAlerts.length === 0) {
+        // Also disable priority_launch for alerts whose window has fully passed
+        const now = new Date();
+        for (const a of (priorityAlerts || [])) {
+          if (a.window_opens_at) {
+            const windowEnd = new Date(new Date(a.window_opens_at).getTime() + 15 * 60 * 1000);
+            if (now > windowEnd) {
+              await supabase.from("dining_alerts").update({
+                priority_launch: false,
+                updated_at: now.toISOString(),
+              }).eq("id", a.id);
+              logStep("Disabled expired priority flag", { alertId: a.id });
+            }
+          }
+        }
+
+        return new Response(JSON.stringify({
+          priority: true, checked: 0, found: 0,
+          message: "No alerts in active priority window",
+          durationMs: Date.now() - startTime,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+        });
+      }
+
+      let checked = 0;
+      let found = 0;
+
+      for (const alert of activeAlerts) {
+        const restaurant = alert.restaurant;
+        if (!restaurant?.disney_url) continue;
+
+        const restaurantUrl = restaurant.disney_url;
+
+        // ── First check (cache-busted) ──
+        logStep("⚡ Priority check #1", { name: restaurant.name, date: alert.alert_date });
+        const result1 = await checkAvailability(
+          restaurantUrl, alert.alert_date, alert.party_size,
+          alert.meal_periods || ["Dinner"], true // cacheBust = true
+        );
+
+        if (result1.available) {
+          found++;
+          await handleAvailabilityFound(supabase, alert, restaurant, result1.bookingUrls, restaurantUrl, result1.times);
+          checked++;
+          continue; // Don't need second check
+        }
+
+        // Update last_checked_at after first check
+        await supabase.from("dining_alerts").update({
+          last_checked_at: new Date().toISOString(),
+          check_count: (alert.check_count || 0) + 1,
+          updated_at: new Date().toISOString(),
+        }).eq("id", alert.id);
+
+        // ── Wait 30 seconds ──
+        logStep("⚡ Waiting 30s before second check", { name: restaurant.name });
+        await new Promise(resolve => setTimeout(resolve, 30_000));
+
+        // ── Second check (cache-busted) ──
+        logStep("⚡ Priority check #2", { name: restaurant.name, date: alert.alert_date });
+        const result2 = await checkAvailability(
+          restaurantUrl, alert.alert_date, alert.party_size,
+          alert.meal_periods || ["Dinner"], true // cacheBust = true
+        );
+
+        if (result2.available) {
+          found++;
+          await handleAvailabilityFound(supabase, alert, restaurant, result2.bookingUrls, restaurantUrl, result2.times);
+        } else {
+          await supabase.from("dining_alerts").update({
+            last_checked_at: new Date().toISOString(),
+            check_count: (alert.check_count || 0) + 2,
+            updated_at: new Date().toISOString(),
+          }).eq("id", alert.id);
+        }
+
+        checked++;
+
+        // Small delay between different alerts
+        if (activeAlerts.indexOf(alert) < activeAlerts.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      const duration = Date.now() - startTime;
+      logStep("⚡ Priority run complete", { checked, found, durationMs: duration });
+
+      return new Response(JSON.stringify({ priority: true, checked, found, durationMs: duration }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // STANDARD SCHEDULED CHECK (existing 5-minute cron)
+    // ──────────────────────────────────────────────────────────────
     logStep("Starting dining availability check run");
     const startTime = Date.now();
 
     // Get active alerts not checked in last 60 seconds
+    // Exclude priority_launch alerts that are in their active window (handled by priority cron)
     const sixtySecondsAgo = new Date(Date.now() - 60 * 1000).toISOString();
     const today = new Date().toISOString().split("T")[0];
 
@@ -237,9 +456,19 @@ serve(async (req) => {
 
     if (alertsError) throw alertsError;
 
-    logStep("Alerts to check", { count: alerts?.length || 0 });
+    // Filter out priority alerts that are currently in their active window
+    // (those are handled by the priority cron to avoid double-checking)
+    const standardAlerts = (alerts || []).filter((a: any) => {
+      if (a.priority_launch && a.window_opens_at && isInPriorityWindow(a.window_opens_at)) {
+        logStep("Skipping priority alert (handled by priority cron)", { alertId: a.id });
+        return false;
+      }
+      return true;
+    });
 
-    if (!alerts || alerts.length === 0) {
+    logStep("Alerts to check", { total: alerts?.length || 0, standard: standardAlerts.length });
+
+    if (standardAlerts.length === 0) {
       return new Response(JSON.stringify({ message: "No alerts to check", checked: 0, durationMs: Date.now() - startTime }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
@@ -248,7 +477,7 @@ serve(async (req) => {
     let checked = 0;
     let found = 0;
 
-    for (const alert of alerts) {
+    for (const alert of standardAlerts) {
       try {
         const restaurant = alert.restaurant;
         if (!restaurant) continue;
@@ -276,64 +505,7 @@ serve(async (req) => {
 
         if (available) {
           found++;
-          updateData.status = "found";
-          updateData.availability_found_at = new Date().toISOString();
-          // Use booking URL from poller if available, otherwise link to the info page
-          updateData.availability_url = buildBookingUrl(bookingUrls[0] || restaurantUrl);
-
-          logStep("AVAILABILITY FOUND!", {
-            restaurant: restaurant.name,
-            times,
-            date: alert.alert_date,
-            partySize: alert.party_size,
-          });
-
-          // Get user email and send notification
-          const { data: userData } = await supabase.auth.admin.getUserById(alert.user_id);
-          if (userData?.user) {
-            const { data: notifData, error: notifError } = await supabase
-              .from("dining_notifications")
-              .insert({
-                alert_id: alert.id,
-                user_id: alert.user_id,
-                restaurant_name: restaurant.name,
-                alert_date: alert.alert_date,
-                party_size: alert.party_size,
-                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl),
-                notification_type: alert.alert_sms ? "sms" : "email",
-                sent_at: null,
-              })
-              .select()
-              .single();
-
-            if (notifData && !notifError) {
-              try {
-                const sendResponse = await fetch(
-                  `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification`,
-                  {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ notification_id: notifData.id }),
-                  }
-                );
-                const sendResult = await sendResponse.json();
-                logStep("Notification SENT", {
-                  email: userData.user.email,
-                  restaurant: restaurant.name,
-                  results: sendResult,
-                });
-              } catch (sendErr) {
-                logStep("Notification send failed (will retry)", {
-                  error: sendErr instanceof Error ? sendErr.message : String(sendErr),
-                });
-              }
-            } else {
-              logStep("Failed to log notification", { error: notifError?.message });
-            }
-          }
+          await handleAvailabilityFound(supabase, alert, restaurant, bookingUrls, restaurantUrl, times);
         }
 
         await supabase.from("dining_alerts").update(updateData).eq("id", alert.id);
