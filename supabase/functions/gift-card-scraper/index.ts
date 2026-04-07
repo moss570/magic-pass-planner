@@ -195,7 +195,7 @@ serve(async (req) => {
           sale_price: raiseResult.price,
           deal_url: raiseResult.url,
           is_live: raiseResult.available && isGoodDeal,
-          notes: `Secondary market. ${raiseResult.savings.toFixed(2) > 0 ? `Save $${raiseResult.savings.toFixed(2)} on $${cardValue} card.` : "No savings available right now."} Instant digital delivery.`,
+          notes: `Secondary market. ${raiseResult.savings > 0 ? `Save $${raiseResult.savings.toFixed(2)} on $${cardValue} card.` : "No savings available right now."} Instant digital delivery.`,
           last_verified: new Date().toISOString(),
         }, { onConflict: "retailer,card_value" });
         results.push(`Raise $${cardValue}: $${raiseResult.price} (save $${raiseResult.savings.toFixed(2)})`);
