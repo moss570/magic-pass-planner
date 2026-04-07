@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Castle, ChevronRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import WelcomeFlow from "@/components/WelcomeFlow";
 import { Progress } from "@/components/ui/progress";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
@@ -29,16 +30,22 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
   const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [realAlerts, setRealAlerts] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
-      supabase.from("users_profile").select("first_name").eq("id", user.id).single()
+      supabase.from("users_profile").select("first_name, has_seen_welcome").eq("id", user.id).single()
         .then(({ data }) => {
           if (data?.first_name && data.first_name.trim()) {
             setFirstName(data.first_name);
           } else {
             setFirstName("there");
+          }
+          // Show welcome if never seen and localStorage check
+          const seenLocally = localStorage.getItem("magic-pass:welcome-seen");
+          if (!data?.has_seen_welcome && !seenLocally) {
+            setShowWelcome(true);
           }
         });
 
@@ -87,6 +94,8 @@ const Dashboard = () => {
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
   return (
+    <>
+    {showWelcome && <WelcomeFlow onComplete={() => setShowWelcome(false)} />}
     <DashboardLayout title={`${greeting}, ${firstName} 👋`} subtitle={mostRecentTrip ? `Your next trip: ${mostRecentTrip.parks?.[0] || "Disney"} ${mostRecentTrip.start_date ? "— " + Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000)) + " days away" : ""}` : "Plan your perfect Disney adventure"}>
       <div className="space-y-6">
         {/* ROW 1 — Stat cards */}
@@ -224,6 +233,7 @@ const Dashboard = () => {
         </div>
       </div>
     </DashboardLayout>
+    </>
   );
 };
 

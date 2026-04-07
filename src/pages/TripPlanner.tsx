@@ -7,6 +7,7 @@ import {
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
