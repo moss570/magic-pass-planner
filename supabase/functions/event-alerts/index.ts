@@ -140,6 +140,20 @@ serve(async (req) => {
       });
     }
 
+    // ─── LIST EVENTS (catalog) ─────────────────────────────────
+    if (action === "events") {
+      const { data, error } = await supabaseAdmin
+        .from("events")
+        .select("*")
+        .eq("is_active", true)
+        .order("event_name", { ascending: true });
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ events: data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     // ─── LIST USER EVENT ALERTS ─────────────────────────────────
     if (action === "list") {
       const { data, error } = await supabaseAdmin
