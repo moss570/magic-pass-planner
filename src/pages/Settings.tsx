@@ -15,6 +15,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [firstName, setFirstName] = useState("");
