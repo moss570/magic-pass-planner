@@ -110,7 +110,7 @@ const Settings = () => {
         <CardHeader className="p-4 md:p-6">
           <CardTitle className="text-base md:text-lg">👤 My Account</CardTitle>
         </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
+         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">First Name</label>
@@ -119,6 +119,23 @@ const Settings = () => {
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Last Name</label>
               <Input value={lastName} onChange={(e) => setLastName(e.target.value)} className="bg-background/50 border-primary/20 text-sm" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Username <span className="text-muted-foreground/60">— Your public display name</span></label>
+              <Input value={username} onChange={(e) => setUsername(e.target.value.replace(/\s/g, "").toLowerCase())} placeholder="@magicfan123" className="bg-background/50 border-primary/20 text-sm" maxLength={30} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Membership Category</label>
+              <Select value={membershipCategory} onValueChange={setMembershipCategory}>
+                <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Annual Passholder">🎟️ Annual Passholder</SelectItem>
+                  <SelectItem value="DVC Member">🏰 DVC Member</SelectItem>
+                  <SelectItem value="Out of State Traveler">✈️ Out of State Traveler</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div>
