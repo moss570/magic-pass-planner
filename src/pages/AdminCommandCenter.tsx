@@ -280,6 +280,134 @@ export default function AdminCommandCenter() {
           </button>
         </div>
 
+        {/* ── BEACON EVENTS ────────────────────────────────── */}
+        {tab === "events" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">Create and manage Magic Beacon community events. Users RSVP from the Events tab.</p>
+              <button onClick={() => setShowAddEvent(!showAddEvent)}
+                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>
+                <Plus className="w-3.5 h-3.5" /> New Event
+              </button>
+            </div>
+
+            {/* Add / Edit Form */}
+            {(showAddEvent || editingEvent) && (() => {
+              const evt = editingEvent || newEvent;
+              const setEvt = (updates: any) => editingEvent ? setEditingEvent({ ...editingEvent, ...updates }) : setNewEvent({ ...newEvent, ...updates });
+              const PARKS = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Magic Kingdom Resorts", "Disney Springs"];
+              const BADGE_OPTIONS = [
+                { badge: "Trading Event", color: "bg-purple-500/20 text-purple-400" },
+                { badge: "Ride Marathon", color: "bg-red-500/20 text-red-400" },
+                { badge: "Foodie Trail", color: "bg-yellow-500/20 text-yellow-400" },
+                { badge: "Photo Walk", color: "bg-orange-500/20 text-orange-400" },
+                { badge: "Meetup", color: "bg-blue-500/20 text-blue-400" },
+                { badge: "Event", color: "bg-primary/20 text-primary" },
+              ];
+              return (
+                <div className="rounded-xl p-5 border border-primary/20" style={{ background: "#111827" }}>
+                  <p className="text-sm font-bold text-foreground mb-4">{editingEvent ? "✏️ Edit Event" : "🎪 Create New Event"}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <input placeholder="Event title *" value={evt.title} onChange={e => setEvt({ title: e.target.value })}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    <input placeholder="Emoji (e.g. 🃏)" value={evt.emoji} onChange={e => setEvt({ emoji: e.target.value })} maxLength={4}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    <select value={evt.park} onChange={e => setEvt({ park: e.target.value })}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }}>
+                      {PARKS.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                    <input placeholder="Location (e.g. CommuniCore Plaza) *" value={evt.location} onChange={e => setEvt({ location: e.target.value })}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    <input placeholder="Date (e.g. May 20, 2026) *" value={evt.event_date} onChange={e => setEvt({ event_date: e.target.value })}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    <input placeholder="Time (e.g. 12:00 PM – 2:00 PM) *" value={evt.event_time} onChange={e => setEvt({ event_time: e.target.value })}
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                  </div>
+                  <textarea placeholder="Description..." value={evt.description} onChange={e => setEvt({ description: e.target.value })} rows={3}
+                    className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3" style={{ background: "#0D1230" }} />
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Badge Style</p>
+                    <div className="flex flex-wrap gap-2">
+                      {BADGE_OPTIONS.map(b => (
+                        <button key={b.badge} onClick={() => setEvt({ badge: b.badge, badge_color: b.color })}
+                          className={`text-xs px-3 py-1.5 rounded-full font-semibold ${b.color} ${evt.badge === b.badge ? "ring-2 ring-primary" : ""}`}>
+                          {b.badge}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => saveEvent(!editingEvent)}
+                      className="px-5 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                      {editingEvent ? "Save Changes" : "Create Event"}
+                    </button>
+                    <button onClick={() => { setShowAddEvent(false); setEditingEvent(null); }}
+                      className="px-4 py-2.5 rounded-lg text-sm text-muted-foreground border border-white/10 hover:text-foreground">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Event List */}
+            {beaconEvents.length === 0 ? (
+              <div className="rounded-xl p-8 text-center border border-white/8" style={{ background: "#111827" }}>
+                <Calendar className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm font-semibold text-foreground mb-1">No events yet</p>
+                <p className="text-xs text-muted-foreground">Create your first community event above</p>
+              </div>
+            ) : (
+              beaconEvents.map(evt => {
+                const rsvps = eventRsvps[evt.id] || [];
+                return (
+                  <div key={evt.id} className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${evt.badge_color}`}>{evt.badge}</span>
+                            {!evt.is_active && <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">Inactive</span>}
+                          </div>
+                          <p className="text-base font-black text-foreground">{evt.emoji} {evt.title}</p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button onClick={() => setEditingEvent({ ...evt })} className="text-xs text-primary hover:underline">Edit</button>
+                          <button onClick={() => deleteEvent(evt.id)} className="text-xs text-red-400 hover:underline">Delete</button>
+                        </div>
+                      </div>
+                      <p className="text-xs text-primary mb-0.5">📍 {evt.park} · {evt.location}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">📅 {evt.event_date}</p>
+                      <p className="text-xs text-muted-foreground mb-2">🕐 {evt.event_time}</p>
+                      {evt.description && <p className="text-xs text-muted-foreground leading-relaxed mb-3">{evt.description}</p>}
+
+                      {/* RSVPs */}
+                      <div className="border-t border-white/8 pt-3">
+                        <p className="text-xs font-bold text-foreground mb-2 flex items-center gap-2">
+                          <Users className="w-3.5 h-3.5 text-primary" />
+                          {rsvps.length} RSVP{rsvps.length !== 1 ? "s" : ""}
+                        </p>
+                        {rsvps.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">No RSVPs yet</p>
+                        ) : (
+                          <div className="space-y-1 max-h-40 overflow-y-auto">
+                            {rsvps.map((r: any) => (
+                              <div key={r.id} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white/5 text-xs">
+                                <span className="text-foreground">{r.first_name || "Unknown"} {r.last_name || ""}</span>
+                                <span className="text-muted-foreground">{r.email || "—"}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+
         {/* ── GAME ANALYTICS ───────────────────────────────── */}
         {tab === "games" && (
           <div className="space-y-4">
