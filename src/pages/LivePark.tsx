@@ -8,6 +8,7 @@ import {
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import { Link, useLocation } from "react-router-dom";
+import CarFinder from "@/components/CarFinder";
 import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
@@ -842,6 +843,9 @@ export default function LivePark() {
             </div>
           </div>
         )}
+
+        {/* Car Finder widget — show when in park or always accessible */}
+        <CarFinder />
 
         {/* Stats Row */}
         {parkData && (
