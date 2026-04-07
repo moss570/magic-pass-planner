@@ -158,13 +158,17 @@ const LINE_GAMES = [
     badge: "🚧 Coming Soon",
   },
   {
-    id: "where-am-i",
-    name: "Where Am I?",
-    icon: "📸",
-    description: "Guess the Disney location from a close-up photo!",
-    type: "coming-soon",
-    comingSoon: true,
-    badge: "🚧 Coming Soon",
+    id: "word-scramble",
+    name: "Word Scramble",
+    icon: "🔤",
+    description: "Unscramble Disney words!",
+    words: [
+      { scrambled: "CKYEMI", answer: "MICKEY", answer2: "MICKEY" },
+      { scrambled: "NIEMN", answer: "MINNIE", answer2: "MINNIE" },
+      { scrambled: "FOOLYG", answer: "GOOFY", answer2: "GOOFY" },
+      { scrambled: "DLNADO", answer: "DONALD", answer2: "DONALD" },
+      { scrambled: "TULOP", answer: "PLUTO", answer2: "PLUTO" },
+    ],
   },
 ];
 
@@ -411,7 +415,7 @@ function LineGames() {
           </div>
           <div className="text-center mb-4">
             <p className="text-3xl font-bold text-primary tracking-[0.3em]">{LINE_GAMES[2].words[scrambleIdx].scrambled}</p>
-            <p className="text-xs text-muted-foreground mt-2">Hint: {LINE_GAMES[2].words[scrambleIdx].hint}</p>
+            <p className="text-xs text-muted-foreground mt-2">Unscramble the letters!</p>
           </div>
           <div className="flex gap-2">
             <input
@@ -1043,12 +1047,6 @@ export default function LivePark() {
               className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
             >
               📸 Where Am I? — Play Now!
-            </button>
-            <!-- Ride Line Quest removed -->
-              className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-3"
-              style={{ background: "#F5C842" }}
-            >
-              🏛️ Ride Line Quest — Play Now!
             </button>
             <LineGames />
           </div>
