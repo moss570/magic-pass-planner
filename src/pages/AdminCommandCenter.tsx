@@ -49,6 +49,15 @@ export default function AdminCommandCenter() {
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [newEvent, setNewEvent] = useState({ title: "", emoji: "🎪", type: "experience", park: "Magic Kingdom", location: "", event_date: "", event_time: "", description: "", badge: "Event", badge_color: "bg-primary/20 text-primary" });
 
+  // System Health data
+  const [healthData, setHealthData] = useState<{
+    diningAlerts: any[]; eventAlerts: any[]; diningNotifs: any[]; eventNotifs: any[];
+    recentDiningErrors: number; recentEventErrors: number;
+  }>({ diningAlerts: [], eventAlerts: [], diningNotifs: [], eventNotifs: [], recentDiningErrors: 0, recentEventErrors: 0 });
+  const [diagResults, setDiagResults] = useState<any[]>([]);
+  const [diagRunning, setDiagRunning] = useState(false);
+  const [diagProgress, setDiagProgress] = useState("");
+
   useEffect(() => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
       navigate("/dashboard");
