@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Radio, MapPin, Clock, Users, Plus, X, Calendar, ChevronRight, Star } from "lucide-react";
+import { Radio, MapPin, Clock, Users, Plus, X, Calendar, ChevronRight, Star, Navigation } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import CompassModal from "@/components/CompassModal";
 
 const PARKS = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Typhoon Lagoon", "Blizzard Beach"];
 
