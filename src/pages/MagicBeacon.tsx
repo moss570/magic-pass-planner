@@ -152,6 +152,7 @@ export default function MagicBeacon() {
   const [duration, setDuration] = useState<"30" | "60" | "120" | "close">("60");
   const [beaconExpiry, setBeaconExpiry] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
+  const [compassTarget, setCompassTarget] = useState<{ spot: string; park: string } | null>(null);
 
   const BEACON_ACTIVITIES = [
     "Speed Walking Group",
@@ -181,14 +182,22 @@ export default function MagicBeacon() {
     return () => clearInterval(interval);
   }, [beaconExpiry]);
 
-  // Demo beacons
-  useEffect(() => {
-    setBeacons([
-      { id: "1", park: "Magic Kingdom", spot: "Space Mountain Entrance", vibe: "Love coasters, happy to ride together 🎢", passTier: "Incredi-Pass", groupSize: "solo", expiresIn: "42 min", isExpired: false },
-      { id: "2", park: "Magic Kingdom", spot: "Fantasyland Carousel", vibe: "Family of Disney adults, first timers welcome 🏰", passTier: "Sorcerer Pass", groupSize: "small", expiresIn: "1h 18min", isExpired: false },
-      { id: "3", park: "EPCOT", spot: "France Pavilion Bridge", vibe: "EPCOT food lover, let's chat 🍷", passTier: "Incredi-Pass", groupSize: "pair", expiresIn: "28 min", isExpired: false },
-    ]);
-  }, []);
+  // Live beacons — start empty (will be populated from DB when backend is wired)
+  // When user starts their own beacon, it appears in the list for others
+
+  // Haversine helper for walk time
+  const calcDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const headingOver = (beacon: any) => {
+    toast({ title: "📡 On my way!", description: `The beacon host has been notified you're heading to ${beacon.spot}` });
+    setCompassTarget({ spot: beacon.spot, park: beacon.park });
+  };
 
   const startBeacon = () => {
     if (!beaconTitle.trim()) { toast({ title: "Enter a beacon title", variant: "destructive" }); return; }
