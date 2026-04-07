@@ -1,68 +1,73 @@
 
 
-## Plan: Build Complete Disney Restaurant Database (408 Restaurants)
+# Enchanting Extras — Isolated Event Alert System
 
-### Current State
-- Database has **73 restaurants** across 17 locations
-- Disney's website lists **408 dining options** across all parks, resorts, Disney Springs, water parks, and BoardWalk
+## Overview
+Fully isolated event availability monitoring system (Droid Depot, Dessert Parties, etc.) with its own tables, edge functions, and Railway scraper endpoint. Zero changes to existing dining code.
 
-### Approach
+## Plan
 
-**Step 1: Write a parsing script to extract all 408 restaurants from Disney's dining page**
+### 1. Database Migration — Two New Tables
 
-The scraped markdown contains structured data for every restaurant:
-- Name, service type (Table Service / Quick Service), location, price range, cuisine tags, and Disney URL
+**`event_alerts`** — mirrors dining_alerts structure:
+- id, user_id, event_name, event_url, alert_date, party_size, preferred_time (Any/Morning/Afternoon/Evening)
+- alert_email (default true), alert_sms (default false)
+- status (watching/found/cancelled/expired)
+- priority_launch, window_opens_at (for midnight launch)
+- last_checked_at, check_count, availability_found_at, found_times (text[])
+- created_at, updated_at
+- RLS: `auth.uid() = user_id` for ALL (authenticated)
 
-The script will parse each restaurant entry and produce a structured JSON with fields matching our `restaurants` table schema.
+**`event_notifications`** — mirrors dining_notifications:
+- id, alert_id, user_id, event_name, alert_date, party_size, notification_type
+- sent_at, delivery_status, delivery_details, retry_count, created_at
+- RLS: SELECT only for `auth.uid() = user_id`
 
-**Step 2: Map Disney locations to our `location` and `location_type` columns**
+### 2. Edge Function: `event-alerts`
+CRUD (list/create/cancel) for event alerts. Same auth pattern as `dining-alerts`.
 
-Categorize each into:
-- **Park**: Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Typhoon Lagoon, Blizzard Beach
-- **Resort**: All resort hotels (Contemporary, Grand Floridian, Polynesian, etc.)
-- **Disney Springs**: Disney Springs restaurants
-- **Other**: ESPN Wide World of Sports, Four Seasons, BoardWalk (non-resort)
+**Midnight Launch Logic**: For alerts 60 days out, `window_opens_at` = **11:59:45 PM ET** the night before (not 6 AM like dining). Sets `priority_launch = true`.
 
-**Step 3: Determine `requires_reservation` and service attributes**
+### 3. Edge Function: `event-availability-check`
+Isolated poller calling Railway's new `/check-event` endpoint (separate from `/check`).
 
-- Restaurants with "Check Availability Calendar" links = `requires_reservation: true`
-- Quick Service only = `requires_reservation: false, accepts_walk_ins: true`
-- Table Service = `requires_reservation: true`
+- **Standard mode**: Checks all watching event alerts (5-min cron)
+- **Priority mode**: 1-min cron for midnight launch alerts (11:59:45 PM – 12:15 AM ET window)
+- On availability found → insert into `event_notifications` → call `send-notification` with `notification_source: "event"`
 
-**Step 4: Deduplicate against existing 73 restaurants**
-
-Match by `disney_url` slug to avoid duplicates. For existing restaurants, skip insertion. For new ones (~335), insert with all parsed fields.
-
-**Step 5: Insert into database**
-
-Use the Supabase insert tool to add all new restaurants in batches.
-
-### Technical Details
-
-**Data extraction from the scraped markdown:**
-Each restaurant block follows this pattern:
+The `/check-event` endpoint payload instructs Railway to perform the multi-layer scrape:
+```json
+{
+  "eventUrl": "https://...",
+  "date": "2026-06-05",
+  "partySize": 2,
+  "steps": ["check_available_days", "time_of_day_buttons", "view_more_times", "scrape_pills"]
+}
 ```
-[cuisine tags\\\name\\\service type\\\location\\\price range](disney_url)
-```
+The actual Puppeteer implementation of Steps A-D lives on Railway (outside Lovable scope), but this edge function sends the right parameters.
 
-**Column mapping:**
-| Scraped Field | DB Column |
-|---|---|
-| Restaurant name | `name` |
-| Disney URL path | `disney_url` (converted to .com) |
-| Location text | `location` |
-| Park/Resort/Springs | `location_type` |
-| Price range text | `price_range` |
-| Cuisine tags | `cuisine` |
-| Table/Quick Service | `requires_reservation`, `accepts_walk_ins` |
-| Has "Check Availability" link | `requires_reservation: true` |
+### 4. Modify `send-notification` (minimal, backward-compatible)
+Add optional `notification_source` field support:
+- When `"event"`: email subject becomes "🎪 Event Alert — [Name] Available!", banner says "EVENT SLOT AVAILABLE!", SMS prefix becomes "🎪 Magic Pass Plus EVENT:"
+- When absent or `"dining"`: existing behavior unchanged
+- Also support reading from `event_notifications` table when source is event
 
-**URL conversion:** Scraped URLs use `.co.uk` domain (geo-redirect). Convert to `disneyworld.disney.go.com` for the US version.
+### 5. Fix Build Errors in `AdminCommandCenter.tsx`
+Cast `game_sessions` and `user_messages` queries with `as any` to bypass missing generated types — these tables exist in DB but aren't in the auto-generated types file.
 
-**Files modified:**
-1. No codebase changes needed -- this is a data-only operation
-2. Database: ~335 new rows inserted into `restaurants` table via insert tool
+### 6. pg_cron Jobs (via SQL insert)
+- `check-event-alerts`: every 5 minutes → `event-availability-check`
+- `priority-event-check`: every 1 minute → `event-availability-check` with `{ "priority": true }`
 
-### What You'll Get
-A complete database of all 408 Disney World dining locations with accurate URLs, locations, cuisine types, and price ranges -- ready for the dining alerts feature to reference.
+## What is NOT changed
+- `dining_alerts` table, `dining-alerts` function, `dining-availability-check` function — all untouched
+- Railway `index.js` — untouched (new `/check-event` is a separate Railway-side addition)
+- Existing notification delivery logic — preserved, only extended with optional labeling
+
+## Files Created/Modified
+- **New migration**: `event_alerts` + `event_notifications` tables with RLS
+- **New**: `supabase/functions/event-alerts/index.ts`
+- **New**: `supabase/functions/event-availability-check/index.ts`
+- **Modified**: `supabase/functions/send-notification/index.ts` (add event labeling)
+- **Modified**: `src/pages/AdminCommandCenter.tsx` (fix type errors)
 
