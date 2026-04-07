@@ -209,6 +209,18 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
           {fireworksRides.map(ride => {
             const getInLine = minutesUntil - ride.wait - ride.rideTime - 2;
             const getInLineAt = new Date(now.getTime() + getInLine * 60000);
+            // Walk time calculation
+            let walkMinutes: number | null = null;
+            let distanceFt: number | null = null;
+            if (userLat && userLng) {
+              const R = 6371000;
+              const dLat = (ride.lat - userLat) * Math.PI / 180;
+              const dLng = (ride.lng - userLng) * Math.PI / 180;
+              const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(ride.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+              const meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              walkMinutes = Math.round(meters / 80);
+              distanceFt = Math.round(meters * 3.281);
+            }
             return (
               <div key={ride.name} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                 <div className="flex items-start justify-between gap-2 mb-1">
@@ -227,11 +239,16 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
                 ) : (
                   <p className="text-xs text-muted-foreground mt-2 italic">Not enough time before fireworks</p>
                 )}
-                {inPark && (
-                  <div className="mt-2">
-                    <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
+                {walkMinutes !== null && (
+                  <div className="mt-2 pt-2 border-t border-white/8 flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">🚶</span>
+                    <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
+                    <span className="text-xs text-muted-foreground">({distanceFt! >= 5280 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
                   </div>
                 )}
+                <div className="mt-2">
+                  <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
+                </div>
               </div>
             );
           })}
