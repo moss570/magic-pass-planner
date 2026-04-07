@@ -338,7 +338,16 @@ export default function MagicBeacon() {
               <div className="space-y-4">
                 <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                   <p className="text-xs font-bold text-foreground mb-3">🏰 Start Your Magic Beacon</p>
-                  <p className="text-xs text-muted-foreground mb-4">Let other APs in the park know where you are. No personal info is shared — just your location and vibe.</p>
+                  <p className="text-xs text-muted-foreground mb-4">Let other APs in the park know where you are. Your beacon will be shared with all passholders in the same park and posted to the Social Feed.</p>
+
+                  {/* Beacon Title */}
+                  <div className="mb-3">
+                    <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Beacon Title *</label>
+                    <input value={beaconTitle} onChange={e => setBeaconTitle(e.target.value)} maxLength={60}
+                      placeholder="e.g. Pin Trading at Frontierland!"
+                      className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                      style={{ background: "#0D1230", minHeight: 44 }} />
+                  </div>
 
                   {/* Park */}
                   <div className="mb-3">
