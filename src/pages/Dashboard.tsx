@@ -146,6 +146,8 @@ const Dashboard = () => {
       park: null,
       parkEmoji: null,
       crowdLevel: w.crowdLevel,
+      crowdLabel: w.crowdLabel,
+      crowdColor: w.crowdColor,
       weather: w,
     }));
   })();
