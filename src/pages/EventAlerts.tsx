@@ -1,28 +1,31 @@
 import { useState, useEffect, useCallback } from "react";
-import { Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Sparkles } from "lucide-react";
+import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const POPULAR_EVENTS = [
-  { name: "Savi's Workshop", url: "https://disneyworld.disney.go.com/experiences/hollywood-studios/savis-workshop-handbuilt-lightsabers/", category: "Experience" },
-  { name: "Droid Depot", url: "https://disneyworld.disney.go.com/experiences/hollywood-studios/droid-depot/", category: "Experience" },
-  { name: "Disney Villains After Hours", url: "https://disneyworld.disney.go.com/events/magic-kingdom/disney-villains-after-hours/", category: "After Hours" },
-  { name: "Disney H2O Glow", url: "https://disneyworld.disney.go.com/events/typhoon-lagoon/h2o-glow/", category: "After Hours" },
-  { name: "Ferrytale Fireworks Dessert Cruise", url: "https://disneyworld.disney.go.com/dining/contemporary-resort/ferrytale-fireworks-dessert-cruise/", category: "Dessert Party" },
-  { name: "Star Wars Dessert Party", url: "https://disneyworld.disney.go.com/dining/hollywood-studios/star-wars-galactic-spectacular-dessert-party/", category: "Dessert Party" },
-  { name: "EPCOT Fireworks Dessert Party", url: "https://disneyworld.disney.go.com/dining/epcot/harmonious-dessert-party/", category: "Dessert Party" },
-  { name: "Bibbidi Bobbidi Boutique", url: "https://disneyworld.disney.go.com/events/magic-kingdom/bibbidi-bobbidi-boutique/", category: "Experience" },
-];
-
+const categoryFilters = ["All", "Experience", "Tour", "After Hours", "Dessert Party", "Festival", "Recreation"];
 const timePreferences = ["Any", "Morning", "Afternoon", "Evening"];
+
+interface Event {
+  id: string;
+  event_name: string;
+  event_url: string;
+  category: string;
+  location: string;
+  location_type: string;
+  area?: string;
+  description?: string;
+  price_info?: string;
+}
 
 interface EventAlert {
   id: string;
@@ -48,19 +51,23 @@ export default function EventAlerts() {
   const { toast } = useToast();
 
   // Form state
-  const [eventName, setEventName] = useState("");
-  const [eventUrl, setEventUrl] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [date, setDate] = useState<Date | undefined>();
   const [dateOpen, setDateOpen] = useState(false);
   const [partySize, setPartySize] = useState(2);
   const [preferredTime, setPreferredTime] = useState("Any");
   const [alertEmail, setAlertEmail] = useState(true);
   const [alertSms, setAlertSms] = useState(false);
+  const [showEventDropdown, setShowEventDropdown] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showQuickPicks, setShowQuickPicks] = useState(true);
 
   // Data state
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [alerts, setAlerts] = useState<EventAlert[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
 
   const getAuthHeaders = useCallback(() => ({
@@ -70,7 +77,39 @@ export default function EventAlerts() {
     "apikey": SUPABASE_ANON_KEY,
   }), [session]);
 
-  // Load user's event alerts
+  // Load events catalog
+  useEffect(() => {
+    if (!session) return;
+    setLoadingEvents(true);
+    fetch(`${SUPABASE_URL}/functions/v1/event-alerts?action=events`, {
+      headers: getAuthHeaders(),
+    })
+      .then(r => r.json())
+      .then(data => {
+        setEvents(data.events || []);
+        setFilteredEvents(data.events || []);
+      })
+      .catch(err => console.error("Failed to load events:", err))
+      .finally(() => setLoadingEvents(false));
+  }, [session, getAuthHeaders]);
+
+  // Filter events
+  useEffect(() => {
+    let filtered = events;
+    if (categoryFilter !== "All") {
+      filtered = filtered.filter(e => e.category === categoryFilter);
+    }
+    if (searchQuery) {
+      filtered = filtered.filter(e =>
+        e.event_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        e.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (e.description || "").toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    setFilteredEvents(filtered);
+  }, [events, categoryFilter, searchQuery]);
+
+  // Load user's alerts
   const loadAlerts = useCallback(() => {
     if (!session) return;
     setLoadingAlerts(true);
@@ -87,15 +126,8 @@ export default function EventAlerts() {
     loadAlerts();
   }, [loadAlerts]);
 
-  const selectQuickPick = (event: typeof POPULAR_EVENTS[0]) => {
-    setEventName(event.name);
-    setEventUrl(event.url);
-    setShowQuickPicks(false);
-  };
-
   const handleCreateAlert = async () => {
-    if (!eventName.trim()) { toast({ title: "Please enter an event name", variant: "destructive" }); return; }
-    if (!eventUrl.trim()) { toast({ title: "Please enter the event URL", variant: "destructive" }); return; }
+    if (!selectedEvent) { toast({ title: "Please select an event", variant: "destructive" }); return; }
     if (!date) { toast({ title: "Please select a date", variant: "destructive" }); return; }
     if (!session) { toast({ title: "Please log in", variant: "destructive" }); return; }
 
@@ -105,8 +137,8 @@ export default function EventAlerts() {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify({
-          event_name: eventName.trim(),
-          event_url: eventUrl.trim(),
+          event_name: selectedEvent.event_name,
+          event_url: selectedEvent.event_url,
           alert_date: format(date, "yyyy-MM-dd"),
           party_size: partySize,
           preferred_time: preferredTime,
@@ -120,12 +152,11 @@ export default function EventAlerts() {
 
       toast({
         title: "🎪 Event alert created!",
-        description: `Watching ${eventName} for ${format(date, "MMM d, yyyy")}${data.alert?.priority_launch ? " — Midnight Launch mode active!" : ""}`,
+        description: `Watching ${selectedEvent.event_name} for ${format(date, "MMM d, yyyy")}${data.alert?.priority_launch ? " — Midnight Launch mode active!" : ""}`,
       });
-      setEventName("");
-      setEventUrl("");
+      setSelectedEvent(null);
       setDate(undefined);
-      setShowQuickPicks(true);
+      setSearchQuery("");
       loadAlerts();
     } catch (err) {
       toast({ title: "Failed to create alert", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
@@ -166,6 +197,8 @@ export default function EventAlerts() {
             AVAILABLE — Book Now!
           </span>
         );
+      case "booked":
+        return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-400">✅ Booked</span>;
       case "expired":
         return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted/30 text-muted-foreground">⏰ Expired</span>;
       case "cancelled":
@@ -176,69 +209,87 @@ export default function EventAlerts() {
   };
 
   const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
-  const pastAlerts = alerts.filter(a => a.status === "expired" || a.status === "cancelled");
+  const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
 
   return (
     <DashboardLayout
-      title="🎪 Enchanting Extras"
-      subtitle="Monitor events like Droid Depot, Dessert Parties & more — we alert you instantly"
+      title="🎪 Enchanting Extras Alerts"
+      subtitle="We watch 24/7 and alert you the instant your event opens up"
     >
       <div className="space-y-6">
 
-        {/* ── SET A NEW EVENT ALERT ──────────────────────────── */}
+        {/* ── SET A NEW ALERT ─────────────────────────────────── */}
         <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
-          <h2 className="text-base font-bold text-foreground mb-4">🔔 Set a New Event Alert</h2>
+          <h2 className="text-base font-bold text-foreground mb-4">🔔 Set a New Alert</h2>
 
-          {/* Quick Picks */}
-          {showQuickPicks && (
-            <div className="mb-4">
-              <label className="text-xs font-semibold text-muted-foreground mb-2 block">Quick Picks</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {POPULAR_EVENTS.map(ev => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Event Search */}
+            <div className="relative md:col-span-2">
+              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Event / Experience</label>
+
+              {/* Category filter pills */}
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {categoryFilters.map(f => (
                   <button
-                    key={ev.name}
-                    onClick={() => selectQuickPick(ev)}
-                    className="flex flex-col items-start gap-0.5 px-3 py-2.5 rounded-lg bg-muted/20 border border-white/5 hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
-                    style={{ minHeight: 48 }}
+                    key={f}
+                    onClick={() => setCategoryFilter(f)}
+                    className={`text-xs px-3 py-1 rounded-full font-medium transition-colors ${categoryFilter === f ? "bg-primary text-[var(--background)]" : "bg-muted/30 text-muted-foreground hover:bg-muted/50"}`}
                   >
-                    <span className="text-xs font-semibold text-foreground leading-tight">{ev.name}</span>
-                    <span className="text-[10px] text-muted-foreground">{ev.category}</span>
+                    {f}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Event Name */}
-            <div className="md:col-span-2">
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Event Name</label>
-              <div className="relative">
-                <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input
-                  type="text"
-                  placeholder="e.g. Droid Depot, Savi's Workshop, Dessert Party..."
-                  value={eventName}
-                  onChange={e => { setEventName(e.target.value); setShowQuickPicks(false); }}
-                  onFocus={() => { if (!eventName) setShowQuickPicks(true); }}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#1a2235] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                  style={{ minHeight: 44 }}
-                />
-              </div>
-            </div>
+              {selectedEvent ? (
+                <div className="flex items-center justify-between px-4 py-3 rounded-lg border border-primary/40 bg-primary/5">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{selectedEvent.event_name}</p>
+                    <p className="text-xs text-muted-foreground">{selectedEvent.location}{selectedEvent.area ? ` · ${selectedEvent.area}` : ""} · {selectedEvent.category}</p>
+                  </div>
+                  <button onClick={() => { setSelectedEvent(null); setSearchQuery(""); }} className="text-muted-foreground hover:text-foreground">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    placeholder={loadingEvents ? "Loading events..." : `Search ${events.length}+ Disney events & experiences...`}
+                    value={searchQuery}
+                    onChange={e => { setSearchQuery(e.target.value); setShowEventDropdown(true); }}
+                    onFocus={() => setShowEventDropdown(true)}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#1a2235] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
+                    style={{ minHeight: 44 }}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {events.length > 0 ? `${events.length} events & experiences · Updated automatically` : "Loading..."}
+                  </p>
 
-            {/* Event URL */}
-            <div className="md:col-span-2">
-              <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Disney Event URL</label>
-              <input
-                type="url"
-                placeholder="https://disneyworld.disney.go.com/..."
-                value={eventUrl}
-                onChange={e => setEventUrl(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg bg-[#1a2235] border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50"
-                style={{ minHeight: 44 }}
-              />
-              <p className="text-[10px] text-muted-foreground mt-1">Paste the full Disney event/experience page URL</p>
+                  {showEventDropdown && filteredEvents.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-white/10 overflow-hidden shadow-xl" style={{ background: "var(--card)", maxHeight: 280 }}>
+                      <div className="overflow-y-auto" style={{ maxHeight: 280 }}>
+                        {filteredEvents.slice(0, 30).map(e => (
+                          <button
+                            key={e.id}
+                            onClick={() => { setSelectedEvent(e); setShowEventDropdown(false); setSearchQuery(""); }}
+                            className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 text-left transition-colors border-b border-white/5 last:border-0"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">{e.event_name}</p>
+                              <p className="text-xs text-muted-foreground">{e.location}{e.area ? ` · ${e.area}` : ""} · {e.category}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground shrink-0">{e.price_info}</span>
+                          </button>
+                        ))}
+                        {filteredEvents.length > 30 && (
+                          <p className="text-center text-xs text-muted-foreground py-2">Refine your search to see more results</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Date Picker */}
@@ -304,7 +355,7 @@ export default function EventAlerts() {
 
           <button
             onClick={handleCreateAlert}
-            disabled={submitting || !eventName.trim() || !eventUrl.trim() || !date}
+            disabled={submitting || !selectedEvent || !date}
             className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "#F5C842" }}
           >
@@ -330,9 +381,9 @@ export default function EventAlerts() {
             </div>
           ) : activeAlerts.length === 0 ? (
             <div className="rounded-xl p-8 text-center border border-dashed border-white/10" style={{ background: "var(--card)" }}>
-              <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm font-medium text-foreground mb-1">No active event alerts</p>
-              <p className="text-xs text-muted-foreground">Pick an event above and we'll watch 24/7 for availability</p>
+              <Bell className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm font-medium text-foreground mb-1">No active alerts</p>
+              <p className="text-xs text-muted-foreground">Set an alert above and we'll watch 24/7 for availability</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -366,12 +417,19 @@ export default function EventAlerts() {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={() => handleCancelAlert(alert.id, alert.event_name)}
-                      className="text-xs text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <CompassButton
+                        destination={alert.event_name}
+                        context="Walt Disney World"
+                        size="inline"
+                      />
+                      <button
+                        onClick={() => handleCancelAlert(alert.id, alert.event_name)}
+                        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {alert.status === "found" && (

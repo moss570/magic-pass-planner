@@ -305,6 +305,54 @@ export type Database = {
           },
         ]
       }
+      events: {
+        Row: {
+          area: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          event_name: string
+          event_url: string
+          id: string
+          is_active: boolean | null
+          location: string
+          location_type: string
+          price_info: string | null
+          requires_reservation: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          area?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          event_name: string
+          event_url: string
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          location_type?: string
+          price_info?: string | null
+          requires_reservation?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          area?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          event_name?: string
+          event_url?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          location_type?: string
+          price_info?: string | null
+          requires_reservation?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       friend_requests: {
         Row: {
           created_at: string | null
