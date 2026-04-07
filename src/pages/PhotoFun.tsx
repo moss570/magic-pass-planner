@@ -96,13 +96,13 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
 
   // Fireworks calculator (from existing feature)
   const fireworksRides = [
-    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2 },
-    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4 },
-    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11 },
-    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3 },
-    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2 },
-    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10 },
-    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9 },
+    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2, lat: 28.4195, lng: -81.5814 },
+    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4, lat: 28.4203, lng: -81.5841 },
+    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11, lat: 28.4193, lng: -81.5842 },
+    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3, lat: 28.4185, lng: -81.5798 },
+    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2, lat: 28.4218, lng: -81.5832 },
+    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10, lat: 28.4188, lng: -81.5829 },
+    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9, lat: 28.4198, lng: -81.5827 },
   ];
 
   const now = new Date();
