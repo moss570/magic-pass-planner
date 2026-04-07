@@ -11,13 +11,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Build a booking URL with date and party size pre-filled
-function buildBookingUrl(baseUrl: string, date: string, partySize: number): string {
-  // Disney reservation URLs accept date and partySize as query params
-  const url = new URL(baseUrl);
-  url.searchParams.set("date", date);
-  url.searchParams.set("partySize", String(partySize));
-  return url.toString();
+// Convert a /dining/ info page URL to a /dine-res/ reservation URL
+// Disney's SPA does not honor query params for date/party pre-fill,
+// so we just link to the reservation page directly.
+function buildBookingUrl(infoUrl: string): string {
+  try {
+    const url = new URL(infoUrl);
+    // e.g. /dining/contemporary-resort/chef-mickeys/ → chef-mickeys
+    const segments = url.pathname.replace(/\/+$/, "").split("/");
+    const slug = segments[segments.length - 1];
+    if (slug) {
+      return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
+    }
+  } catch { /* fall through */ }
+  return infoUrl;
 }
 
 // Check availability via Railway Puppeteer poller
