@@ -319,6 +319,7 @@ export type Database = {
           location_type: string
           price_info: string | null
           requires_reservation: boolean | null
+          scrapable: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -334,6 +335,7 @@ export type Database = {
           location_type?: string
           price_info?: string | null
           requires_reservation?: boolean | null
+          scrapable?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -349,6 +351,7 @@ export type Database = {
           location_type?: string
           price_info?: string | null
           requires_reservation?: boolean | null
+          scrapable?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
