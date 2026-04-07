@@ -42,13 +42,13 @@ export default function Feed() {
       // Load blocked users
       const { data: blocks } = await (supabase.from("user_blocks" as any).select("blocked_id") as any)
         .eq("blocker_id", user?.id);
-      const blockSet = new Set((blocks || []).map((b: any) => b.blocked_id));
+      const blockSet = new Set<string>((blocks || []).map((b: any) => b.blocked_id as string));
       setBlockedIds(blockSet);
 
       // Load friends
       const { data: friendships1 } = await supabase.from("friendships").select("user_id_2").eq("user_id_1", user?.id || "");
       const { data: friendships2 } = await supabase.from("friendships").select("user_id_1").eq("user_id_2", user?.id || "");
-      const fIds = new Set([
+      const fIds = new Set<string>([
         ...(friendships1 || []).map(f => f.user_id_2),
         ...(friendships2 || []).map(f => f.user_id_1),
       ]);
