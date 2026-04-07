@@ -42,6 +42,13 @@ export default function AdminCommandCenter() {
   const [replyText, setReplyText] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
 
+  // Events data
+  const [beaconEvents, setBeaconEvents] = useState<any[]>([]);
+  const [eventRsvps, setEventRsvps] = useState<Record<string, any[]>>({});
+  const [showAddEvent, setShowAddEvent] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [newEvent, setNewEvent] = useState({ title: "", emoji: "🎪", type: "experience", park: "Magic Kingdom", location: "", event_date: "", event_time: "", description: "", badge: "Event", badge_color: "bg-primary/20 text-primary" });
+
   useEffect(() => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
       navigate("/dashboard");
