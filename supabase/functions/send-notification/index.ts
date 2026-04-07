@@ -47,12 +47,15 @@ serve(async (req) => {
 
     if (!notification) throw new Error("Notification not found");
 
-    // Get the alert
+    // Get the alert (includes user's notification preferences)
     const { data: alert } = await supabase
       .from("dining_alerts")
       .select("*, restaurant:restaurants(name, disney_url)")
       .eq("id", notification.alert_id)
       .single();
+
+    const wantsEmail = alert?.alert_email !== false; // default true
+    const wantsSms = alert?.alert_sms === true; // default false
 
     // Get user email
     const { data: userData } = await supabase.auth.admin.getUserById(notification.user_id);

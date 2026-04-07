@@ -106,6 +106,31 @@ serve(async (req) => {
       if (error) throw error;
       logStep("Alert created", { alertId: data.id, userId: user.id });
 
+      // Trigger an instant first check in the background
+      const restaurantUrl = data.restaurant?.disney_url;
+      if (restaurantUrl) {
+        logStep("Triggering instant first check", { alertId: data.id, url: restaurantUrl });
+        // Fire-and-forget: don't await so the user gets their response immediately
+        fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/dining-availability-check`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            test_url: restaurantUrl,
+            date: alert_date,
+            party_size,
+            meal_periods: meal_periods || ["Any"],
+            instant_alert_id: data.id,
+          }),
+        }).then(r => r.json()).then(result => {
+          logStep("Instant check result", { alertId: data.id, result });
+        }).catch(err => {
+          logStep("Instant check fire-and-forget error (non-blocking)", { error: String(err) });
+        });
+      }
+
       return new Response(JSON.stringify({ alert: data }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 201,
