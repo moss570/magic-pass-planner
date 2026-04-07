@@ -318,7 +318,19 @@ function LineGames() {
               onClick={() => {
                 if ((g as any).comingSoon) return;
                 if (g.id === "disney-trivia") loadTrivia();
-                setActiveGame(g.id); setScore(0); setTriviaQ(0); setAnswered(null); setGameOver(false); setScrambleIdx(0); setScrambleInput(""); setScrambleCorrect(null);
+                setScore(0); setTriviaQ(0); setAnswered(null); setGameOver(false); setScrambleIdx(0); setScrambleInput(""); setScrambleCorrect(null);
+                if (g.id === "disney-trivia") {
+                  // Fetch 10 random questions from Supabase
+                  fetch(`${SUPABASE_URL}/rest/v1/trivia_questions?is_active=eq.true&order=id.asc&limit=100`, {
+                    headers: { "apikey": SUPABASE_ANON, "Authorization": `Bearer ${SUPABASE_ANON}` }
+                  }).then(r => r.json()).then(data => {
+                    if (data && data.length > 0) {
+                      const shuffled = [...data].sort(() => Math.random() - 0.5).slice(0, 10);
+                      setTriviaQuestions(shuffled.map((q: any) => ({ q: q.question, options: q.options, answer: q.correct_answer })));
+                    }
+                  }).catch(() => {});
+                }
+                setActiveGame(g.id);
               }}
               disabled={(g as any).comingSoon}
               className={`text-left p-3 rounded-lg border transition-colors ${(g as any).comingSoon ? "border-white/5 opacity-60 cursor-not-allowed" : "border-white/10 hover:border-primary/40 hover:bg-primary/5"}`}

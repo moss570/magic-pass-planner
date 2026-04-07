@@ -87,7 +87,7 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
                 to={item.path}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
                   isActive
-                    ? "text-white border-l-[3px] border-yellow-300 bg-white/20 font-bold"
+                    ? "text-primary border-l-[3px] border-primary bg-primary/10 font-bold"
                     : "text-muted-foreground hover:text-foreground hover:bg-[#1a2235]"
                 } lg:justify-start justify-center`}
               >
