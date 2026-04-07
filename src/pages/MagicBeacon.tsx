@@ -105,14 +105,26 @@ export default function MagicBeacon() {
 
   // My beacon state
   const [myBeaconActive, setMyBeaconActive] = useState(false);
+  const [beaconTitle, setBeaconTitle] = useState("");
   const [selectedPark, setSelectedPark] = useState("Magic Kingdom");
   const [selectedSpot, setSelectedSpot] = useState("");
   const [fineLocation, setFineLocation] = useState("");
   const [selectedVibe, setSelectedVibe] = useState("");
+  const [beaconActivity, setBeaconActivity] = useState("");
+  const [customActivity, setCustomActivity] = useState("");
   const [groupSize, setGroupSize] = useState<"solo" | "pair" | "small" | "large">("solo");
   const [duration, setDuration] = useState<"30" | "60" | "120" | "close">("60");
   const [beaconExpiry, setBeaconExpiry] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
+
+  const BEACON_ACTIVITIES = [
+    "Speed Walking Group",
+    "Lorcana Cards Trading",
+    "Pin Trading",
+    "Just Resting",
+    "Meeting New Friends",
+    "Custom",
+  ];
 
   // GPS location
   const [gpsLocation, setGpsLocation] = useState<{lat: number; lng: number} | null>(null);
