@@ -45,9 +45,7 @@ async function checkAvailability(
   }
 
   try {
-    // Transform to /dine-res/ URL — old /dining/ info pages are 404 now
-    const scrapingUrl = buildScrapingUrl(restaurantUrl);
-    logStep("Sending to poller", { url: scrapingUrl, date, partySize, mealPeriods });
+    logStep("Sending to poller", { url: restaurantUrl, date, partySize, mealPeriods });
 
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
