@@ -62,8 +62,8 @@ export default function AdminCommandCenter() {
     try {
       if (t === "games") {
         // Get game session stats
-        const { data } = await supabase.from("game_sessions")
-          .select("game_id, game_name, score, duration_seconds, completed, created_at")
+        const { data } = await (supabase.from("game_sessions" as any)
+          .select("game_id, game_name, score, duration_seconds, completed, created_at") as any)
           .order("created_at", { ascending: false })
           .limit(500);
         
@@ -100,7 +100,7 @@ export default function AdminCommandCenter() {
       }
 
       if (t === "messages") {
-        const { data } = await supabase.from("user_messages").select("*").order("created_at", { ascending: false }).limit(50);
+        const { data } = await (supabase.from("user_messages" as any).select("*") as any).order("created_at", { ascending: false }).limit(50);
         setMessages(data || []);
       }
     } catch (err) {
@@ -169,12 +169,12 @@ export default function AdminCommandCenter() {
           originalMessage: selectedMessage.message,
         }),
       });
-      await supabase.from("user_messages").update({
+      await (supabase.from("user_messages" as any).update({
         admin_reply: replyText,
         replied_at: new Date().toISOString(),
         replied_by: user?.email || "admin",
         status: "replied",
-      }).eq("id", selectedMessage.id);
+      }) as any).eq("id", selectedMessage.id);
       toast({ title: "✅ Reply sent!" });
       setReplyText("");
       setSelectedMessage(null);
@@ -508,7 +508,7 @@ export default function AdminCommandCenter() {
                         <p className="text-xs text-muted-foreground mt-0.5">{selectedMessage.subject} · {new Date(selectedMessage.created_at).toLocaleString()}</p>
                       </div>
                       <button onClick={async () => {
-                        await supabase.from("user_messages").update({ status: "archived" }).eq("id", selectedMessage.id);
+                        await (supabase.from("user_messages" as any).update({ status: "archived" }) as any).eq("id", selectedMessage.id);
                         setSelectedMessage(null); loadTab("messages");
                       }} className="text-muted-foreground hover:text-foreground p-1.5">
                         <Archive className="w-4 h-4" />
