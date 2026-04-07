@@ -1123,7 +1123,7 @@ export default function LivePark() {
         )}
 
         {/* Legacy: keep original games tab hidden, render via sub-page instead */}
-        {activeTab === "games_HIDDEN" && (
+        {(activeTab as string) === "games_HIDDEN" && (
           <div className="space-y-4">
             <button
               onClick={() => setWhereAmIOpen(true)}
