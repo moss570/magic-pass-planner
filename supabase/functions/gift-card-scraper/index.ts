@@ -195,7 +195,7 @@ serve(async (req) => {
           sale_price: raiseResult.price,
           deal_url: raiseResult.url,
           is_live: raiseResult.available && isGoodDeal,
-          notes: `Secondary market. ${raiseResult.savings.toFixed(2) > 0 ? `Save $${raiseResult.savings.toFixed(2)} on $${cardValue} card.` : "No savings available right now."} Instant digital delivery.`,
+          notes: `Secondary market. ${raiseResult.savings > 0 ? `Save $${raiseResult.savings.toFixed(2)} on $${cardValue} card.` : "No savings available right now."} Instant digital delivery.`,
           last_verified: new Date().toISOString(),
         }, { onConflict: "retailer,card_value" });
         results.push(`Raise $${cardValue}: $${raiseResult.price} (save $${raiseResult.savings.toFixed(2)})`);
@@ -261,13 +261,13 @@ serve(async (req) => {
 
     if (liveDeals && liveDeals.length > 0) {
       const { data: alerts } = await supabase.from("gift_card_alerts")
-        .select("*, users_profile:user_id(email:users_profile.email)")
-        .eq("is_active", true);
+        .select("*")
+        .eq("is_active", true) as any;
       
       // For each live deal, check if any alert matches
       let notified = 0;
       for (const deal of liveDeals) {
-        for (const alert of (alerts || [])) {
+        for (const alert of (alerts || []) as any[]) {
           const minSavings = alert.min_savings || 10;
           const cardValues = alert.card_values || ["500"];
           const retailers = alert.retailers || ["Sam's Club"];
