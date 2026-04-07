@@ -309,5 +309,6 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
         </div>
       )}
     </div>
+    </DashboardLayout>
   );
 }
