@@ -91,6 +91,65 @@ serve(async (req) => {
     let body: any = {};
     try { body = await req.json(); } catch { /* empty body is fine */ }
 
+    // ── DIAGNOSE MODE ──
+    if (body.diagnose) {
+      const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
+      const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
+      if (!railwayUrl || !railwayApiKey) {
+        return new Response(JSON.stringify({ error: "Missing Railway secrets" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+        });
+      }
+      logStep("DIAGNOSE MODE", { url: body.test_url });
+      const res = await fetch(`${railwayUrl}/diagnose`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": railwayApiKey },
+        body: JSON.stringify({ restaurantUrl: body.test_url }),
+      });
+      const data = await res.json();
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: res.ok ? 200 : 502,
+      });
+    }
+
+    // ── BATCH DIAGNOSE MODE ──
+    if (body.batch_diagnose) {
+      const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
+      const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
+      if (!railwayUrl || !railwayApiKey) {
+        return new Response(JSON.stringify({ error: "Missing Railway secrets" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+        });
+      }
+
+      // If URLs provided directly, use those; otherwise fetch from DB
+      let urls: string[] = body.urls || [];
+      if (urls.length === 0) {
+        const { data: restaurants } = await supabase
+          .from("restaurants")
+          .select("name, disney_url")
+          .eq("is_active", true)
+          .not("disney_url", "is", null)
+          .limit(200);
+        urls = (restaurants || []).map((r: any) => r.disney_url).filter(Boolean);
+        logStep("Batch diagnose - fetched URLs from DB", { count: urls.length });
+      }
+
+      const limit = Math.min(body.limit || 10, 50);
+      const batch = urls.slice(0, limit);
+      logStep("BATCH DIAGNOSE", { total: urls.length, checking: batch.length });
+
+      const res = await fetch(`${railwayUrl}/batch-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": railwayApiKey },
+        body: JSON.stringify({ urls: batch }),
+      });
+      const data = await res.json();
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: res.ok ? 200 : 502,
+      });
+    }
+
     if (body.test_url) {
       const isInstant = !!body.instant_alert_id;
       logStep(isInstant ? "INSTANT FIRST CHECK" : "DIRECT TEST MODE", { url: body.test_url, date: body.date, partySize: body.party_size, mealPeriods: body.meal_periods, alertId: body.instant_alert_id });
