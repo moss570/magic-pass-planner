@@ -1,49 +1,69 @@
 
 
-## What Changed and When
+## Plan: Add Diagnostic Mode & Batch Restaurant Testing
 
-### Timeline of Changes
+### Problem
+The poller works for Chef Mickey's but fails silently for other restaurants (like Citricos) because Disney uses different page templates/DOM structures across restaurant categories. We need to identify exactly what differs and make the scraper resilient to all templates.
 
-**1:46 AM** — Chef Mickey's found availability successfully. The poller received the original `/dining/contemporary-resort/chef-mickeys/` URL and returned `available: true` with 4 time slots. Everything was working.
+### Approach
 
-**1:46 AM (message #342)** — You asked to fix notifications + add instant checks. I edited three files:
-- `dining-alerts/index.ts` — added instant first check on alert creation
-- `send-notification/index.ts` — added email/SMS preference checks
-- `dining-availability-check/index.ts` — added instant check handler (`instant_alert_id` support)
+**Step 1: Add `/diagnose` endpoint to Railway poller (`index.js`)**
 
-**1:52 AM (message #344)** — You reported SMS not delivering and booking URL not deep-linking. I edited:
-- `send-notification/index.ts` — added phone normalization to E.164
-- `dining-availability-check/index.ts` — added `buildBookingUrl()` that constructs `/dine-res/restaurant/{slug}/` URLs **for notification links only** (not for scraping)
+A new endpoint that visits a restaurant's `/dining/` page and returns a detailed report of what it "sees" — without trying to extract availability. This tells us exactly which selectors match and which don't for each restaurant.
 
-**2:03 AM (message #346)** — You reported the date URL didn't work. I edited:
-- `dining-availability-check/index.ts` — simplified `buildBookingUrl()` to drop query params. Still only affected notification links.
+Returns:
+- Page title, URL after redirects
+- Whether datepicker was found and which selector matched
+- Whether meal periods were found and which selector matched  
+- Whether calendar month/year headings were found
+- Whether day cells exist
+- Raw text snippets from relevant page sections
+- Any block/login/captcha detection triggered
 
-**9:07 AM** — Chef Mickey's was checked again and STILL found availability using the original `/dining/` URL. **The scraper was still working at this point.**
+**Step 2: Add `/batch-test` endpoint to Railway poller**
 
-**9:05 AM** — Tiffins checked 221 times, all returning `available: false`. The poller was receiving `/dining/animal-kingdom/tiffins-restaurant/` — the original URL.
+Accepts an array of restaurant URLs and runs `/diagnose` on each (with delays between). Returns a summary report showing which restaurants' pages have matching selectors vs which don't.
 
-**9:16 AM (message #360)** — **THE BREAKING CHANGE.** I added `buildScrapingUrl()` which transforms ALL URLs sent to the poller from `/dining/` to `/dine-res/restaurant/{slug}/`. This broke scraping because `/dine-res/` requires Disney login.
+**Step 3: Update edge function with a `diagnose` mode**
 
-### Root Cause
+Add a `diagnose: true` flag to the edge function's test mode that passes through to the poller's `/diagnose` endpoint, so we can trigger diagnostics from Supabase without needing direct Railway access.
 
-The `/dining/` info pages were NOT all broken. Chef Mickey's `/dining/` page was working fine at 9:07 AM. I incorrectly concluded all `/dining/` pages were 404 and deployed a change that redirected the poller to `/dine-res/` pages (which require login).
+**Step 4: Run batch diagnosis against all 73 restaurants**
 
-The Tiffins issue was likely a **different problem** — either the specific `/dining/animal-kingdom/tiffins-restaurant/` page has different DOM structure, or the datepicker selectors don't work on that particular page. The poller wasn't returning errors (no "blocked" or "no-dialog") — it was returning `available: false`, meaning it loaded the page but found no availability slots. This could be a selector issue specific to that page, not a global URL problem.
+Execute the batch test and categorize results:
+- **Working**: datepicker + meal periods found (like Chef Mickey's)
+- **Partial**: some selectors match but not all
+- **Failed**: no selectors match — needs new selectors
 
-### The Fix
+**Step 5: Update poller selectors to handle all template variants**
 
-1. **Revert `buildScrapingUrl`** — Remove the URL transformation that sends `/dine-res/` URLs to the poller. Go back to sending the original `/dining/` URLs from the database, which is what was working for Chef Mickey's.
-
-2. **Keep `buildBookingUrl`** — The notification "Book Now" links should still point to `/dine-res/restaurant/{slug}/` since that's the actual reservation flow for users (who are logged in).
-
-3. **Investigate Tiffins specifically** — After reverting, test both Chef Mickey's and Tiffins to see if Chef Mickey's works again and whether Tiffins has a page-specific issue vs. a genuine "no availability" result.
+Based on the diagnostic results, add fallback selectors for each template variant so the poller works across all restaurant types.
 
 ### Technical Details
 
-**File**: `supabase/functions/dining-availability-check/index.ts`
+**New `/diagnose` endpoint response shape:**
+```json
+{
+  "url": "...",
+  "title": "...",
+  "blocked": false,
+  "datepicker": { "found": true, "selector": "wdpr-datepicker", "state": "visible" },
+  "mealPeriods": { "found": true, "count": 3, "texts": ["Breakfast...", "Lunch...", "Dinner..."] },
+  "calendar": { "monthTitle": "April 2026", "nextButton": true, "dayCells": 30 },
+  "rawSnippets": { "bodyLength": 45000, "first500chars": "..." }
+}
+```
 
-- Remove `buildScrapingUrl()` function (lines 31-39)
-- In `checkAvailability()`, stop calling `buildScrapingUrl()` and pass the original `restaurantUrl` directly to the poller
-- Keep `buildBookingUrl()` for notification links
-- Redeploy the edge function
+**Edge function changes** (`dining-availability-check/index.ts`):
+- Add handling for `body.diagnose === true` that calls `/diagnose` on Railway instead of `/check`
+- Add handling for `body.batch_diagnose` with array of URLs
+
+**Files modified:**
+1. Railway `index.js` — add `/diagnose` and `/batch-test` endpoints
+2. `supabase/functions/dining-availability-check/index.ts` — add diagnose pass-through
+
+### What You Need To Do
+- Update the Railway `index.js` with the new endpoints (I'll provide the exact code)
+- I'll update and deploy the edge function
+- Then we run the batch test and fix any selector gaps
 
