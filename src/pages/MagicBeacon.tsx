@@ -318,10 +318,15 @@ export default function MagicBeacon() {
                     <p className="text-sm font-bold text-green-400">📡 Your beacon is LIVE</p>
                     {timeLeft && <span className="text-xs text-muted-foreground ml-auto">Expires in {timeLeft}</span>}
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{selectedSpot}</p>
+                  <p className="text-base font-black text-foreground">{beaconTitle}</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{selectedSpot}</p>
                   <p className="text-xs text-primary">{selectedPark}</p>
                   {fineLocation && <p className="text-xs text-muted-foreground mt-1">📍 "{fineLocation}"</p>}
+                  <p className="text-xs text-muted-foreground mt-1">🎯 {beaconActivity === "Custom" ? customActivity : beaconActivity}</p>
                   {selectedVibe && <p className="text-xs text-muted-foreground italic mt-1">"{selectedVibe}"</p>}
+                  <div className="mt-3 p-2 rounded-lg border border-primary/20 bg-primary/5">
+                    <p className="text-xs text-primary font-semibold">📢 Beacon shared with all APs in {selectedPark} · Visible on Social Feed</p>
+                  </div>
                 </div>
                 <button onClick={stopBeacon}
                   className="w-full py-3 rounded-xl font-bold text-sm text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-colors">
