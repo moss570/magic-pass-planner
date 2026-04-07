@@ -112,15 +112,27 @@ serve(async (req) => {
       results.push({ channel: "email", success: emailResp.ok, status: emailResp.status });
     }
 
-    // Send SMS if user has phone
+    // Send SMS if user has phone and opted in
     const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioFrom = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID") || Deno.env.get("TWILIO_PHONE_NUMBER");
 
+    // Normalize phone to E.164 format (US numbers)
+    const normalizePhone = (raw: string): string => {
+      const digits = raw.replace(/\D/g, "");
+      if (digits.length === 10) return `+1${digits}`;
+      if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
+      if (raw.startsWith("+")) return raw;
+      return `+${digits}`;
+    };
+
     if (wantsSms && profile?.phone && twilioSid && twilioToken && twilioFrom) {
+      const toPhone = normalizePhone(profile.phone);
+      console.log("[SEND-NOTIFICATION] SMS to", toPhone, "(raw:", profile.phone, ")");
+
       const smsParams = new URLSearchParams({
         Body: `🏰 Magic Pass Plus: ${restaurantName} is available! Date: ${notification.alert_date}, Party of ${notification.party_size}. Book now: ${bookingUrl}`,
-        To: profile.phone,
+        To: toPhone,
         ...(twilioFrom.startsWith("MG") ? { MessagingServiceSid: twilioFrom } : { From: twilioFrom }),
       });
 
@@ -135,7 +147,11 @@ serve(async (req) => {
           body: smsParams.toString(),
         }
       );
-      results.push({ channel: "sms", success: smsResp.ok, status: smsResp.status });
+      const smsBody = await smsResp.json();
+      if (!smsResp.ok) {
+        console.log("[SEND-NOTIFICATION] SMS error:", JSON.stringify(smsBody));
+      }
+      results.push({ channel: "sms", success: smsResp.ok, status: smsResp.status, sid: smsBody.sid });
     }
 
     // Mark notification as sent with delivery status tracking
