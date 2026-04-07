@@ -1170,6 +1170,7 @@ export type Database = {
           home_zip: string | null
           id: string
           last_name: string | null
+          membership_category: string | null
           mock_lat: number | null
           mock_lng: number | null
           mock_park: string | null
@@ -1177,6 +1178,7 @@ export type Database = {
           onboarding_step: number | null
           phone: string | null
           qr_token: string | null
+          username: string | null
         }
         Insert: {
           ap_expiration?: string | null
@@ -1193,6 +1195,7 @@ export type Database = {
           home_zip?: string | null
           id: string
           last_name?: string | null
+          membership_category?: string | null
           mock_lat?: number | null
           mock_lng?: number | null
           mock_park?: string | null
@@ -1200,6 +1203,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
+          username?: string | null
         }
         Update: {
           ap_expiration?: string | null
@@ -1216,6 +1220,7 @@ export type Database = {
           home_zip?: string | null
           id?: string
           last_name?: string | null
+          membership_category?: string | null
           mock_lat?: number | null
           mock_lng?: number | null
           mock_park?: string | null
@@ -1223,6 +1228,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
+          username?: string | null
         }
         Relationships: []
       }
