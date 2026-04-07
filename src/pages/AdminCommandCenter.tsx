@@ -262,7 +262,37 @@ export default function AdminCommandCenter() {
     !triviaSearch || q.question.toLowerCase().includes(triviaSearch.toLowerCase()) || q.category?.includes(triviaSearch.toLowerCase())
   );
 
+  const runDiagnosticBatch = async () => {
+    setDiagRunning(true);
+    setDiagResults([]);
+    setDiagProgress("Starting diagnostic batch...");
+    let offset = 0;
+    const allResults: any[] = [];
+    try {
+      while (true) {
+        setDiagProgress(`Processing events ${offset + 1}–${offset + 5}...`);
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/diagnose-events`, {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ offset, limit: 5, autoUpdate: true }),
+        });
+        const data = await res.json();
+        if (data.error) { setDiagProgress(`Error: ${data.error}`); break; }
+        if (data.done || !data.results || data.results.length === 0) { break; }
+        allResults.push(...data.results);
+        setDiagResults([...allResults]);
+        if (!data.hasMore) break;
+        offset = data.nextOffset;
+      }
+      setDiagProgress(`Done — ${allResults.length} events checked`);
+    } catch (err) {
+      setDiagProgress(`Error: ${err instanceof Error ? err.message : String(err)}`);
+    }
+    setDiagRunning(false);
+  };
+
   const TABS: { id: Tab; label: string; icon: any; badge?: number }[] = [
+    { id: "health", label: "System Health", icon: Activity },
     { id: "events", label: "Beacon Events", icon: Calendar, badge: beaconEvents.filter(e => e.is_active).length },
     { id: "games", label: "Game Analytics", icon: Gamepad2 },
     { id: "trivia", label: "Trivia Questions", icon: HelpCircle, badge: triviaQuestions.filter(q => q.is_active).length },
