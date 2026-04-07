@@ -110,6 +110,23 @@ export default function AdminCommandCenter() {
         const { data } = await (supabase.from("user_messages" as any).select("*") as any).order("created_at", { ascending: false }).limit(50);
         setMessages(data || []);
       }
+
+      if (t === "events") {
+        const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).order("created_at", { ascending: false });
+        setBeaconEvents(events || []);
+        // Load RSVPs for all events
+        const rsvpMap: Record<string, any[]> = {};
+        for (const evt of (events || [])) {
+          const { data: rsvps } = await (supabase.from("beacon_rsvps" as any).select("*") as any).eq("event_id", evt.id);
+          // Get user profiles for each RSVP
+          const enriched = await Promise.all((rsvps || []).map(async (r: any) => {
+            const { data: profile } = await supabase.from("users_profile").select("first_name, last_name, email").eq("id", r.user_id).single();
+            return { ...r, first_name: profile?.first_name, last_name: profile?.last_name, email: profile?.email };
+          }));
+          rsvpMap[evt.id] = enriched;
+        }
+        setEventRsvps(rsvpMap);
+      }
     } catch (err) {
       console.error(err);
     } finally {
