@@ -86,6 +86,23 @@ serve(async (req) => {
   );
 
   try {
+    // Direct test mode: check a single restaurant without needing a DB alert
+    let body: any = {};
+    try { body = await req.json(); } catch { /* empty body is fine */ }
+
+    if (body.test_url) {
+      logStep("DIRECT TEST MODE", { url: body.test_url, date: body.date, partySize: body.party_size, mealPeriods: body.meal_periods });
+      const { available, times, bookingUrls } = await checkAvailability(
+        body.test_url,
+        body.date || "2026-05-06",
+        body.party_size || 2,
+        body.meal_periods || ["Dinner"]
+      );
+      return new Response(JSON.stringify({ test: true, available, times, bookingUrls }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     logStep("Starting dining availability check run");
     const startTime = Date.now();
 
