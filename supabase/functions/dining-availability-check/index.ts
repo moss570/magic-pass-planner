@@ -123,7 +123,7 @@ serve(async (req) => {
               restaurant_name: alert.restaurant?.name || "Restaurant",
               alert_date: alert.alert_date,
               party_size: alert.party_size,
-              availability_url: bookingUrls[0] || body.test_url,
+              availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, alert.alert_date, alert.party_size),
               notification_type: alert.alert_sms ? "sms" : "email",
               sent_at: null,
             }).select().single();
