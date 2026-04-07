@@ -47,12 +47,15 @@ serve(async (req) => {
 
     if (!notification) throw new Error("Notification not found");
 
-    // Get the alert
+    // Get the alert (includes user's notification preferences)
     const { data: alert } = await supabase
       .from("dining_alerts")
       .select("*, restaurant:restaurants(name, disney_url)")
       .eq("id", notification.alert_id)
       .single();
+
+    const wantsEmail = alert?.alert_email !== false; // default true
+    const wantsSms = alert?.alert_sms === true; // default false
 
     // Get user email
     const { data: userData } = await supabase.auth.admin.getUserById(notification.user_id);
@@ -72,7 +75,7 @@ serve(async (req) => {
     const results = [];
 
     // Send email
-    if (userEmail && BREVO_KEY) {
+    if (wantsEmail && userEmail && BREVO_KEY) {
       const emailResp = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: { "api-key": BREVO_KEY, "Content-Type": "application/json" },
@@ -114,7 +117,7 @@ serve(async (req) => {
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioFrom = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID") || Deno.env.get("TWILIO_PHONE_NUMBER");
 
-    if (profile?.phone && twilioSid && twilioToken && twilioFrom) {
+    if (wantsSms && profile?.phone && twilioSid && twilioToken && twilioFrom) {
       const smsParams = new URLSearchParams({
         Body: `🏰 Magic Pass Plus: ${restaurantName} is available! Date: ${notification.alert_date}, Party of ${notification.party_size}. Book now: ${bookingUrl}`,
         To: profile.phone,
