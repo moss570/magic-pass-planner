@@ -318,10 +318,61 @@ export default function AdminCommandCenter() {
                     </select>
                     <input placeholder="Location (e.g. CommuniCore Plaza) *" value={evt.location} onChange={e => setEvt({ location: e.target.value })}
                       className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
-                    <input placeholder="Date (e.g. May 20, 2026) *" value={evt.event_date} onChange={e => setEvt({ event_date: e.target.value })}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
-                    <input placeholder="Time (e.g. 12:00 PM – 2:00 PM) *" value={evt.event_time} onChange={e => setEvt({ event_time: e.target.value })}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    <div>
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Event Date *</label>
+                      <input 
+                        type="date" 
+                        value={evt.event_date} 
+                        onChange={e => setEvt({ event_date: e.target.value })}
+                        min={new Date().toISOString().split("T")[0]}
+                        className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                        style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">Start Time *</label>
+                        <input 
+                          type="time" 
+                          value={evt.event_time?.split(" – ")[0]?.replace(/[AP]M/, "").trim().replace(/(\d+):(\d+)/, (m, h, min) => {
+                            const hour = parseInt(h);
+                            const isPm = evt.event_time?.split(" – ")[0]?.includes("PM");
+                            return `${String(isPm && hour !== 12 ? hour + 12 : !isPm && hour === 12 ? 0 : hour).padStart(2, "0")}:${min}`;
+                          }) || ""}
+                          onChange={e => {
+                            const [h, m] = e.target.value.split(":");
+                            const hour = parseInt(h);
+                            const ampm = hour >= 12 ? "PM" : "AM";
+                            const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                            const startStr = `${displayHour}:${m} ${ampm}`;
+                            const existingEnd = evt.event_time?.split(" – ")[1] || "";
+                            setEvt({ event_time: existingEnd ? `${startStr} – ${existingEnd}` : startStr });
+                          }}
+                          className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                          style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-muted-foreground mb-1 block">End Time</label>
+                        <input 
+                          type="time"
+                          onChange={e => {
+                            const [h, m] = e.target.value.split(":");
+                            const hour = parseInt(h);
+                            const ampm = hour >= 12 ? "PM" : "AM";
+                            const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+                            const endStr = `${displayHour}:${m} ${ampm}`;
+                            const existingStart = evt.event_time?.split(" – ")[0] || "";
+                            setEvt({ event_time: existingStart ? `${existingStart} – ${endStr}` : endStr });
+                          }}
+                          className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                          style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                        />
+                      </div>
+                    </div>
+                    {evt.event_time && (
+                      <p className="text-xs text-primary mt-1">📅 Preview: {evt.event_date ? new Date(evt.event_date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }) : "No date"} · {evt.event_time}</p>
+                    )}
                   </div>
                   <textarea placeholder="Description..." value={evt.description} onChange={e => setEvt({ description: e.target.value })} rows={3}
                     className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3" style={{ background: "#0D1230" }} />
