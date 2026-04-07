@@ -261,13 +261,13 @@ serve(async (req) => {
 
     if (liveDeals && liveDeals.length > 0) {
       const { data: alerts } = await supabase.from("gift_card_alerts")
-        .select("*, users_profile:user_id(email:users_profile.email)")
-        .eq("is_active", true);
+        .select("*")
+        .eq("is_active", true) as any;
       
       // For each live deal, check if any alert matches
       let notified = 0;
       for (const deal of liveDeals) {
-        for (const alert of (alerts || [])) {
+        for (const alert of (alerts || []) as any[]) {
           const minSavings = alert.min_savings || 10;
           const cardValues = alert.card_values || ["500"];
           const retailers = alert.retailers || ["Sam's Club"];
