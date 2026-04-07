@@ -11,6 +11,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
+// Build a booking URL with date and party size pre-filled
+function buildBookingUrl(baseUrl: string, date: string, partySize: number): string {
+  // Disney reservation URLs accept date and partySize as query params
+  const url = new URL(baseUrl);
+  url.searchParams.set("date", date);
+  url.searchParams.set("partySize", String(partySize));
+  return url.toString();
+}
+
 // Check availability via Railway Puppeteer poller
 async function checkAvailability(
   restaurantUrl: string,
