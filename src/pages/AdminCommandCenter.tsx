@@ -100,7 +100,7 @@ export default function AdminCommandCenter() {
       }
 
       if (t === "messages") {
-        const { data } = await supabase.from("user_messages").select("*").order("created_at", { ascending: false }).limit(50);
+        const { data } = await (supabase.from("user_messages" as any).select("*") as any).order("created_at", { ascending: false }).limit(50);
         setMessages(data || []);
       }
     } catch (err) {
