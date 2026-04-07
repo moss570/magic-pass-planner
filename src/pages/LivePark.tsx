@@ -890,7 +890,7 @@ export default function LivePark() {
               {sp === "line-games" ? "🎮 Line Games" : sp === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon"}
             </button>
           ))}
-        </div>
+        </div>}
         {/* Current view label on mobile */}
         {!hashSection && <div className="md:hidden flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
