@@ -344,9 +344,12 @@ const Dashboard = () => {
                           {w.windSpeed > 15 && <p className="text-xs text-muted-foreground">💨 {w.windSpeed} mph</p>}
                         </>
                       )}
-                      <div className="flex items-center justify-center gap-1 mt-1.5">
-                        <div className={`w-2 h-2 rounded-full ${crowdDot(day.crowdColor || "green")}`} />
-                        <span className={`text-[10px] font-semibold ${crowdColor(day.crowdLevel)}`}>{day.crowdLabel}</span>
+                      <div className="mt-2 pt-2 border-t border-white/8">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <div className={`w-2.5 h-2.5 rounded-full ${crowdDot(day.crowdColor || "green")}`} />
+                          <span className={`text-xs font-bold ${crowdColor(day.crowdLevel)}`}>{day.crowdLevel}/10</span>
+                        </div>
+                        <p className={`text-[10px] font-semibold mt-0.5 ${crowdColor(day.crowdLevel)}`}>👥 {day.crowdLabel || "Unknown"}</p>
                       </div>
                       {w?.rainChance >= 40 && <p className="text-[10px] text-yellow-400 mt-1">⚠️ Rain likely</p>}
                       {w?.isGoodDay && <p className="text-[10px] text-green-400 mt-1">✅ Great day!</p>}
