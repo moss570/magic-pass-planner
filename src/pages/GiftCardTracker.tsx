@@ -38,7 +38,7 @@ export default function GiftCardTracker() {
 
   const loadDeals = async () => {
     setLoading(true);
-    const { data } = await supabase.from("gift_card_deals").select("*").order("is_live", { ascending: false }).order("savings", { ascending: false });
+    const { data } = await supabase.from("gift_card_deals").select("*").order("priority", { ascending: true, nullsLast: true }).order("is_live", { ascending: false }).order("savings", { ascending: false });
     setDeals(data || []);
     setLoading(false);
   };
@@ -75,6 +75,7 @@ export default function GiftCardTracker() {
   };
 
   const savings = calcSavings();
+  // Keep priority order from database (already sorted by priority ASC)
   const liveDeals = deals.filter(d => d.is_live);
   const watchDeals = deals.filter(d => !d.is_live);
 
