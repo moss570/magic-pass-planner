@@ -105,14 +105,26 @@ export default function MagicBeacon() {
 
   // My beacon state
   const [myBeaconActive, setMyBeaconActive] = useState(false);
+  const [beaconTitle, setBeaconTitle] = useState("");
   const [selectedPark, setSelectedPark] = useState("Magic Kingdom");
   const [selectedSpot, setSelectedSpot] = useState("");
   const [fineLocation, setFineLocation] = useState("");
   const [selectedVibe, setSelectedVibe] = useState("");
+  const [beaconActivity, setBeaconActivity] = useState("");
+  const [customActivity, setCustomActivity] = useState("");
   const [groupSize, setGroupSize] = useState<"solo" | "pair" | "small" | "large">("solo");
   const [duration, setDuration] = useState<"30" | "60" | "120" | "close">("60");
   const [beaconExpiry, setBeaconExpiry] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
+
+  const BEACON_ACTIVITIES = [
+    "Speed Walking Group",
+    "Lorcana Cards Trading",
+    "Pin Trading",
+    "Just Resting",
+    "Meeting New Friends",
+    "Custom",
+  ];
 
   // GPS location
   const [gpsLocation, setGpsLocation] = useState<{lat: number; lng: number} | null>(null);
@@ -143,11 +155,14 @@ export default function MagicBeacon() {
   }, []);
 
   const startBeacon = () => {
+    if (!beaconTitle.trim()) { toast({ title: "Enter a beacon title", variant: "destructive" }); return; }
     if (!selectedSpot) { toast({ title: "Select a meeting spot", variant: "destructive" }); return; }
+    if (!beaconActivity) { toast({ title: "Select a beacon activity", variant: "destructive" }); return; }
     const durationMs = duration === "close" ? 8 * 3600000 : parseInt(duration) * 60000;
     setBeaconExpiry(new Date(Date.now() + durationMs));
     setMyBeaconActive(true);
-    toast({ title: "📡 Beacon is live!", description: `Other AP members in ${selectedPark} can see you` });
+    const activityLabel = beaconActivity === "Custom" ? customActivity : beaconActivity;
+    toast({ title: "📡 Beacon is live!", description: `"${beaconTitle}" — ${activityLabel} · Shared with all APs in ${selectedPark}` });
   };
 
   const stopBeacon = () => {
@@ -303,10 +318,15 @@ export default function MagicBeacon() {
                     <p className="text-sm font-bold text-green-400">📡 Your beacon is LIVE</p>
                     {timeLeft && <span className="text-xs text-muted-foreground ml-auto">Expires in {timeLeft}</span>}
                   </div>
-                  <p className="text-sm font-semibold text-foreground">{selectedSpot}</p>
+                  <p className="text-base font-black text-foreground">{beaconTitle}</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">{selectedSpot}</p>
                   <p className="text-xs text-primary">{selectedPark}</p>
                   {fineLocation && <p className="text-xs text-muted-foreground mt-1">📍 "{fineLocation}"</p>}
+                  <p className="text-xs text-muted-foreground mt-1">🎯 {beaconActivity === "Custom" ? customActivity : beaconActivity}</p>
                   {selectedVibe && <p className="text-xs text-muted-foreground italic mt-1">"{selectedVibe}"</p>}
+                  <div className="mt-3 p-2 rounded-lg border border-primary/20 bg-primary/5">
+                    <p className="text-xs text-primary font-semibold">📢 Beacon shared with all APs in {selectedPark} · Visible on Social Feed</p>
+                  </div>
                 </div>
                 <button onClick={stopBeacon}
                   className="w-full py-3 rounded-xl font-bold text-sm text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-colors">
@@ -318,7 +338,16 @@ export default function MagicBeacon() {
               <div className="space-y-4">
                 <div className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                   <p className="text-xs font-bold text-foreground mb-3">🏰 Start Your Magic Beacon</p>
-                  <p className="text-xs text-muted-foreground mb-4">Let other APs in the park know where you are. No personal info is shared — just your location and vibe.</p>
+                  <p className="text-xs text-muted-foreground mb-4">Let other APs in the park know where you are. Your beacon will be shared with all passholders in the same park and posted to the Social Feed.</p>
+
+                  {/* Beacon Title */}
+                  <div className="mb-3">
+                    <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Beacon Title *</label>
+                    <input value={beaconTitle} onChange={e => setBeaconTitle(e.target.value)} maxLength={60}
+                      placeholder="e.g. Pin Trading at Frontierland!"
+                      className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                      style={{ background: "#0D1230", minHeight: 44 }} />
+                  </div>
 
                   {/* Park */}
                   <div className="mb-3">
@@ -367,6 +396,23 @@ export default function MagicBeacon() {
                     </div>
                   </div>
 
+                  {/* Beacon Activity */}
+                  <div className="mb-3">
+                    <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Beacon Activity *</label>
+                    <select value={beaconActivity} onChange={e => { setBeaconActivity(e.target.value); if (e.target.value !== "Custom") setCustomActivity(""); }}
+                      className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                      style={{ background: "#0D1230", minHeight: 44 }}>
+                      <option value="">Select an activity...</option>
+                      {BEACON_ACTIVITIES.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    {beaconActivity === "Custom" && (
+                      <input value={customActivity} onChange={e => setCustomActivity(e.target.value)} maxLength={60}
+                        placeholder="Describe your activity..."
+                        className="w-full mt-2 px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                        style={{ background: "#0D1230", minHeight: 44 }} />
+                    )}
+                  </div>
+
                   {/* Vibe */}
                   <div className="mb-3">
                     <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Vibe note (optional)</label>
@@ -397,7 +443,7 @@ export default function MagicBeacon() {
                     <p className="text-xs text-muted-foreground">🔒 <strong className="text-foreground">Privacy:</strong> Other Magic Pass members only see your park, meeting spot, pass tier, vibe, and group size. Your name, email, and personal info are never shared. You can stop your beacon at any time.</p>
                   </div>
 
-                  <button onClick={startBeacon} disabled={!selectedSpot}
+                  <button onClick={startBeacon} disabled={!selectedSpot || !beaconTitle.trim() || !beaconActivity || (beaconActivity === "Custom" && !customActivity.trim())}
                     className="w-full py-4 rounded-2xl font-black text-base text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
                     style={{ background: "#F5C842" }}>
                     <Radio className="w-5 h-5" /> Start My Beacon
