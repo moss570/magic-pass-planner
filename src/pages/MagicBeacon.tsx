@@ -396,6 +396,23 @@ export default function MagicBeacon() {
                     </div>
                   </div>
 
+                  {/* Beacon Activity */}
+                  <div className="mb-3">
+                    <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Beacon Activity *</label>
+                    <select value={beaconActivity} onChange={e => { setBeaconActivity(e.target.value); if (e.target.value !== "Custom") setCustomActivity(""); }}
+                      className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                      style={{ background: "#0D1230", minHeight: 44 }}>
+                      <option value="">Select an activity...</option>
+                      {BEACON_ACTIVITIES.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    {beaconActivity === "Custom" && (
+                      <input value={customActivity} onChange={e => setCustomActivity(e.target.value)} maxLength={60}
+                        placeholder="Describe your activity..."
+                        className="w-full mt-2 px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                        style={{ background: "#0D1230", minHeight: 44 }} />
+                    )}
+                  </div>
+
                   {/* Vibe */}
                   <div className="mb-3">
                     <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Vibe note (optional)</label>
