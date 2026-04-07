@@ -70,6 +70,7 @@ const App = () => (
             <Route path="/magic-beacon" element={<ProtectedRoute><MagicBeacon /></ProtectedRoute>} />
             <Route path="/photo-fun" element={<ProtectedRoute><PhotoFun /></ProtectedRoute>} />
             <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
+            <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
