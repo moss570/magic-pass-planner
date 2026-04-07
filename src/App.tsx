@@ -29,6 +29,7 @@ import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
 import AdminCommandCenter from "./pages/AdminCommandCenter";
+import EventAlerts from "./pages/EventAlerts";
 
 const queryClient = new QueryClient();
 
