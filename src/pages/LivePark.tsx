@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
+import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import { useToast } from "@/hooks/use-toast";
 
@@ -499,30 +500,53 @@ export default function LivePark() {
 
   // GPS detection
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setGpsError("GPS not supported on this device");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const { latitude, longitude } = pos.coords;
-        setUserLat(latitude);
-        setUserLng(longitude);
-
-        // Check if in park
-        const bounds = PARK_BOUNDS[selectedPark];
-        if (bounds) {
-          const inside = latitude >= bounds.lat[0] && latitude <= bounds.lat[1] &&
-            longitude >= bounds.lng[0] && longitude <= bounds.lng[1];
-          setInPark(inside);
+    // Check for mock location (testing mode)
+    const checkMockLocation = async () => {
+      try {
+        const { data: profile } = await supabase
+          .from("users_profile")
+          .select("mock_park, mock_lat, mock_lng")
+          .eq("id", user?.id || "")
+          .single();
+        
+        if (profile?.mock_lat && profile?.mock_lng) {
+          setUserLat(profile.mock_lat);
+          setUserLng(profile.mock_lng);
+          setInPark(true);
+          return true;
         }
-      },
-      err => {
-        setGpsError(err.code === 1 ? "Location permission denied" : "Could not get location");
-        setInPark(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+      } catch {}
+      return false;
+    };
+
+    checkMockLocation().then(hasMock => {
+      if (hasMock) return;
+      
+      if (!navigator.geolocation) {
+        setGpsError("GPS not supported on this device");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude, longitude } = pos.coords;
+          setUserLat(latitude);
+          setUserLng(longitude);
+
+          // Check if in park
+          const bounds = PARK_BOUNDS[selectedPark];
+          if (bounds) {
+            const inside = latitude >= bounds.lat[0] && latitude <= bounds.lat[1] &&
+              longitude >= bounds.lng[0] && longitude <= bounds.lng[1];
+            setInPark(inside);
+          }
+        },
+        err => {
+          setGpsError(err.code === 1 ? "Location permission denied" : "Could not get location");
+          setInPark(false);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
   }, [selectedPark]);
 
   const fetchParkData = useCallback(async () => {
