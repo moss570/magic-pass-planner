@@ -175,14 +175,21 @@ export default function MagicBeacon() {
     toast({ title: "Beacon stopped" });
   };
 
-  const rsvpEvent = (eventId: string) => {
+  const rsvpEvent = async (eventId: string) => {
     if (!session) { toast({ title: "Log in to RSVP", variant: "destructive" }); return; }
-    setRsvps(prev => {
-      const n = new Set(prev);
-      if (n.has(eventId)) { n.delete(eventId); toast({ title: "RSVP removed" }); }
-      else { n.add(eventId); toast({ title: "✅ You're going!" }); }
-      return n;
-    });
+    const userId = session.user.id;
+    const isGoing = rsvps.has(eventId);
+    if (isGoing) {
+      await (supabase.from("beacon_rsvps" as any).delete() as any).eq("event_id", eventId).eq("user_id", userId);
+      setRsvps(prev => { const n = new Set(prev); n.delete(eventId); return n; });
+      setRsvpCounts(prev => ({ ...prev, [eventId]: Math.max(0, (prev[eventId] || 1) - 1) }));
+      toast({ title: "RSVP removed" });
+    } else {
+      await (supabase.from("beacon_rsvps" as any).insert({ event_id: eventId, user_id: userId }) as any);
+      setRsvps(prev => new Set(prev).add(eventId));
+      setRsvpCounts(prev => ({ ...prev, [eventId]: (prev[eventId] || 0) + 1 }));
+      toast({ title: "✅ You're going!" });
+    }
   };
 
   const groupSizeLabel = { solo: "Solo AP", pair: "With a partner", small: "Small group (3-4)", large: "Large group (5+)" };
