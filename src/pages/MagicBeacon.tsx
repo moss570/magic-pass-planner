@@ -443,7 +443,7 @@ export default function MagicBeacon() {
                     <p className="text-xs text-muted-foreground">🔒 <strong className="text-foreground">Privacy:</strong> Other Magic Pass members only see your park, meeting spot, pass tier, vibe, and group size. Your name, email, and personal info are never shared. You can stop your beacon at any time.</p>
                   </div>
 
-                  <button onClick={startBeacon} disabled={!selectedSpot}
+                  <button onClick={startBeacon} disabled={!selectedSpot || !beaconTitle.trim() || !beaconActivity || (beaconActivity === "Custom" && !customActivity.trim())}
                     className="w-full py-4 rounded-2xl font-black text-base text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
                     style={{ background: "#F5C842" }}>
                     <Radio className="w-5 h-5" /> Start My Beacon
