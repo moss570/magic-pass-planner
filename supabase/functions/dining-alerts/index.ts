@@ -11,6 +11,56 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-ALERTS] ${step}${detailsStr}`);
 };
 
+// Disney opens reservations at 6:00 AM ET, 60 days before the dining date.
+// We calculate the exact window_opens_at timestamp for a given alert_date.
+function computeWindowOpensAt(alertDate: string): { isPriority: boolean; windowOpensAt: string | null } {
+  // alertDate is "YYYY-MM-DD"
+  const dining = new Date(alertDate + "T00:00:00");
+  const now = new Date();
+
+  // The window opens 60 days before the dining date at 6:00 AM ET
+  const windowDay = new Date(dining);
+  windowDay.setDate(windowDay.getDate() - 60);
+
+  // Build 6:00 AM ET on that day.
+  // ET = UTC-5 (EST) or UTC-4 (EDT). Use America/New_York via offset calculation.
+  // We'll store as UTC: 6:00 AM ET = 10:00 or 11:00 UTC depending on DST.
+  // For correctness, compute the ET offset for that specific date.
+  const etOffset = getETOffsetHours(windowDay);
+  const windowOpensAt = new Date(
+    windowDay.getFullYear(),
+    windowDay.getMonth(),
+    windowDay.getDate(),
+    6 - etOffset, // Convert 6 AM ET to UTC hours
+    0, 0, 0
+  );
+
+  // An alert qualifies for priority launch if the window hasn't opened yet,
+  // or opened within the last 15 minutes (so we catch alerts created right at window time)
+  const fifteenMinAfter = new Date(windowOpensAt.getTime() + 15 * 60 * 1000);
+  const isPriority = now < fifteenMinAfter;
+
+  return {
+    isPriority,
+    windowOpensAt: windowOpensAt.toISOString(),
+  };
+}
+
+// Approximate ET offset: EDT (UTC-4) Mar-Nov, EST (UTC-5) Nov-Mar
+function getETOffsetHours(date: Date): number {
+  const year = date.getFullYear();
+  // Second Sunday in March
+  const marStart = new Date(year, 2, 1);
+  const marSunday = 14 - marStart.getDay() || 7;
+  const edtStart = new Date(year, 2, marSunday >= 8 ? marSunday : marSunday + 7, 2, 0, 0);
+  // First Sunday in November
+  const novStart = new Date(year, 10, 1);
+  const novSunday = 7 - novStart.getDay() || 7;
+  const estStart = new Date(year, 10, novSunday, 2, 0, 0);
+
+  return (date >= edtStart && date < estStart) ? -4 : -5;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -87,6 +137,10 @@ serve(async (req) => {
 
       if (existing) throw new Error("You already have a watching alert for this restaurant on this date");
 
+      // Determine if this alert qualifies for Priority Launch
+      const { isPriority, windowOpensAt } = computeWindowOpensAt(alert_date);
+      logStep("Priority launch check", { alert_date, isPriority, windowOpensAt });
+
       const { data, error } = await supabaseAdmin
         .from("dining_alerts")
         .insert({
@@ -99,12 +153,19 @@ serve(async (req) => {
           alert_email: alert_email !== false,
           alert_sms: alert_sms === true,
           status: "watching",
+          priority_launch: isPriority,
+          window_opens_at: isPriority ? windowOpensAt : null,
         })
         .select(`*, restaurant:restaurants(name, location, disney_url)`)
         .single();
 
       if (error) throw error;
-      logStep("Alert created", { alertId: data.id, userId: user.id });
+      logStep("Alert created", {
+        alertId: data.id,
+        userId: user.id,
+        priorityLaunch: isPriority,
+        windowOpensAt: isPriority ? windowOpensAt : "N/A",
+      });
 
       // Trigger an instant first check in the background
       const restaurantUrl = data.restaurant?.disney_url;
