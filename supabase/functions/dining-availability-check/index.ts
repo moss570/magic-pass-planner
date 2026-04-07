@@ -110,7 +110,7 @@ serve(async (req) => {
         await supabase.from("dining_alerts").update({
           status: "found",
           availability_found_at: new Date().toISOString(),
-          availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, body.date, body.party_size || 2),
+          availability_url: buildBookingUrl(bookingUrls[0] || body.test_url),
           last_checked_at: new Date().toISOString(),
           check_count: 1,
           updated_at: new Date().toISOString(),
