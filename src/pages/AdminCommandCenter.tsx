@@ -212,6 +212,7 @@ export default function AdminCommandCenter() {
   );
 
   const TABS: { id: Tab; label: string; icon: any; badge?: number }[] = [
+    { id: "events", label: "Beacon Events", icon: Calendar, badge: beaconEvents.filter(e => e.is_active).length },
     { id: "games", label: "Game Analytics", icon: Gamepad2 },
     { id: "trivia", label: "Trivia Questions", icon: HelpCircle, badge: triviaQuestions.filter(q => q.is_active).length },
     { id: "photos", label: "Photo Review", icon: Image, badge: pendingPhotos.length },
