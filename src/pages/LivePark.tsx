@@ -1044,12 +1044,6 @@ export default function LivePark() {
             >
               📸 Where Am I? — Play Now!
             </button>
-            <!-- Ride Line Quest removed -->
-              className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-3"
-              style={{ background: "#F5C842" }}
-            >
-              🏛️ Ride Line Quest — Play Now!
-            </button>
             <LineGames />
           </div>
         )}
