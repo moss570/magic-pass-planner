@@ -491,7 +491,7 @@ export default function LivePark() {
   const [inPark, setInPark] = useState<boolean | null>(null);
   const [isGameDev, setIsGameDev] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
-  const [sortMode, setSortMode] = useState<SortMode>("wait");
+  const [sortMode, setSortMode] = useState<SortMode>("distance");
   const [filterArea, setFilterArea] = useState("All");
   const [showOnlyOpen, setShowOnlyOpen] = useState(true);
   const [showFireworksOnly, setShowFireworksOnly] = useState(false);
