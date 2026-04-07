@@ -117,7 +117,7 @@ serve(async (req) => {
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioFrom = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID") || Deno.env.get("TWILIO_PHONE_NUMBER");
 
-    if (profile?.phone && twilioSid && twilioToken && twilioFrom) {
+    if (wantsSms && profile?.phone && twilioSid && twilioToken && twilioFrom) {
       const smsParams = new URLSearchParams({
         Body: `🏰 Magic Pass Plus: ${restaurantName} is available! Date: ${notification.alert_date}, Party of ${notification.party_size}. Book now: ${bookingUrl}`,
         To: profile.phone,
