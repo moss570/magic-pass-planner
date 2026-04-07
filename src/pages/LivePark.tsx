@@ -478,6 +478,7 @@ function LineGames() {
 }
 
 export default function LivePark() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [selectedPark, setSelectedPark] = useState("magic-kingdom");
   const [parkData, setParkData] = useState<ParkData | null>(null);
