@@ -75,7 +75,7 @@ serve(async (req) => {
     const results = [];
 
     // Send email
-    if (userEmail && BREVO_KEY) {
+    if (wantsEmail && userEmail && BREVO_KEY) {
       const emailResp = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: { "api-key": BREVO_KEY, "Content-Type": "application/json" },
