@@ -183,7 +183,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: bookingUrls[0] || restaurantUrl,
+                availability_url: bookingUrls[0] || reservationUrl,
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
