@@ -28,15 +28,6 @@ function buildBookingUrl(infoUrl: string): string {
   return infoUrl;
 }
 
-// Convert any Disney restaurant URL to the /dine-res/ reservation page
-// The old /dining/ info pages are now 404; the /dine-res/ pages show availability publicly
-function buildScrapingUrl(infoUrl: string): string {
-  // Already a /dine-res/ URL? Use as-is
-  if (infoUrl.includes("/dine-res/")) return infoUrl;
-  const slug = extractSlug(infoUrl);
-  if (slug) return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
-  return infoUrl;
-}
 
 // Check availability via Railway Puppeteer poller
 async function checkAvailability(
