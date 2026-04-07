@@ -58,6 +58,7 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
   const [fireworksTime, setFireworksTime] = useState("21:00");
   const [nearbyPhotoPass, setNearbyPhotoPass] = useState<any[]>([]);
   const [sunsetTime, setSunsetTime] = useState("");
+  const [expandedRide, setExpandedRide] = useState<string | null>(null);
 
   // Calculate sunset time for today in Orlando
   useEffect(() => {
@@ -96,13 +97,13 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
 
   // Fireworks calculator (from existing feature)
   const fireworksRides = [
-    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2, lat: 28.4195, lng: -81.5814 },
-    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4, lat: 28.4203, lng: -81.5841 },
-    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11, lat: 28.4193, lng: -81.5842 },
-    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3, lat: 28.4185, lng: -81.5798 },
-    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2, lat: 28.4218, lng: -81.5832 },
-    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10, lat: 28.4188, lng: -81.5829 },
-    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9, lat: 28.4198, lng: -81.5827 },
+    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2, lat: 28.4195, lng: -81.5814, emoji: "⚡", description: "The undisputed king of fireworks rides. As your Lightcycle launches into the open-air section of the track, the neon canopy disappears and the full Happily Ever After sky opens above you — fireworks bursting in every direction against the glow of Tomorrowland below.", tip: "Time your boarding for about 5 minutes before showtime. The open-air section lasts roughly 30 seconds and lines up perfectly with the finale bursts if you board at the right moment.", photoTip: "The open section faces northeast — position yourself in the rear cars for the widest sky view. The castle is visible in the distance lit in purple and gold." },
+    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4, lat: 28.4203, lng: -81.5841, emoji: "🌋", description: "The wildest ride in the wilderness gets even wilder after dark. As your mine train crests the final hill before the big drop, the Frontierland sky opens up and fireworks explode directly overhead — all while you're seconds from a screaming descent into the canyon below.", tip: "Sit in the rear cars for the best overhead view at the crest. Aim to board 15-20 minutes before the show so the timing lines up at the top of the hill.", photoTip: "The rear of the train crests the hill facing the castle. You'll catch gold and red bursts framed against the Frontierland rockwork." },
+    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11, lat: 28.4193, lng: -81.5842, emoji: "🎷", description: "One of Magic Kingdom's most underrated fireworks experiences. As you climb toward the big drop, the bayou canopy opens and you catch a breathtaking glimpse of the fireworks sky — perfectly framed between the Spanish moss and the night air — right before you plunge into the bayou below.", tip: "The fireworks view happens at the very top of the lift hill. Board so you reach the top during the middle or finale of the show for the most dramatic burst-to-drop combo.", photoTip: "Front-row riders get a clean sky shot at the top. Castle is visible northwest — look left as you crest the hill." },
+    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3, lat: 28.4185, lng: -81.5798, emoji: "🚀", description: "No ride in Magic Kingdom puts you higher above the action than Astro Orbiter. Spinning 60 feet above Tomorrowland, you get a full 360° view of Happily Ever After — fireworks bursting at eye level in every direction, Cinderella Castle glowing below you, and the entire park lit up like a map.", tip: "Lines are minimal during fireworks — everyone is on the ground. Ride it during the show for one of the most cinematic views in the park.", photoTip: "You're literally eye-level with the lower shells. Wide-angle or portrait mode works best — you'll capture bursts, the castle, and Main Street all in one shot from above." },
+    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2, lat: 28.4218, lng: -81.5832, emoji: "🐘", description: "Quietly one of the most magical ways to experience the fireworks. The short line during showtime means you'll be airborne in minutes, floating in gentle circles above Fantasyland while Happily Ever After lights up the sky above you and the little ones beside you experience pure wonder.", tip: "This is the perfect fireworks ride for families with young kids. Lines drop to near zero during the show. You'll get 2-3 full laps in the air during the peak.", photoTip: "Face your camera up and outward at the top of the circle for bursts framed with the Fantasyland rooftops below." },
+    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10, lat: 28.4188, lng: -81.5829, emoji: "🐊", description: "The Jungle Cruise after dark is already a different animal — the lantern glow on the water, the audio jokes that land better at night, the animatronics with a spookier edge. Add Happily Ever After bursting above the tropical canopy and you have one of the most atmospheric fireworks experiences in the park.", tip: "Board right as the show begins. The open-air boat gives you clear sky views throughout the entire journey. The skippers often acknowledge the fireworks.", photoTip: "Look for breaks in the tree canopy — you'll get layered shots of bursts with palm fronds and jungle animals in the foreground." },
+    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9, lat: 28.4198, lng: -81.5827, emoji: "👻", description: "The outdoor queue along the mansion's front grounds offers surprising fireworks views between burst sequences. If you time your wait in the exterior queue, you'll catch flashes of color through the wrought iron gates with the candlelit mansion behind you — genuinely haunting.", tip: "Don't rush through the outdoor queue during fireworks season. Stand at the gate section facing the hub for the best sightlines.", photoTip: "The wrought iron gate with fireworks in the background is one of the most unique shots in Magic Kingdom. Long exposure = stunning." },
   ];
 
   const now = new Date();
@@ -221,34 +222,55 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
               walkMinutes = Math.round(meters / 80);
               distanceFt = Math.round(meters * 3.281);
             }
+            const isExpanded = expandedRide === ride.name;
             return (
-              <div key={ride.name} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-sm font-bold text-foreground">{ride.name}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${qualityBadge(ride.viewQuality)}`}>
-                    {ride.viewQuality === "excellent" ? "⭐ Excellent" : ride.viewQuality === "great" ? "✨ Great" : ride.viewQuality === "good" ? "👍 Good" : "🌓 Partial"}
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground">{ride.area} · Wait: {ride.wait} min · Ride: {ride.rideTime} min</p>
-                {getInLine > -5 ? (
-                  <div className={`mt-2 px-3 py-2 rounded-lg ${getInLine <= 0 ? "bg-red-500/15 border border-red-500/20" : "bg-green-500/15 border border-green-500/20"}`}>
-                    <p className={`text-sm font-bold ${getInLine <= 0 ? "text-red-400" : "text-green-400"}`}>
-                      {getInLine <= 0 ? "⚡ Get in line NOW!" : `Queue by ${getInLineAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`}
-                    </p>
+              <div key={ride.name} className="rounded-xl border border-white/8 overflow-hidden cursor-pointer transition-all" style={{ background: "#111827" }}
+                onClick={() => setExpandedRide(isExpanded ? null : ride.name)}>
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{ride.emoji}</span>
+                      <p className="text-sm font-bold text-foreground">{ride.name}</p>
+                    </div>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold shrink-0 ${qualityBadge(ride.viewQuality)}`}>
+                      {ride.viewQuality === "excellent" ? "⭐ Excellent" : ride.viewQuality === "great" ? "✨ Great" : ride.viewQuality === "good" ? "👍 Good" : "🌓 Partial"}
+                    </span>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground mt-2 italic">Not enough time before fireworks</p>
-                )}
-                {walkMinutes !== null && (
-                  <div className="mt-2 pt-2 border-t border-white/8 flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground">🚶</span>
-                    <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
-                    <span className="text-xs text-muted-foreground">({distanceFt! >= 5280 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
+                  <p className="text-xs text-muted-foreground">{ride.area} · Wait: {ride.wait} min · Ride: {ride.rideTime} min</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{isExpanded ? "Tap to collapse ▲" : "Tap for details ▼"}</p>
+                </div>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 space-y-3 border-t border-white/8 pt-3" onClick={e => e.stopPropagation()}>
+                    <p className="text-xs text-foreground/90 leading-relaxed">{ride.description}</p>
+                    <div className="rounded-lg p-3 bg-primary/10 border border-primary/20">
+                      <p className="text-xs font-bold text-primary mb-1">🎯 Strategy Tip</p>
+                      <p className="text-xs text-foreground/80">{ride.tip}</p>
+                    </div>
+                    <div className="rounded-lg p-3 bg-secondary/10 border border-secondary/20">
+                      <p className="text-xs font-bold text-secondary mb-1">📸 Photo Tip</p>
+                      <p className="text-xs text-foreground/80">{ride.photoTip}</p>
+                    </div>
+
+                    {getInLine > -5 ? (
+                      <div className={`px-3 py-2 rounded-lg ${getInLine <= 0 ? "bg-red-500/15 border border-red-500/20" : "bg-green-500/15 border border-green-500/20"}`}>
+                        <p className={`text-sm font-bold ${getInLine <= 0 ? "text-red-400" : "text-green-400"}`}>
+                          {getInLine <= 0 ? "⚡ Get in line NOW!" : `Queue by ${getInLineAt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground italic">Not enough time before fireworks</p>
+                    )}
+                    {walkMinutes !== null && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-muted-foreground">🚶</span>
+                        <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
+                        <span className="text-xs text-muted-foreground">({distanceFt! >= 5280 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
+                      </div>
+                    )}
+                    <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
                   </div>
                 )}
-                <div className="mt-2">
-                  <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
-                </div>
               </div>
             );
           })}
