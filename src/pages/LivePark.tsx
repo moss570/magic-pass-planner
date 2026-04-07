@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
 import ShowTimes from "@/pages/ShowTimes";
-import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
