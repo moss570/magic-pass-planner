@@ -68,69 +68,7 @@ const VIBE_OPTIONS = [
   "Photography enthusiast 📸",
 ];
 
-// Magic Pass Events (managed by Brandon/Clark)
-const MAGIC_PASS_EVENTS = [
-  {
-    id: "lorcana-epcot-may",
-    title: "Lorcana Card Trading Meetup",
-    type: "trading",
-    emoji: "🃏",
-    park: "EPCOT",
-    location: "CommuniCore Plaza",
-    date: "May 20, 2026",
-    time: "12:00 PM – 2:00 PM",
-    description: "Bring your Lorcana decks and trades! Meet fellow Disney adults for an afternoon of trading and playing in the park. All experience levels welcome.",
-    rsvpCount: 47,
-    daysUntil: 43,
-    badge: "Trading Event",
-    badgeColor: "bg-purple-500/20 text-purple-400",
-  },
-  {
-    id: "coaster-marathon-mk",
-    title: "Space Mountain Ride Marathon",
-    type: "challenge",
-    emoji: "🎢",
-    park: "Magic Kingdom",
-    location: "Tomorrowland — Space Mountain",
-    date: "June 7, 2026",
-    time: "9:00 AM – 12:00 PM",
-    description: "How many times can we ride Space Mountain in 3 hours? Join the challenge — we'll track group rides and crown the marathon champion. Lightning Lane strategies welcome.",
-    rsvpCount: 31,
-    daysUntil: 61,
-    badge: "Ride Marathon",
-    badgeColor: "bg-red-500/20 text-red-400",
-  },
-  {
-    id: "dessert-trail-monorail",
-    title: "Monorail Dessert Trail",
-    type: "foodie",
-    emoji: "🍰",
-    park: "Magic Kingdom Resorts",
-    location: "Monorail loop — Contemporary, Polynesian, Grand Floridian",
-    date: "June 14, 2026",
-    time: "6:00 PM – 9:00 PM",
-    description: "Ride the resort monorail and hit dessert stops at the Contemporary, Polynesian, and Grand Floridian. We'll share our picks and vote on the best dessert of the night.",
-    rsvpCount: 62,
-    daysUntil: 68,
-    badge: "Foodie Trail",
-    badgeColor: "bg-yellow-500/20 text-yellow-400",
-  },
-  {
-    id: "photo-sunset-epcot",
-    title: "EPCOT Golden Hour Photo Walk",
-    type: "photography",
-    emoji: "📸",
-    park: "EPCOT",
-    location: "World Showcase — meet at France Pavilion",
-    date: "June 21, 2026",
-    time: "7:30 PM – 9:00 PM",
-    description: "Join fellow Magic Pass photographers for the best golden hour shots in World Showcase. We'll hit France, Japan, Italy, and the lagoon for sunset reflections.",
-    rsvpCount: 28,
-    daysUntil: 75,
-    badge: "Photo Walk",
-    badgeColor: "bg-orange-500/20 text-orange-400",
-  },
-];
+// Events are now loaded from the database (beacon_events table)
 
 export default function MagicBeacon() {
   const { session } = useAuth();
