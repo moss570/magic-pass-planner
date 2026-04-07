@@ -246,3 +246,56 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ─── Dropdown / Select fix — always dark background ─── */
+select,
+select option {
+  background-color: #111827 !important;
+  color: #F9FAFB !important;
+}
+
+select:focus {
+  outline: 1px solid rgba(245,200,66,0.4) !important;
+  border-color: rgba(245,200,66,0.4) !important;
+}
+
+/* Restaurant dropdown list items */
+.restaurant-dropdown-item {
+  background: #111827;
+  color: #F9FAFB;
+}
+
+.restaurant-dropdown-item:hover {
+  background: rgba(245,200,66,0.1);
+}
+
+/* Ensure all input/textarea stay dark */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+textarea {
+  color-scheme: dark;
+}
+
+/* Force dark theme - override any Lovable light theme injection */
+html, body, #root {
+  background-color: hsl(222, 72%, 7%) !important;
+  color: hsl(210, 50%, 98%) !important;
+}
+
+[class*="bg-background"],
+.bg-background {
+  background-color: hsl(222, 72%, 7%) !important;
+}
+
+[class*="bg-card"],
+.bg-card {
+  background-color: hsl(217, 47%, 11%) !important;
+}
+
+/* Restaurant/location dropdown forced dark */
+[data-radix-popper-content-wrapper],
+[role="listbox"],
+[role="option"],
+[data-radix-select-viewport] {
+  background-color: #111827 !important;
+  color: #F9FAFB !important;
+}
