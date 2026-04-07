@@ -25,6 +25,7 @@ interface Event {
   area?: string;
   description?: string;
   price_info?: string;
+  scrapable?: boolean;
 }
 
 interface EventAlert {
