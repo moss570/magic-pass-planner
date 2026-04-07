@@ -22,6 +22,41 @@ const QUEUE_MAP: Record<string, string[]> = {
   "Blizzard Beach": ["Main Entrance", "Summit Plummet Queue", "Melt-Away Bay Shore"],
 };
 
+// GPS coordinates for meeting spots
+const SPOT_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Main Gate / Town Square": { lat: 28.4167, lng: -81.5812 },
+  "Cinderella Castle Steps": { lat: 28.4195, lng: -81.5812 },
+  "Space Mountain Entrance": { lat: 28.4210, lng: -81.5778 },
+  "Tomorrowland Terrace": { lat: 28.4203, lng: -81.5790 },
+  "Fantasyland Carousel": { lat: 28.4205, lng: -81.5815 },
+  "Big Thunder Mountain Entrance": { lat: 28.4199, lng: -81.5845 },
+  "Haunted Mansion Queue": { lat: 28.4209, lng: -81.5830 },
+  "Pirates Entrance": { lat: 28.4186, lng: -81.5838 },
+  "Adventureland Bridge": { lat: 28.4183, lng: -81.5828 },
+  "Tiana's Bayou Entrance": { lat: 28.4192, lng: -81.5850 },
+  "Crystal Palace Front": { lat: 28.4187, lng: -81.5810 },
+  "Spaceship Earth": { lat: 28.3747, lng: -81.5494 },
+  "World Showcase Plaza": { lat: 28.3710, lng: -81.5494 },
+  "France Pavilion Bridge": { lat: 28.3688, lng: -81.5530 },
+  "Japan Pavilion": { lat: 28.3695, lng: -81.5535 },
+  "Canada Pavilion": { lat: 28.3700, lng: -81.5460 },
+  "Test Track Queue": { lat: 28.3735, lng: -81.5475 },
+  "Guardians Queue": { lat: 28.3740, lng: -81.5510 },
+  "Sunshine Seasons": { lat: 28.3738, lng: -81.5502 },
+  "Hollywood Blvd Entrance": { lat: 28.3576, lng: -81.5593 },
+  "Chinese Theater": { lat: 28.3549, lng: -81.5588 },
+  "Galaxy's Edge Entrance": { lat: 28.3535, lng: -81.5620 },
+  "Slinky Dog Dash Queue": { lat: 28.3555, lng: -81.5618 },
+  "Tower of Terror Entrance": { lat: 28.3595, lng: -81.5605 },
+  "Echo Lake": { lat: 28.3565, lng: -81.5580 },
+  "Main Entrance / Oasis": { lat: 28.3553, lng: -81.5901 },
+  "Tree of Life": { lat: 28.3571, lng: -81.5904 },
+  "Pandora Bridge": { lat: 28.3558, lng: -81.5930 },
+  "Africa - Harambe": { lat: 28.3590, lng: -81.5920 },
+  "Asia - Expedition Everest Queue": { lat: 28.3580, lng: -81.5880 },
+  "Discovery Island": { lat: 28.3575, lng: -81.5900 },
+};
+
 const VIBE_OPTIONS = [
   "Love coasters, happy to ride together 🎢",
   "Solo AP, say hi! 👋",
