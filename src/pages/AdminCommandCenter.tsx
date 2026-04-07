@@ -169,7 +169,7 @@ export default function AdminCommandCenter() {
           originalMessage: selectedMessage.message,
         }),
       });
-      await supabase.from("user_messages").update({
+      await (supabase.from("user_messages" as any).update({
         admin_reply: replyText,
         replied_at: new Date().toISOString(),
         replied_by: user?.email || "admin",
