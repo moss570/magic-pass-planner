@@ -142,7 +142,8 @@ serve(async (req) => {
           continue;
         }
 
-        logStep("Checking restaurant", { name: restaurant.name, url: restaurantUrl, date: alert.alert_date });
+        const reservationUrl = transformToReservationUrl(restaurantUrl);
+        logStep("Checking restaurant", { name: restaurant.name, url: restaurantUrl, reservationUrl, date: alert.alert_date });
 
         const { available, times, bookingUrls } = await checkAvailability(
           restaurantUrl,
@@ -161,7 +162,8 @@ serve(async (req) => {
           found++;
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
-          updateData.availability_url = bookingUrls[0] || restaurantUrl;
+          // Use the reservation URL (not the info page) so the "Book Now" link works
+          updateData.availability_url = bookingUrls[0] || reservationUrl;
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
@@ -181,7 +183,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: bookingUrls[0] || restaurantUrl,
+                availability_url: bookingUrls[0] || reservationUrl,
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
