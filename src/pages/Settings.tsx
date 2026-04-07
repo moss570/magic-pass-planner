@@ -20,6 +20,8 @@ const Settings = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [homeZip, setHomeZip] = useState("");
+  const [username, setUsername] = useState("");
+  const [membershipCategory, setMembershipCategory] = useState("Annual Passholder");
 
   const [apTier, setApTier] = useState("None");
   const [apExpiration, setApExpiration] = useState("");
