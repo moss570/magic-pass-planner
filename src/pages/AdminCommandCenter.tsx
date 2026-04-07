@@ -136,6 +136,25 @@ export default function AdminCommandCenter() {
         }
         setEventRsvps(rsvpMap);
       }
+
+      if (t === "health") {
+        const [dAlerts, eAlerts, dNotifs, eNotifs] = await Promise.all([
+          supabase.from("dining_alerts").select("id, status, last_checked_at, check_count, restaurant_id, alert_date").order("created_at", { ascending: false }).limit(50),
+          supabase.from("event_alerts").select("id, status, last_checked_at, check_count, event_name, alert_date").order("created_at", { ascending: false }).limit(50),
+          supabase.from("dining_notifications").select("id, delivery_status, sent_at, restaurant_name, notification_type, created_at").order("created_at", { ascending: false }).limit(50),
+          supabase.from("event_notifications").select("id, delivery_status, sent_at, event_name, notification_type, created_at").order("created_at", { ascending: false }).limit(50),
+        ]);
+        const diningNotifs = dNotifs.data || [];
+        const eventNotifs = eNotifs.data || [];
+        setHealthData({
+          diningAlerts: dAlerts.data || [],
+          eventAlerts: eAlerts.data || [],
+          diningNotifs,
+          eventNotifs,
+          recentDiningErrors: diningNotifs.filter(n => n.delivery_status === "failed").length,
+          recentEventErrors: eventNotifs.filter(n => n.delivery_status === "failed").length,
+        });
+      }
     } catch (err) {
       console.error(err);
     } finally {
