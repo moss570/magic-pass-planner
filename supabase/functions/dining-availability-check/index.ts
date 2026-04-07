@@ -54,9 +54,9 @@ async function checkAvailability(
   }
 
   try {
-    // Send the original /dining/ info page URL — no transform needed.
-    // The info page is public (no login wall) and has a "Check Available Days" button.
-    logStep("Sending to poller", { url: restaurantUrl, date, partySize, mealPeriods });
+    // Transform to /dine-res/ URL — old /dining/ info pages are 404 now
+    const scrapingUrl = buildScrapingUrl(restaurantUrl);
+    logStep("Sending to poller", { url: scrapingUrl, date, partySize, mealPeriods });
 
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
