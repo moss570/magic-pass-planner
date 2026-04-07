@@ -625,9 +625,13 @@ export type Database = {
           created_at: string | null
           deal_url: string | null
           expires_at: string | null
+          http_status: number | null
           id: string
           is_live: boolean | null
           last_verified: string | null
+          link_checked_at: string | null
+          link_error: string | null
+          link_status: string | null
           notes: string | null
           priority: number | null
           retailer: string
@@ -640,9 +644,13 @@ export type Database = {
           created_at?: string | null
           deal_url?: string | null
           expires_at?: string | null
+          http_status?: number | null
           id?: string
           is_live?: boolean | null
           last_verified?: string | null
+          link_checked_at?: string | null
+          link_error?: string | null
+          link_status?: string | null
           notes?: string | null
           priority?: number | null
           retailer: string
@@ -655,9 +663,13 @@ export type Database = {
           created_at?: string | null
           deal_url?: string | null
           expires_at?: string | null
+          http_status?: number | null
           id?: string
           is_live?: boolean | null
           last_verified?: string | null
+          link_checked_at?: string | null
+          link_error?: string | null
+          link_status?: string | null
           notes?: string | null
           priority?: number | null
           retailer?: string
