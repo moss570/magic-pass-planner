@@ -415,7 +415,7 @@ function LineGames() {
           </div>
           <div className="text-center mb-4">
             <p className="text-3xl font-bold text-primary tracking-[0.3em]">{LINE_GAMES[2].words[scrambleIdx].scrambled}</p>
-            <p className="text-xs text-muted-foreground mt-2">Hint: {LINE_GAMES[2].words[scrambleIdx].hint}</p>
+            <p className="text-xs text-muted-foreground mt-2">Unscramble the letters!</p>
           </div>
           <div className="flex gap-2">
             <input
