@@ -779,6 +779,9 @@ export type Database = {
           home_zip: string | null
           id: string
           last_name: string | null
+          mock_lat: number | null
+          mock_lng: number | null
+          mock_park: string | null
           onboarding_complete: boolean | null
           phone: string | null
           qr_token: string | null
@@ -795,6 +798,9 @@ export type Database = {
           home_zip?: string | null
           id: string
           last_name?: string | null
+          mock_lat?: number | null
+          mock_lng?: number | null
+          mock_park?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
           qr_token?: string | null
@@ -811,6 +817,9 @@ export type Database = {
           home_zip?: string | null
           id?: string
           last_name?: string | null
+          mock_lat?: number | null
+          mock_lng?: number | null
+          mock_park?: string | null
           onboarding_complete?: boolean | null
           phone?: string | null
           qr_token?: string | null

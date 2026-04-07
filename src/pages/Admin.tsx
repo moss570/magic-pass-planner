@@ -273,7 +273,7 @@ export default function Admin() {
   };
 
   const loadStripeReport = async () => {
-    if (!session) return;
+    if (!user) return;
     setStripeLoading(true);
     try {
       const token = (await supabase.auth.getSession()).data.session?.access_token;

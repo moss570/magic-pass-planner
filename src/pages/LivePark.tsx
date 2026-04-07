@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Zap, MapPin, Clock, Navigation, Trophy, Gamepad2, RefreshCw,
   ChevronDown, ChevronUp, Star, Sparkles, Timer, AlertTriangle,
@@ -477,6 +478,7 @@ function LineGames() {
 }
 
 export default function LivePark() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [selectedPark, setSelectedPark] = useState("magic-kingdom");
   const [parkData, setParkData] = useState<ParkData | null>(null);
@@ -513,7 +515,7 @@ export default function LivePark() {
       try {
         const { data: profile } = await supabase
           .from("users_profile")
-          .select("mock_park, mock_lat, mock_lng")
+          .select("mock_lat, mock_lng")
           .eq("id", user?.id || "")
           .single();
         
