@@ -378,11 +378,21 @@ function LineGames() {
               }
               return (
                 <button key={i} onClick={() => handleTriviaAnswer(i)}
-                  className={`text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${bg}`}>
+                  disabled={answered !== null}
+                  className={`text-left px-4 py-2.5 rounded-lg border text-sm transition-colors ${bg} disabled:cursor-default`}>
                   {opt}
                 </button>
               );
             })}
+            {answered !== null && (
+              <button
+                onClick={handleTriviaNext}
+                className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] mt-2"
+                style={{ background: "#F5C842" }}
+              >
+                {triviaQ + 1 >= triviaQuestions.length ? "See My Score 🏆" : "Next Question →"}
+              </button>
+            )}
           </div>
         </div>
       )}
