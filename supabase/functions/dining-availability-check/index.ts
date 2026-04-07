@@ -11,13 +11,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Build a booking URL with date and party size pre-filled
-function buildBookingUrl(baseUrl: string, date: string, partySize: number): string {
-  // Disney reservation URLs accept date and partySize as query params
-  const url = new URL(baseUrl);
-  url.searchParams.set("date", date);
-  url.searchParams.set("partySize", String(partySize));
-  return url.toString();
+// Convert a /dining/ info page URL to a /dine-res/ reservation URL
+// Disney's SPA does not honor query params for date/party pre-fill,
+// so we just link to the reservation page directly.
+function buildBookingUrl(infoUrl: string): string {
+  try {
+    const url = new URL(infoUrl);
+    // e.g. /dining/contemporary-resort/chef-mickeys/ → chef-mickeys
+    const segments = url.pathname.replace(/\/+$/, "").split("/");
+    const slug = segments[segments.length - 1];
+    if (slug) {
+      return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}/`;
+    }
+  } catch { /* fall through */ }
+  return infoUrl;
 }
 
 // Check availability via Railway Puppeteer poller
@@ -103,7 +110,7 @@ serve(async (req) => {
         await supabase.from("dining_alerts").update({
           status: "found",
           availability_found_at: new Date().toISOString(),
-          availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, body.date, body.party_size || 2),
+          availability_url: buildBookingUrl(bookingUrls[0] || body.test_url),
           last_checked_at: new Date().toISOString(),
           check_count: 1,
           updated_at: new Date().toISOString(),
@@ -123,7 +130,7 @@ serve(async (req) => {
               restaurant_name: alert.restaurant?.name || "Restaurant",
               alert_date: alert.alert_date,
               party_size: alert.party_size,
-              availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, alert.alert_date, alert.party_size),
+              availability_url: buildBookingUrl(bookingUrls[0] || body.test_url),
               notification_type: alert.alert_sms ? "sms" : "email",
               sent_at: null,
             }).select().single();
@@ -213,7 +220,7 @@ serve(async (req) => {
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
           // Use booking URL from poller if available, otherwise link to the info page
-          updateData.availability_url = buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size);
+          updateData.availability_url = buildBookingUrl(bookingUrls[0] || restaurantUrl);
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
@@ -233,7 +240,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size),
+                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl),
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
