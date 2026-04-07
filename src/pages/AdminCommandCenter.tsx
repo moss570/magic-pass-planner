@@ -13,7 +13,7 @@ const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
-type Tab = "games" | "trivia" | "photos" | "messages";
+type Tab = "games" | "trivia" | "photos" | "messages" | "events";
 
 export default function AdminCommandCenter() {
   const { user, session } = useAuth();
