@@ -338,6 +338,157 @@ export default function AdminCommandCenter() {
           </button>
         </div>
 
+        {/* ── SYSTEM HEALTH ────────────────────────────────── */}
+        {tab === "health" && (
+          <div className="space-y-6">
+            {/* Status Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                {
+                  label: "Active Dining Alerts",
+                  value: healthData.diningAlerts.filter(a => a.status === "watching").length,
+                  total: healthData.diningAlerts.length,
+                  color: "text-blue-400",
+                },
+                {
+                  label: "Active Event Alerts",
+                  value: healthData.eventAlerts.filter(a => a.status === "watching").length,
+                  total: healthData.eventAlerts.length,
+                  color: "text-purple-400",
+                },
+                {
+                  label: "Dining Notif Failures",
+                  value: healthData.recentDiningErrors,
+                  total: healthData.diningNotifs.length,
+                  color: healthData.recentDiningErrors > 0 ? "text-red-400" : "text-green-400",
+                },
+                {
+                  label: "Event Notif Failures",
+                  value: healthData.recentEventErrors,
+                  total: healthData.eventNotifs.length,
+                  color: healthData.recentEventErrors > 0 ? "text-red-400" : "text-green-400",
+                },
+              ].map((c, i) => (
+                <div key={i} className="rounded-xl border border-white/10 p-4" style={{ background: "#111827" }}>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">{c.label}</p>
+                  <p className={`text-2xl font-black ${c.color}`}>{c.value}</p>
+                  <p className="text-[10px] text-muted-foreground">of {c.total} total</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Railway Poller Status */}
+            <div className="rounded-xl border border-white/10 p-5" style={{ background: "#111827" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-primary" />
+                  <p className="text-sm font-bold text-foreground">Railway Poller Status</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0D1230" }}>
+                  <p className="text-muted-foreground mb-1">Last Dining Check</p>
+                  {(() => {
+                    const lastChecked = healthData.diningAlerts.filter(a => a.last_checked_at).sort((a, b) => new Date(b.last_checked_at).getTime() - new Date(a.last_checked_at).getTime())[0];
+                    if (!lastChecked) return <p className="text-foreground">No checks yet</p>;
+                    const ago = Math.round((Date.now() - new Date(lastChecked.last_checked_at).getTime()) / 60000);
+                    return <p className={`font-semibold ${ago > 15 ? "text-red-400" : "text-green-400"}`}>{ago} min ago</p>;
+                  })()}
+                </div>
+                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0D1230" }}>
+                  <p className="text-muted-foreground mb-1">Last Event Check</p>
+                  {(() => {
+                    const lastChecked = healthData.eventAlerts.filter(a => a.last_checked_at).sort((a, b) => new Date(b.last_checked_at).getTime() - new Date(a.last_checked_at).getTime())[0];
+                    if (!lastChecked) return <p className="text-foreground">No checks yet</p>;
+                    const ago = Math.round((Date.now() - new Date(lastChecked.last_checked_at).getTime()) / 60000);
+                    return <p className={`font-semibold ${ago > 15 ? "text-red-400" : "text-green-400"}`}>{ago} min ago</p>;
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Notifications */}
+            <div className="rounded-xl border border-white/10 p-5" style={{ background: "#111827" }}>
+              <p className="text-sm font-bold text-foreground mb-3">📬 Recent Notifications</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Dining ({healthData.diningNotifs.length})</p>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {healthData.diningNotifs.slice(0, 10).map(n => (
+                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                        <span className="text-foreground truncate flex-1">{n.restaurant_name || "Unknown"}</span>
+                        <span className={`font-semibold ml-2 ${n.delivery_status === "sent" ? "text-green-400" : n.delivery_status === "failed" ? "text-red-400" : "text-yellow-400"}`}>
+                          {n.delivery_status}
+                        </span>
+                      </div>
+                    ))}
+                    {healthData.diningNotifs.length === 0 && <p className="text-xs text-muted-foreground">No notifications</p>}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Events ({healthData.eventNotifs.length})</p>
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {healthData.eventNotifs.slice(0, 10).map(n => (
+                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                        <span className="text-foreground truncate flex-1">{n.event_name || "Unknown"}</span>
+                        <span className={`font-semibold ml-2 ${n.delivery_status === "sent" ? "text-green-400" : n.delivery_status === "failed" ? "text-red-400" : "text-yellow-400"}`}>
+                          {n.delivery_status}
+                        </span>
+                      </div>
+                    ))}
+                    {healthData.eventNotifs.length === 0 && <p className="text-xs text-muted-foreground">No notifications</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Diagnostic Batch Runner */}
+            <div className="rounded-xl border border-white/10 p-5" style={{ background: "#111827" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm font-bold text-foreground">🔬 Event Template Diagnostics</p>
+                  <p className="text-xs text-muted-foreground">Run a batch diagnostic to check if Disney event page templates have changed</p>
+                </div>
+                <button
+                  onClick={runDiagnosticBatch}
+                  disabled={diagRunning}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] disabled:opacity-50"
+                  style={{ background: "#F5C842" }}
+                >
+                  {diagRunning ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                  {diagRunning ? "Running..." : "Run Diagnostics"}
+                </button>
+              </div>
+              {diagProgress && (
+                <p className={`text-xs mb-3 ${diagProgress.startsWith("Error") ? "text-red-400" : "text-primary"} font-medium`}>
+                  {diagProgress}
+                </p>
+              )}
+              {diagResults.length > 0 && (
+                <div className="space-y-1 max-h-80 overflow-y-auto">
+                  <div className="grid grid-cols-[1fr_80px_80px_80px] gap-2 text-[10px] text-muted-foreground uppercase tracking-wider font-semibold px-2 py-1.5">
+                    <span>Event</span><span>Status</span><span>Scrapable</span><span>Updated</span>
+                  </div>
+                  {diagResults.map((r, i) => (
+                    <div key={i} className="grid grid-cols-[1fr_80px_80px_80px] gap-2 text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                      <span className="text-foreground truncate" title={r.url}>{r.event_name}</span>
+                      <span className={r.ok ? "text-green-400" : "text-red-400"}>{r.ok ? "✅ OK" : "❌ Fail"}</span>
+                      <span className={r.scrapable ? "text-green-400" : "text-yellow-400"}>{r.scrapable ? "Yes" : "No"}</span>
+                      <span className={r.dbUpdated ? "text-primary" : "text-muted-foreground"}>{r.dbUpdated ? "✏️ Yes" : "—"}</span>
+                    </div>
+                  ))}
+                  <div className="flex gap-4 text-xs text-muted-foreground pt-2 px-2">
+                    <span>✅ OK: {diagResults.filter(r => r.ok).length}</span>
+                    <span>❌ Failed: {diagResults.filter(r => !r.ok).length}</span>
+                    <span>Scrapable: {diagResults.filter(r => r.scrapable).length}</span>
+                    <span>DB Updated: {diagResults.filter(r => r.dbUpdated).length}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ── BEACON EVENTS ────────────────────────────────── */}
         {tab === "events" && (
           <div className="space-y-4">
