@@ -366,6 +366,86 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_submissions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          location: string | null
+          park: string | null
+          photo_type: string
+          ride_name: string | null
+          status: string | null
+          title: string
+          user_id: string
+          vote_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          location?: string | null
+          park?: string | null
+          photo_type: string
+          ride_name?: string | null
+          status?: string | null
+          title: string
+          user_id: string
+          vote_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          location?: string | null
+          park?: string | null
+          photo_type?: string
+          ride_name?: string | null
+          status?: string | null
+          title?: string
+          user_id?: string
+          vote_count?: number | null
+        }
+        Relationships: []
+      }
+      photo_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          photo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_votes_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photo_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       restaurants: {
         Row: {
           accepts_walk_ins: boolean | null
