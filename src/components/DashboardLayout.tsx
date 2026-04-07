@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useState as _useState, useEffect } from "react";
 import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -12,7 +12,12 @@ const sidebarNav = [
   { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },
   { icon: Sparkles, label: "Enchanting Extras", path: "/event-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
-  { icon: Zap, label: "Live Park Mode", path: "/live-park" },
+  { icon: Zap, label: "Live Park Mode", path: "/live-park", subItems: [
+    { label: "🎮 Line Games", path: "/live-park?sub=line-games" },
+    { label: "📸 Photo Fun", path: "/live-park?sub=photo-fun" },
+    { label: "🎭 Show Times", path: "/live-park?show=true" },
+    { label: "🏰 Magic Beacon", path: "/live-park?sub=magic-beacon" },
+  ]},
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
   { icon: UserPlus, label: "Friends", path: "/friends" },

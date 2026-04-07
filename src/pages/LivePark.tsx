@@ -10,6 +10,9 @@ import CompassButton from "@/components/CompassButton";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
+import PhotoFun from "@/pages/PhotoFun";
+import ShowTimes from "@/pages/ShowTimes";
+import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -494,10 +497,11 @@ export default function LivePark() {
   const [showOnlyOpen, setShowOnlyOpen] = useState(true);
   const [showFireworksOnly, setShowFireworksOnly] = useState(false);
   const [fireworksTime, setFireworksTime] = useState("21:00");
-  const [activeTab, setActiveTab] = useState<"waits" | "fireworks" | "games" | "info">("waits");
+  const [activeTab, setActiveTab] = useState<"waits" | "show-times" | "info">("waits");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
   const [whereAmIOpen, setWhereAmIOpen] = useState(false);
+  const [activeSubPage, setActiveSubPage] = useState<"none" | "photo-fun" | "show-times" | "magic-beacon" | "line-games">("none");
   const [navigateOpen, setNavigateOpen] = useState(false);
   const [navigateSearch, setNavigateSearch] = useState("");
   const [navigateTarget, setNavigateTarget] = useState<{name: string; area: string} | null>(null);
@@ -868,16 +872,21 @@ export default function LivePark() {
         <div className="hidden md:flex gap-1 border-b border-white/10">
           {[
             { id: "waits", label: "⚡ Wait Times" },
-            { id: "fireworks", label: "🎆 Fireworks" },
-            { id: "games", label: "🎮 Line Games" },
+            { id: "show-times", label: "🎭 Show Times" },
             { id: "info", label: "ℹ️ Park Info" },
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${activeTab === tab.id ? "text-primary border-b-2 border-primary -mb-px" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => { setActiveTab(tab.id as any); setActiveSubPage("none"); }}
+              className={`px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${activeTab === tab.id && activeSubPage === "none" ? "text-primary border-b-2 border-primary -mb-px" : "text-muted-foreground hover:text-foreground"}`}
             >
               {tab.label}
+            </button>
+          ))}
+          {["line-games","photo-fun","magic-beacon"].map(sp => (
+            <button key={sp} onClick={() => setActiveSubPage(sp as any)}
+              className={`px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${activeSubPage === sp ? "text-secondary border-b-2 border-secondary -mb-px" : "text-muted-foreground hover:text-foreground"}`}>
+              {sp === "line-games" ? "🎮 Line Games" : sp === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon"}
             </button>
           ))}
         </div>
@@ -885,7 +894,10 @@ export default function LivePark() {
         <div className="md:hidden flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
             Showing: <span className="text-foreground font-semibold">
-              {activeTab === "waits" ? "⚡ Wait Times" : activeTab === "fireworks" ? "🎆 Fireworks" : activeTab === "games" ? "🎮 Line Games" : "ℹ️ Park Info"}
+              {activeSubPage !== "none" ? 
+                (activeSubPage === "line-games" ? "🎮 Line Games" : activeSubPage === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon") :
+                (activeTab === "waits" ? "⚡ Wait Times" : activeTab === "show-times" ? "🎭 Show Times" : "ℹ️ Park Info")
+              }
             </span>
           </p>
           <button onClick={() => setLiveMenuOpen(true)} className="text-xs text-primary font-semibold flex items-center gap-1">
@@ -1096,7 +1108,13 @@ export default function LivePark() {
         )}
 
         {/* ── LINE GAMES TAB ──────────────────────────────────── */}
-        {activeTab === "games" && (
+        {/* SHOW TIMES TAB */}
+        {activeTab === "show-times" && activeSubPage === "none" && (
+          <ShowTimes selectedPark={PARKS.find(p => p.slug === selectedPark)?.name || "Magic Kingdom"} inPark={inPark || false} />
+        )}
+
+        {/* Legacy: keep original games tab hidden, render via sub-page instead */}
+        {activeTab === "games_HIDDEN" && (
           <div className="space-y-4">
             <button
               onClick={() => setWhereAmIOpen(true)}
