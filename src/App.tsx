@@ -33,6 +33,8 @@ import MagicBeacon from "./pages/MagicBeacon";
 import PhotoFun from "./pages/PhotoFun";
 import EventAlerts from "./pages/EventAlerts";
 import LineGames from "./pages/LineGames";
+import Feed from "./pages/Feed";
+import InboxPage from "./pages/Inbox";
 
 const queryClient = new QueryClient();
 
