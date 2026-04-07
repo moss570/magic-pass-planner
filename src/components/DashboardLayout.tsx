@@ -10,6 +10,7 @@ const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
   { icon: Map, label: "Trip Planner", path: "/trip-planner" },
   { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },
+  { icon: Sparkles, label: "Enchanting Extras", path: "/event-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
