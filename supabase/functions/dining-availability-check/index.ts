@@ -240,7 +240,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size),
+                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl),
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
