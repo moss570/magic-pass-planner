@@ -76,6 +76,8 @@ export default function MagicBeacon() {
   const [activeTab, setActiveTab] = useState<"beacons" | "events" | "my-beacon">("beacons");
   const [beacons, setBeacons] = useState<any[]>([]);
   const [rsvps, setRsvps] = useState<Set<string>>(new Set());
+  const [dbEvents, setDbEvents] = useState<any[]>([]);
+  const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
 
   // My beacon state
   const [myBeaconActive, setMyBeaconActive] = useState(false);
