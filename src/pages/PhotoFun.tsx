@@ -96,13 +96,13 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
 
   // Fireworks calculator (from existing feature)
   const fireworksRides = [
-    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2 },
-    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4 },
-    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11 },
-    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3 },
-    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2 },
-    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10 },
-    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9 },
+    { name: "TRON Lightcycle / Run", viewQuality: "excellent", area: "Tomorrowland", wait: 40, rideTime: 2, lat: 28.4195, lng: -81.5814 },
+    { name: "Big Thunder Mountain Railroad", viewQuality: "great", area: "Frontierland", wait: 25, rideTime: 4, lat: 28.4203, lng: -81.5841 },
+    { name: "Tiana's Bayou Adventure", viewQuality: "great", area: "Frontierland", wait: 30, rideTime: 11, lat: 28.4193, lng: -81.5842 },
+    { name: "Astro Orbiter", viewQuality: "great", area: "Tomorrowland", wait: 20, rideTime: 3, lat: 28.4185, lng: -81.5798 },
+    { name: "Dumbo the Flying Elephant", viewQuality: "good", area: "Fantasyland", wait: 15, rideTime: 2, lat: 28.4218, lng: -81.5832 },
+    { name: "Jungle Cruise", viewQuality: "good", area: "Adventureland", wait: 20, rideTime: 10, lat: 28.4188, lng: -81.5829 },
+    { name: "Haunted Mansion", viewQuality: "partial", area: "Liberty Square", wait: 15, rideTime: 9, lat: 28.4198, lng: -81.5827 },
   ];
 
   const now = new Date();
@@ -209,6 +209,18 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
           {fireworksRides.map(ride => {
             const getInLine = minutesUntil - ride.wait - ride.rideTime - 2;
             const getInLineAt = new Date(now.getTime() + getInLine * 60000);
+            // Walk time calculation
+            let walkMinutes: number | null = null;
+            let distanceFt: number | null = null;
+            if (userLat && userLng) {
+              const R = 6371000;
+              const dLat = (ride.lat - userLat) * Math.PI / 180;
+              const dLng = (ride.lng - userLng) * Math.PI / 180;
+              const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(ride.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+              const meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              walkMinutes = Math.round(meters / 80);
+              distanceFt = Math.round(meters * 3.281);
+            }
             return (
               <div key={ride.name} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                 <div className="flex items-start justify-between gap-2 mb-1">
@@ -227,11 +239,16 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
                 ) : (
                   <p className="text-xs text-muted-foreground mt-2 italic">Not enough time before fireworks</p>
                 )}
-                {inPark && (
-                  <div className="mt-2">
-                    <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
+                {walkMinutes !== null && (
+                  <div className="mt-2 pt-2 border-t border-white/8 flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">🚶</span>
+                    <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
+                    <span className="text-xs text-muted-foreground">({distanceFt! >= 5280 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
                   </div>
                 )}
+                <div className="mt-2">
+                  <CompassButton destination={ride.name} context={`${ride.area} · Magic Kingdom`} size="inline" />
+                </div>
               </div>
             );
           })}
