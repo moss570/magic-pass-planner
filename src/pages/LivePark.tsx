@@ -158,13 +158,17 @@ const LINE_GAMES = [
     badge: "🚧 Coming Soon",
   },
   {
-    id: "where-am-i",
-    name: "Where Am I?",
-    icon: "📸",
-    description: "Guess the Disney location from a close-up photo!",
-    type: "coming-soon",
-    comingSoon: true,
-    badge: "🚧 Coming Soon",
+    id: "word-scramble",
+    name: "Word Scramble",
+    icon: "🔤",
+    description: "Unscramble Disney words!",
+    words: [
+      { scrambled: "CKYEMI", answer: "MICKEY", answer2: "MICKEY" },
+      { scrambled: "NIEMN", answer: "MINNIE", answer2: "MINNIE" },
+      { scrambled: "FOOLYG", answer: "GOOFY", answer2: "GOOFY" },
+      { scrambled: "DLNADO", answer: "DONALD", answer2: "DONALD" },
+      { scrambled: "TULOP", answer: "PLUTO", answer2: "PLUTO" },
+    ],
   },
 ];
 
