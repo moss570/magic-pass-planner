@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Gamepad2, Camera, Search, Zap, Trophy } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
+import DisneyTrivia from "@/components/DisneyTrivia";
 
 interface GameCard {
   id: string;
@@ -26,6 +27,16 @@ const GAMES: GameCard[] = [
     tag: "Photo Quiz",
   },
   {
+    id: "trivia",
+    emoji: "🧠",
+    title: "Disney Trivia",
+    subtitle: "Test your Disney knowledge",
+    description: "Answer questions about rides, history, characters, and park secrets. Harder questions earn more points!",
+    color: "#8B5CF6",
+    available: true,
+    tag: "Quiz",
+  },
+  {
     id: "scavenger-hunt",
     emoji: "🔍",
     title: "Queue Scavenger Hunt",
@@ -42,6 +53,10 @@ export default function LineGames() {
 
   if (activeGame === "where-am-i") {
     return <WhereAmI onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "trivia") {
+    return <DisneyTrivia onClose={() => setActiveGame(null)} />;
   }
 
   return (
