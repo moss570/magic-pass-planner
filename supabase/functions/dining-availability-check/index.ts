@@ -11,21 +11,6 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
-// Transform a Disney info URL (/dining/...) into the bare reservation URL (/dine-res/restaurant/...)
-// The Disney SPA ignores query params — all interaction is JS-driven via the Railway poller
-function transformToReservationUrl(infoUrl: string): string {
-  try {
-    const url = new URL(infoUrl);
-    const segments = url.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
-    const slug = segments[segments.length - 1];
-    if (!slug) return infoUrl;
-
-    return `https://disneyworld.disney.go.com/dine-res/restaurant/${slug}`;
-  } catch {
-    return infoUrl;
-  }
-}
-
 // Check availability via Railway Puppeteer poller
 async function checkAvailability(
   restaurantUrl: string,
@@ -33,10 +18,6 @@ async function checkAvailability(
   partySize: number,
   mealPeriods: string[]
 ): Promise<{ available: boolean; times: string[]; bookingUrls: string[] }> {
-  // Transform info URL to reservation URL before sending to poller
-  const reservationUrl = transformToReservationUrl(restaurantUrl);
-  logStep("Transformed URL", { from: restaurantUrl, to: reservationUrl });
-
   const railwayUrl = Deno.env.get("RAILWAY_POLLER_URL");
   const railwayApiKey = Deno.env.get("RAILWAY_POLLER_API_KEY");
 
@@ -46,13 +27,17 @@ async function checkAvailability(
   }
 
   try {
+    // Send the original /dining/ info page URL — no transform needed.
+    // The info page is public (no login wall) and has a "Check Available Days" button.
+    logStep("Sending to poller", { url: restaurantUrl, date, partySize, mealPeriods });
+
     const res = await fetch(`${railwayUrl}/check`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": railwayApiKey,
       },
-      body: JSON.stringify({ restaurantUrl: reservationUrl, date, partySize, mealPeriods }),
+      body: JSON.stringify({ restaurantUrl, date, partySize, mealPeriods }),
     });
 
     if (!res.ok) {
@@ -142,8 +127,7 @@ serve(async (req) => {
           continue;
         }
 
-        const reservationUrl = transformToReservationUrl(restaurantUrl);
-        logStep("Checking restaurant", { name: restaurant.name, url: restaurantUrl, reservationUrl, date: alert.alert_date });
+        logStep("Checking restaurant", { name: restaurant.name, url: restaurantUrl, date: alert.alert_date });
 
         const { available, times, bookingUrls } = await checkAvailability(
           restaurantUrl,
@@ -162,8 +146,8 @@ serve(async (req) => {
           found++;
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
-          // Use the reservation URL (not the info page) so the "Book Now" link works
-          updateData.availability_url = bookingUrls[0] || reservationUrl;
+          // Use booking URL from poller if available, otherwise link to the info page
+          updateData.availability_url = bookingUrls[0] || restaurantUrl;
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
@@ -183,7 +167,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: bookingUrls[0] || reservationUrl,
+                availability_url: bookingUrls[0] || restaurantUrl,
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
