@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import { useToast } from "@/hooks/use-toast";
@@ -484,6 +485,7 @@ export default function LivePark() {
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [inPark, setInPark] = useState<boolean | null>(null);
+  const [isGameDev, setIsGameDev] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("wait");
   const [filterArea, setFilterArea] = useState("All");
@@ -501,6 +503,12 @@ export default function LivePark() {
   // GPS detection
   useEffect(() => {
     // Check for mock location (testing mode)
+    // Check if user is a game developer
+    if (user?.id) {
+      supabase.from("vip_accounts").select("is_game_developer").eq("user_id", user.id).single()
+        .then(({ data }) => setIsGameDev(data?.is_game_developer || false));
+    }
+
     const checkMockLocation = async () => {
       try {
         const { data: profile } = await supabase
