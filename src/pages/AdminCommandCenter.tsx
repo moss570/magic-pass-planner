@@ -207,6 +207,29 @@ export default function AdminCommandCenter() {
     finally { setSendingReply(false); }
   };
 
+  // Event CRUD
+  const saveEvent = async (isNew: boolean) => {
+    const evt = isNew ? newEvent : editingEvent;
+    if (!evt.title || !evt.park || !evt.location || !evt.event_date || !evt.event_time) {
+      toast({ title: "Fill in all required fields", variant: "destructive" }); return;
+    }
+    if (isNew) {
+      const { error } = await (supabase.from("beacon_events" as any).insert({ ...evt, created_by: user?.id }) as any);
+      if (!error) { toast({ title: "✅ Event created!" }); setShowAddEvent(false); setNewEvent({ title: "", emoji: "🎪", type: "experience", park: "Magic Kingdom", location: "", event_date: "", event_time: "", description: "", badge: "Event", badge_color: "bg-primary/20 text-primary" }); loadTab("events"); }
+      else toast({ title: "Failed", description: error.message, variant: "destructive" });
+    } else {
+      const { error } = await (supabase.from("beacon_events" as any).update({ title: evt.title, emoji: evt.emoji, type: evt.type, park: evt.park, location: evt.location, event_date: evt.event_date, event_time: evt.event_time, description: evt.description, badge: evt.badge, badge_color: evt.badge_color, is_active: evt.is_active, updated_at: new Date().toISOString() }) as any).eq("id", evt.id);
+      if (!error) { toast({ title: "✅ Event updated!" }); setEditingEvent(null); loadTab("events"); }
+      else toast({ title: "Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const deleteEvent = async (id: string) => {
+    if (!confirm("Delete this event and all RSVPs?")) return;
+    await (supabase.from("beacon_events" as any).delete() as any).eq("id", id);
+    toast({ title: "Event deleted" }); loadTab("events");
+  };
+
   const filteredTrivia = triviaQuestions.filter(q =>
     !triviaSearch || q.question.toLowerCase().includes(triviaSearch.toLowerCase()) || q.category?.includes(triviaSearch.toLowerCase())
   );
