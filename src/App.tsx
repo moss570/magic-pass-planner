@@ -32,6 +32,7 @@ import AdminCommandCenter from "./pages/AdminCommandCenter";
 import MagicBeacon from "./pages/MagicBeacon";
 import PhotoFun from "./pages/PhotoFun";
 import EventAlerts from "./pages/EventAlerts";
+import LineGames from "./pages/LineGames";
 
 const queryClient = new QueryClient();
 
