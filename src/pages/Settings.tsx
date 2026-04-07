@@ -68,14 +68,17 @@ const Settings = () => {
   const handleSaveAccount = async () => {
     if (!user) return;
     setSavingAccount(true);
-    const { error } = await supabase.from("users_profile").upsert({
+    const updateData: any = {
       id: user.id,
       first_name: firstName,
       last_name: lastName,
       email,
       phone,
       home_zip: homeZip,
-    });
+    };
+    if (username.trim()) updateData.username = username.trim();
+    if (membershipCategory) updateData.membership_category = membershipCategory;
+    const { error } = await supabase.from("users_profile").upsert(updateData);
     setSavingAccount(false);
     if (error) {
       toast.error("❌ Save failed — please try again");

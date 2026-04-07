@@ -9,6 +9,8 @@ import { useSubscription } from "@/hooks/useSubscription";
 const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
   { icon: Map, label: "Trip Planner", path: "/trip-planner" },
+  { icon: Newspaper, label: "Social Feed", path: "/feed" },
+  { icon: Inbox, label: "Inbox", path: "/inbox" },
   { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },
   { icon: Sparkles, label: "Enchanting Extras", path: "/event-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
