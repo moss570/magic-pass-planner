@@ -515,7 +515,7 @@ export default function LivePark() {
       try {
         const { data: profile } = await supabase
           .from("users_profile")
-          .select("mock_park, mock_lat, mock_lng")
+          .select("mock_lat, mock_lng")
           .eq("id", user?.id || "")
           .single();
         
