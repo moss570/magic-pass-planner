@@ -155,11 +155,14 @@ export default function MagicBeacon() {
   }, []);
 
   const startBeacon = () => {
+    if (!beaconTitle.trim()) { toast({ title: "Enter a beacon title", variant: "destructive" }); return; }
     if (!selectedSpot) { toast({ title: "Select a meeting spot", variant: "destructive" }); return; }
+    if (!beaconActivity) { toast({ title: "Select a beacon activity", variant: "destructive" }); return; }
     const durationMs = duration === "close" ? 8 * 3600000 : parseInt(duration) * 60000;
     setBeaconExpiry(new Date(Date.now() + durationMs));
     setMyBeaconActive(true);
-    toast({ title: "📡 Beacon is live!", description: `Other AP members in ${selectedPark} can see you` });
+    const activityLabel = beaconActivity === "Custom" ? customActivity : beaconActivity;
+    toast({ title: "📡 Beacon is live!", description: `"${beaconTitle}" — ${activityLabel} · Shared with all APs in ${selectedPark}` });
   };
 
   const stopBeacon = () => {
