@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
-import RideLineQuest from "@/pages/RideLineQuest";
 import WhereAmI from "@/components/WhereAmI";
 import { useToast } from "@/hooks/use-toast";
 
@@ -150,27 +149,6 @@ const LINE_GAMES = [
     ],
   },
   {
-    id: "wait-time-guesser",
-    name: "Wait Time Guesser",
-    icon: "⏱️",
-    description: "Guess the current wait time for rides!",
-    type: "guesser",
-  },
-  {
-    id: "disney-word-scramble",
-    name: "Word Scramble",
-    icon: "🔤",
-    description: "Unscramble Disney character names!",
-    words: [
-      { scrambled: "LEUNEDRIAC", answer: "CINDERELLA", hint: "She lost a glass slipper" },
-      { scrambled: "AYMIKCLSUO", answer: "MICKEY MOUSE", hint: "The main mouse" },
-      { scrambled: "OTYZW", answer: "WOOTY", answer2: "WOODY", hint: "Cowboy toy" },
-      { scrambled: "INAMROE", answer: "MOANA", hint: "Polynesian princess" },
-      { scrambled: "ZIAMGALN", answer: "AMAZING", hint: "Rearrange to find a Disney motto word" },
-      { scrambled: "ZABLZE", answer: "ELZA", answer2: "ELSA", hint: "Queen of ice powers" },
-    ],
-  },
-  {
     id: "scavenger-hunt",
     name: "Queue Scavenger Hunt",
     icon: "🔍",
@@ -253,15 +231,17 @@ function LineGames() {
     if (answered !== null) return;
     setAnswered(idx);
     const q = (triviaQuestions[triviaQ] || LINE_GAMES[0].questions[triviaQ]);
-    if (idx === q.answer) setScore(s => s + 1);
-    setTimeout(() => {
-      if (triviaQ + 1 >= triviaQuestions.length) {
-        setGameOver(true);
-      } else {
-        setTriviaQ(q => q + 1);
-        setAnswered(null);
-      }
-    }, 1200);
+    if (idx === (q.answer ?? (q as any).correct_answer ?? 0)) setScore(s => s + 1);
+    // No auto-advance - user clicks "Next Question" button
+  };
+
+  const handleTriviaNext = () => {
+    if (triviaQ + 1 >= triviaQuestions.length) {
+      setGameOver(true);
+    } else {
+      setTriviaQ(q => q + 1);
+      setAnswered(null);
+    }
   };
 
   const startTapper = () => {
@@ -486,7 +466,6 @@ export default function LivePark() {
   const [activeTab, setActiveTab] = useState<"waits" | "fireworks" | "games" | "info">("waits");
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
-  const [rideLineQuestOpen, setRideLineQuestOpen] = useState(false);
   const [whereAmIOpen, setWhereAmIOpen] = useState(false);
   const [navigateOpen, setNavigateOpen] = useState(false);
   const [navigateSearch, setNavigateSearch] = useState("");
@@ -1065,8 +1044,7 @@ export default function LivePark() {
             >
               📸 Where Am I? — Play Now!
             </button>
-            <button
-              onClick={() => setRideLineQuestOpen(true)}
+            <!-- Ride Line Quest removed -->
               className="w-full py-4 rounded-2xl font-black text-lg text-[var(--background)] flex items-center justify-center gap-3"
               style={{ background: "#F5C842" }}
             >
@@ -1075,8 +1053,7 @@ export default function LivePark() {
             <LineGames />
           </div>
         )}
-        {rideLineQuestOpen && <RideLineQuest onClose={() => setRideLineQuestOpen(false)} />}
-        {whereAmIOpen && <WhereAmI onClose={() => setWhereAmIOpen(false)} />}
+                {whereAmIOpen && <WhereAmI onClose={() => setWhereAmIOpen(false)} />}
 
         {/* ── PARK INFO TAB ───────────────────────────────────── */}
         {activeTab === "info" && (
