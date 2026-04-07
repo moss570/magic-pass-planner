@@ -30,10 +30,12 @@ export type Database = {
           meal_periods: string[] | null
           party_size: number
           preferred_time: string | null
+          priority_launch: boolean
           restaurant_id: string
           status: string | null
           updated_at: string | null
           user_id: string
+          window_opens_at: string | null
         }
         Insert: {
           alert_date: string
@@ -50,10 +52,12 @@ export type Database = {
           meal_periods?: string[] | null
           party_size?: number
           preferred_time?: string | null
+          priority_launch?: boolean
           restaurant_id: string
           status?: string | null
           updated_at?: string | null
           user_id: string
+          window_opens_at?: string | null
         }
         Update: {
           alert_date?: string
@@ -70,10 +74,12 @@ export type Database = {
           meal_periods?: string[] | null
           party_size?: number
           preferred_time?: string | null
+          priority_launch?: boolean
           restaurant_id?: string
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          window_opens_at?: string | null
         }
         Relationships: [
           {
