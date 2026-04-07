@@ -508,7 +508,7 @@ export default function AdminCommandCenter() {
                         <p className="text-xs text-muted-foreground mt-0.5">{selectedMessage.subject} · {new Date(selectedMessage.created_at).toLocaleString()}</p>
                       </div>
                       <button onClick={async () => {
-                        await supabase.from("user_messages").update({ status: "archived" }).eq("id", selectedMessage.id);
+                        await (supabase.from("user_messages" as any).update({ status: "archived" }) as any).eq("id", selectedMessage.id);
                         setSelectedMessage(null); loadTab("messages");
                       }} className="text-muted-foreground hover:text-foreground p-1.5">
                         <Archive className="w-4 h-4" />
