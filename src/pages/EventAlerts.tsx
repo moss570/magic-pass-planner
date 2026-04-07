@@ -25,6 +25,7 @@ interface Event {
   area?: string;
   description?: string;
   price_info?: string;
+  scrapable?: boolean;
 }
 
 interface EventAlert {
@@ -272,11 +273,16 @@ export default function EventAlerts() {
                         {filteredEvents.slice(0, 30).map(e => (
                           <button
                             key={e.id}
-                            onClick={() => { setSelectedEvent(e); setShowEventDropdown(false); setSearchQuery(""); }}
-                            className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/5 text-left transition-colors border-b border-white/5 last:border-0"
+                            onClick={() => { if (e.scrapable !== false) { setSelectedEvent(e); setShowEventDropdown(false); setSearchQuery(""); } }}
+                            className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors border-b border-white/5 last:border-0 ${e.scrapable === false ? "opacity-50 cursor-not-allowed" : "hover:bg-white/5"}`}
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{e.event_name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-foreground truncate">{e.event_name}</p>
+                                {e.scrapable === false && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/40 text-muted-foreground font-medium shrink-0">Walk-up only</span>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">{e.location}{e.area ? ` · ${e.area}` : ""} · {e.category}</p>
                             </div>
                             <span className="text-xs text-muted-foreground shrink-0">{e.price_info}</span>
