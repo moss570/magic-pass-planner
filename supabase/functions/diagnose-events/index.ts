@@ -106,9 +106,8 @@ serve(async (req) => {
           blocked: data.blocked || false,
         };
 
-        // Auto-update scrapable
-        if (body.autoUpdate && typeof data.scrapable === "boolean" && event.scrapable !== data.scrapable) {
-          await supabase.from("events").update({ scrapable: data.scrapable }).eq("id", event.id);
+        if (body.autoUpdate && typeof result.scrapable === "boolean" && event.scrapable !== result.scrapable) {
+          await supabase.from("events").update({ scrapable: result.scrapable }).eq("id", event.id);
           result.dbUpdated = true;
           updated++;
         }
