@@ -18,6 +18,7 @@ interface Deal {
   id: string; retailer: string; card_value: number; sale_price: number;
   savings: number; savings_pct: number; deal_url: string; is_live: boolean;
   last_verified: string; notes: string; expires_at?: string;
+  link_status?: string; link_checked_at?: string; http_status?: number;
 }
 
 export default function GiftCardTracker() {
