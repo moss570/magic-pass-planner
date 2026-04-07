@@ -24,6 +24,12 @@ serve(async (req) => {
     let body: any = {};
     try { body = await req.json(); } catch { /* ok */ }
 
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
     // Mode 1: Single diagnose
     if (body.eventUrl) {
       console.log("[diagnose-events] Single:", body.eventUrl);
@@ -33,53 +39,93 @@ serve(async (req) => {
         body: JSON.stringify({ eventUrl: body.eventUrl }),
       });
       const data = await res.json();
+
+      // Auto-update if requested
+      if (body.autoUpdate && typeof data.scrapable === "boolean") {
+        const { data: events } = await supabase
+          .from("events").select("id, scrapable").eq("event_url", body.eventUrl).limit(1);
+        if (events?.[0] && events[0].scrapable !== data.scrapable) {
+          await supabase.from("events").update({ scrapable: data.scrapable }).eq("id", events[0].id);
+          data.dbUpdated = true;
+        }
+      }
+
       return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
     }
 
-    // Mode 2: Batch diagnose all active events from DB
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
+    // Mode 2: Batch - process one at a time to avoid timeout
+    // Use offset/limit for pagination
+    const offset = body.offset || 0;
+    const limit = body.limit || 5;
 
     const { data: events, error } = await supabase
       .from("events")
       .select("id, event_name, event_url, scrapable")
       .eq("is_active", true)
-      .order("event_name");
+      .order("event_name")
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
-
-    const urls = (events || []).map((e: any) => e.event_url);
-    console.log(`[diagnose-events] Batch: ${urls.length} URLs`);
-
-    const res = await fetch(`${railwayUrl}/batch-diagnose-events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": railwayApiKey },
-      body: JSON.stringify({ urls }),
-    });
-    const batchData = await res.json();
-
-    // Auto-update scrapable column based on results
-    if (body.autoUpdate && batchData.results) {
-      let updated = 0;
-      for (const result of batchData.results) {
-        if (result.url && typeof result.scrapable === "boolean") {
-          const matchingEvent = (events || []).find((e: any) => e.event_url === result.url);
-          if (matchingEvent && matchingEvent.scrapable !== result.scrapable) {
-            await supabase.from("events").update({ scrapable: result.scrapable }).eq("id", matchingEvent.id);
-            updated++;
-            console.log(`[diagnose-events] Updated ${matchingEvent.event_name}: scrapable=${result.scrapable} (profile ${result.profile})`);
-          }
-        }
-      }
-      batchData.updatedCount = updated;
+    if (!events || events.length === 0) {
+      return new Response(JSON.stringify({ done: true, offset, message: "No more events" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
     }
 
-    return new Response(JSON.stringify(batchData), {
+    console.log(`[diagnose-events] Batch offset=${offset} limit=${limit}, processing ${events.length} events`);
+
+    const results: any[] = [];
+    let updated = 0;
+
+    for (const event of events) {
+      try {
+        console.log(`[diagnose-events] Diagnosing: ${event.event_name}`);
+        const res = await fetch(`${railwayUrl}/diagnose-event`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": railwayApiKey },
+          body: JSON.stringify({ eventUrl: event.event_url }),
+        });
+        const data = await res.json();
+
+        const result: any = {
+          event_name: event.event_name,
+          url: event.event_url,
+          profile: data.profile || "error",
+          profileReason: data.profileReason || data.error || "unknown",
+          scrapable: data.scrapable,
+          blocked: data.blocked || false,
+          templateType: data.templateType || "unknown",
+        };
+
+        // Auto-update scrapable
+        if (body.autoUpdate && typeof data.scrapable === "boolean" && event.scrapable !== data.scrapable) {
+          await supabase.from("events").update({ scrapable: data.scrapable }).eq("id", event.id);
+          result.dbUpdated = true;
+          updated++;
+        }
+
+        results.push(result);
+      } catch (err) {
+        results.push({
+          event_name: event.event_name,
+          url: event.event_url,
+          profile: "error",
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
+    return new Response(JSON.stringify({
+      offset,
+      limit,
+      processed: results.length,
+      updated,
+      nextOffset: offset + events.length,
+      hasMore: events.length === limit,
+      results,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
     });
 
