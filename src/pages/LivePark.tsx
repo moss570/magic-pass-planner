@@ -1027,7 +1027,7 @@ export default function LivePark() {
         )}
 
         {/* ── FIREWORKS TAB ───────────────────────────────────── */}
-        {activeTab === "fireworks" && (
+        {(activeTab as string) === "fireworks" && (
           <div className="space-y-4">
             <div className="rounded-xl p-5 border border-secondary/30" style={{ background: "var(--card)" }}>
               <h3 className="text-sm font-bold text-foreground mb-3">🎆 Fireworks Ride Timing Calculator</h3>
