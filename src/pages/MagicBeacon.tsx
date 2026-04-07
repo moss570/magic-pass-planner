@@ -316,8 +316,6 @@ export default function MagicBeacon() {
               ? (() => { const m = calcDistance(gpsLocation.lat, gpsLocation.lng, SPOT_COORDS[compassTarget.spot].lat, SPOT_COORDS[compassTarget.spot].lng); const ft = m * 3.28084; return ft > 5280 ? `${(ft / 5280).toFixed(1)} miles` : `${Math.round(ft)} ft`; })()
               : "nearby"}
             directions={["Follow park signage toward " + compassTarget.spot]}
-            destLat={SPOT_COORDS[compassTarget.spot].lat}
-            destLng={SPOT_COORDS[compassTarget.spot].lng}
           />
         )}
 
