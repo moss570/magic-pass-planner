@@ -213,7 +213,7 @@ serve(async (req) => {
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
           // Use booking URL from poller if available, otherwise link to the info page
-          updateData.availability_url = bookingUrls[0] || restaurantUrl;
+          updateData.availability_url = buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size);
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
