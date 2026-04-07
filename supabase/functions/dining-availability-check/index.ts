@@ -11,6 +11,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[DINING-CHECK] ${step}${detailsStr}`);
 };
 
+// Build a booking URL with date and party size pre-filled
+function buildBookingUrl(baseUrl: string, date: string, partySize: number): string {
+  // Disney reservation URLs accept date and partySize as query params
+  const url = new URL(baseUrl);
+  url.searchParams.set("date", date);
+  url.searchParams.set("partySize", String(partySize));
+  return url.toString();
+}
+
 // Check availability via Railway Puppeteer poller
 async function checkAvailability(
   restaurantUrl: string,
@@ -94,7 +103,7 @@ serve(async (req) => {
         await supabase.from("dining_alerts").update({
           status: "found",
           availability_found_at: new Date().toISOString(),
-          availability_url: bookingUrls[0] || body.test_url,
+          availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, body.date, body.party_size || 2),
           last_checked_at: new Date().toISOString(),
           check_count: 1,
           updated_at: new Date().toISOString(),
@@ -114,7 +123,7 @@ serve(async (req) => {
               restaurant_name: alert.restaurant?.name || "Restaurant",
               alert_date: alert.alert_date,
               party_size: alert.party_size,
-              availability_url: bookingUrls[0] || body.test_url,
+              availability_url: buildBookingUrl(bookingUrls[0] || body.test_url, alert.alert_date, alert.party_size),
               notification_type: alert.alert_sms ? "sms" : "email",
               sent_at: null,
             }).select().single();
@@ -204,7 +213,7 @@ serve(async (req) => {
           updateData.status = "found";
           updateData.availability_found_at = new Date().toISOString();
           // Use booking URL from poller if available, otherwise link to the info page
-          updateData.availability_url = bookingUrls[0] || restaurantUrl;
+          updateData.availability_url = buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size);
 
           logStep("AVAILABILITY FOUND!", {
             restaurant: restaurant.name,
@@ -224,7 +233,7 @@ serve(async (req) => {
                 restaurant_name: restaurant.name,
                 alert_date: alert.alert_date,
                 party_size: alert.party_size,
-                availability_url: bookingUrls[0] || restaurantUrl,
+                availability_url: buildBookingUrl(bookingUrls[0] || restaurantUrl, alert.alert_date, alert.party_size),
                 notification_type: alert.alert_sms ? "sms" : "email",
                 sent_at: null,
               })
