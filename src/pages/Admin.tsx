@@ -203,16 +203,12 @@ export default function Admin() {
   const loadVips = async () => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) return;
     try {
-      const token = (await supabase.auth.getSession()).data.session?.access_token;
-      const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=list`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "x-client-authorization": `Bearer ${token}`,
-          "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
-        },
-      });
-      const data = await resp.json();
-      setVips(data.vips || []);
+      // Load directly from Supabase to get all fields including is_game_developer
+      const { data, error } = await supabase
+        .from("vip_accounts")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error) setVips(data || []);
     } catch (err) {
       console.error("Failed to load VIPs:", err);
     }
@@ -544,21 +540,22 @@ export default function Admin() {
                             <button onClick={() => revokeVip(vip)} className="text-xs text-yellow-400 hover:text-yellow-300">Revoke</button>
                           )}
                           <button onClick={async () => {
-                            const token = (await supabase.auth.getSession()).data.session?.access_token;
-                            // Toggle game developer status directly
                             const newVal = !vip.is_game_developer;
+                            // Optimistically update state first for instant visual feedback
+                            setVips(prev => prev.map(v => v.id === vip.id ? { ...v, is_game_developer: newVal } : v));
                             const { error } = await supabase
                               .from("vip_accounts")
                               .update({ is_game_developer: newVal })
                               .eq("id", vip.id);
                             if (!error) {
                               toast({ title: newVal ? "🎮 Game Developer enabled!" : "🎮 Game Developer disabled" });
-                              loadVips();
                             } else {
+                              // Revert on error
+                              setVips(prev => prev.map(v => v.id === vip.id ? { ...v, is_game_developer: !newVal } : v));
                               toast({ title: "Update failed", description: error.message, variant: "destructive" });
                             }
-                          }} className={`text-xs ${vip.is_game_developer ? "text-green-400 hover:text-green-300" : "text-blue-400 hover:text-blue-300"}`}>
-                            {vip.is_game_developer ? "🎮 Game Dev ON" : "🎮 Make Dev"}
+                          }} className={`text-xs font-semibold px-2 py-1 rounded border transition-colors ${vip.is_game_developer ? "border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20" : "border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"}`}>
+                            {vip.is_game_developer ? "🎮 Dev ON ✓" : "🎮 Make Dev"}
                           </button>
                           <button onClick={() => deleteVip(vip)} className="text-xs text-red-400 hover:text-red-300">Delete</button>
                         </div>
