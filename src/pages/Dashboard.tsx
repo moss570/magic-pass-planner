@@ -1,238 +1,361 @@
 import { useState, useEffect } from "react";
-import { Castle, ChevronRight } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-import WelcomeFlow from "@/components/WelcomeFlow";
-import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import WelcomeFlow from "@/components/WelcomeFlow";
 
-// itinerary is now loaded from mostRecentTrip state
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 
-const alerts = [
-  { emoji: "🍽️", title: "Be Our Guest — Oct 15, party of 4", status: "Watching...", statusColor: "text-yellow-400", dot: "bg-yellow-400 live-pulse" },
-  { emoji: "🎁", title: "Sam's Club Disney Gift Cards", status: "Deal live! $200 for $190", statusColor: "text-green-400", dot: "bg-green-400 live-pulse", badge: "LIVE" },
-  { emoji: "🏨", title: "Wilderness Lodge — May 18-22", status: "Price drop: $892 → $743", statusColor: "text-green-400", badge: "SAVED $149" },
-];
-
-const upcomingDates = [
-  { date: "May 20", park: "Magic Kingdom", crowd: 4, color: "text-green-400", dot: "bg-green-400" },
-  { date: "May 21", park: "EPCOT", crowd: 6, color: "text-yellow-400", dot: "bg-yellow-400" },
-  { date: "May 22", park: "Hollywood Studios", crowd: 7, color: "text-yellow-400", dot: "bg-yellow-400" },
-  { date: "May 23", park: "Animal Kingdom", crowd: 3, color: "text-green-400", dot: "bg-green-400" },
-];
+const crowdColor = (level: number) => level <= 3 ? "text-green-400" : level <= 5 ? "text-yellow-400" : level <= 7 ? "text-orange-400" : "text-red-400";
+const crowdDot = (color: string) => ({ green: "bg-green-400", yellow: "bg-yellow-400", orange: "bg-orange-400", red: "bg-red-400" }[color] || "bg-gray-400");
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [firstName, setFirstName] = useState("there");
+  const { user, session } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
-  const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
+
+  // State
+  const [firstName, setFirstName] = useState("there");
   const [showWelcome, setShowWelcome] = useState(false);
+  const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
   const [realAlerts, setRealAlerts] = useState<any[]>([]);
+  const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
+  const [tripExpenses, setTripExpenses] = useState<{ total: number; budget: number } | null>(null);
+  const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
+  const [subscription, setSubscription] = useState<any>(null);
+
+  // Clark's recommendation — dynamic based on real data
+  const getClarkRecommendation = () => {
+    if (!mostRecentTrip) return "Start by creating your first trip in Trip Planner to get personalized recommendations.";
+    const daysAway = mostRecentTrip.start_date ? Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000) : null;
+    if (daysAway !== null && daysAway <= 7) return `Your trip is in ${daysAway} day${daysAway !== 1 ? "s" : ""}! Check your dining alerts and make sure your Lightning Lane strategy is set. Review the Trip Planner itinerary one more time and confirm all reservations.`;
+    if (daysAway !== null && daysAway <= 30) return `${daysAway} days until your trip. Now is the time to set dining reservation alerts — popular restaurants book up fast. Check the Gift Card Tracker for any Sam's Club deals to save on your trip budget.`;
+    if (activeAlertCount === 0) return "You have no active dining alerts. Set alerts now for your trip dates — top restaurants like Be Our Guest and Space 220 book up 30-60 days out.";
+    if (realAlerts.some(a => a.status === "found")) return `🎉 A dining reservation just became available! Check your Dining Alerts — act quickly before it's claimed.`;
+    return `You have ${activeAlertCount} active dining alert${activeAlertCount !== 1 ? "s" : ""}. We're checking every 5 minutes. Set alerts for more restaurants to maximize your chances.`;
+  };
 
   useEffect(() => {
-    if (user) {
-      supabase.from("users_profile").select("first_name, has_seen_welcome").eq("id", user.id).single()
-        .then(({ data }) => {
-          if (data?.first_name && data.first_name.trim()) {
-            setFirstName(data.first_name);
-          } else {
-            setFirstName("there");
-          }
-          // Show welcome if never seen and localStorage check
-          const seenLocally = localStorage.getItem("magic-pass:welcome-seen");
-          if (!data?.has_seen_welcome && !seenLocally) {
-            setShowWelcome(true);
-          }
-        });
+    if (!user || !session) return;
 
-      // Fetch most recent saved trip + itinerary
-      supabase.from("saved_trips")
-        .select("id, name, parks, start_date, itinerary, estimated_total")
-        .eq("user_id", user.id)
-        .not("itinerary", "is", null)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .then(({ data: tripData }) => {
-          if (tripData && tripData.length > 0) {
-            setMostRecentTrip(tripData[0]);
-          } else {
-            setMostRecentTrip(null);
-          }
-        });
+    // Profile + welcome check
+    supabase.from("users_profile")
+      .select("first_name, has_seen_welcome")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        setFirstName(data?.first_name?.trim() || "there");
+        const seenLocally = localStorage.getItem("magic-pass:welcome-seen");
+        if (!data?.has_seen_welcome && !seenLocally) setShowWelcome(true);
+      });
 
-      // Fetch real active alerts count and recent alerts
-      supabase.from("dining_alerts")
-        .select(`*, restaurant:restaurants(name, location)`)
-        .eq("user_id", user.id)
-        .in("status", ["watching", "found"])
-        .order("created_at", { ascending: false })
-        .limit(3)
-        .then(({ data: alertData, count }) => {
-          if (alertData) {
-            setRealAlerts(alertData);
-            setActiveAlertCount(alertData.length);
-          }
-        });
-    }
-  }, [user]);
+    // Most recent trip
+    supabase.from("saved_trips")
+      .select("id, name, parks, start_date, end_date, itinerary, estimated_total")
+      .eq("user_id", user.id)
+      .not("itinerary", "is", null)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => setMostRecentTrip(data?.[0] || null));
 
-  useEffect(() => {
+    // Active dining + extra alerts count
+    supabase.from("dining_alerts")
+      .select("id, status, restaurant:restaurants(name, location)")
+      .eq("user_id", user.id)
+      .in("status", ["watching", "found"])
+      .order("created_at", { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        setRealAlerts(data || []);
+        setActiveAlertCount(data?.length || 0);
+      });
+
+    // Trip expenses vs budget
+    supabase.from("saved_trips")
+      .select("id, estimated_total")
+      .eq("user_id", user.id)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .then(async ({ data: trips }) => {
+        if (!trips?.length) return;
+        const tripId = trips[0].id;
+        const budget = trips[0].estimated_total || 0;
+        const { data: expenses } = await supabase.from("trip_expenses").select("amount").eq("trip_id", tripId);
+        const total = (expenses || []).reduce((s, e) => s + parseFloat(e.amount), 0);
+        setTripExpenses({ total, budget });
+      });
+
+    // Subscription
+    supabase.from("subscriptions")
+      .select("plan_name, status, trial_end")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => setSubscription(data));
+
+    // Checkout success toast
     if (searchParams.get("checkout") === "success") {
-      toast.success("🎉 Welcome to Magic Pass Plus! Your 7-day free trial has started.", {
+      sonnerToast.success("🎉 Welcome to Magic Pass Plus! Your 7-day free trial has started.", {
         duration: 6000,
         style: { background: "#F5C842", color: "#080E1E", border: "none", fontWeight: 600 },
       });
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [user, session]);
+
+  // Load weather after trip is loaded
+  useEffect(() => {
+    const park = mostRecentTrip?.parks?.[0] || "Magic Kingdom";
+    fetch(`${SUPABASE_URL}/functions/v1/weather-forecast?park=${encodeURIComponent(park)}&days=7`)
+      .then(r => r.json())
+      .then(data => setWeatherForecast(data.forecast || []))
+      .catch(() => {});
+  }, [mostRecentTrip]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
+  // Days to trip calculation
+  const daysToTrip = mostRecentTrip?.start_date
+    ? Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000))
+    : null;
+
+  // Savings calculation from trip budget
+  const estimatedSavings = mostRecentTrip?.estimated_total
+    ? Math.round(mostRecentTrip.estimated_total * 0.08) // ~8% from gift cards + CC
+    : null;
+
+  // Determine upcoming dates to show
+  const upcomingDates = (() => {
+    if (mostRecentTrip?.start_date && daysToTrip !== null && daysToTrip <= 70 && mostRecentTrip.itinerary) {
+      // Use trip dates
+      return mostRecentTrip.itinerary.slice(0, 5).map((day: any, i: number) => ({
+        date: day.date,
+        park: day.park,
+        parkEmoji: day.parkEmoji,
+        crowdLevel: day.crowdLevel,
+        weather: weatherForecast[i] || null,
+      }));
+    }
+    // Use next 5 days with weather
+    return weatherForecast.slice(0, 5).map((w: any) => ({
+      date: w.date,
+      park: null,
+      parkEmoji: null,
+      crowdLevel: w.crowdLevel,
+      weather: w,
+    }));
+  })();
+
+  const itinerary = mostRecentTrip?.itinerary?.[0]?.items || [];
+
   return (
     <>
-    {showWelcome && <WelcomeFlow onComplete={() => setShowWelcome(false)} />}
-    <DashboardLayout title={`${greeting}, ${firstName} 👋`} subtitle={mostRecentTrip ? `Your next trip: ${mostRecentTrip.parks?.[0] || "Disney"} ${mostRecentTrip.start_date ? "— " + Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000)) + " days away" : ""}` : "Plan your perfect Disney adventure"}>
-      <div className="space-y-6">
-        {/* ROW 1 — Stat cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          {[
-            { label: "Active Alerts", value: activeAlertCount !== null ? String(activeAlertCount) : "—", valueColor: "text-primary", sub: activeAlertCount === 0 ? "No active alerts" : "Dining reservation alerts" },
-            { label: "Days to Trip", value: mostRecentTrip?.start_date ? String(Math.max(0, Math.floor((new Date(mostRecentTrip.start_date + "T12:00:00").getTime() - Date.now()) / 86400000))) : "—", valueColor: "text-primary", sub: mostRecentTrip ? `${mostRecentTrip.parks?.[0] || "Disney"} · ${mostRecentTrip.start_date}` : "No trips planned" },
-            { label: "Est. Trip Savings", value: "$340", valueColor: "text-green-400", sub: "Gift cards + hotel discount" },
-          ].map((card) => (
-            <div key={card.label} className="rounded-xl bg-card gold-border p-4 md:p-5">
-              <p className="text-[10px] md:text-xs text-muted-foreground mb-1">{card.label}</p>
-              <p className={`text-2xl md:text-3xl font-extrabold ${card.valueColor}`}>{card.value}</p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">{card.sub}</p>
-            </div>
-          ))}
-          <div className="rounded-xl bg-card gold-border p-4 md:p-5">
-            <p className="text-[10px] md:text-xs text-muted-foreground mb-1">Budget Status</p>
-            <p className="text-2xl md:text-3xl font-extrabold text-foreground">$4,200</p>
-            <p className="text-[10px] md:text-xs text-muted-foreground mt-1">of $6,500 budget used</p>
-            <Progress value={65} className="h-1.5 mt-3 bg-muted" />
-          </div>
-        </div>
+      {showWelcome && <WelcomeFlow onComplete={() => setShowWelcome(false)} />}
+      <DashboardLayout
+        title={`${greeting}, ${firstName} 👋`}
+        subtitle={mostRecentTrip
+          ? `Your next trip: ${mostRecentTrip.parks?.[0] || "Disney"} ${daysToTrip !== null ? `— ${daysToTrip} day${daysToTrip !== 1 ? "s" : ""} away` : ""}`
+          : "Plan your perfect Disney adventure"}
+      >
+        <div className="space-y-6">
 
-        {/* ROW 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Itinerary — 3/5 */}
-          <div className="lg:col-span-3 rounded-xl bg-card gold-border p-4 md:p-6">
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-1">Your Trip Itinerary</h2>
-            <p className="text-xs text-muted-foreground mb-5">
-              {mostRecentTrip ? `${mostRecentTrip.parks?.[0] || "Disney"} · ${mostRecentTrip.start_date || ""}` : "No trip planned yet"}
-            </p>
-            {mostRecentTrip?.itinerary && Array.isArray(mostRecentTrip.itinerary) ? (
-              <div className="space-y-0">
-                {(mostRecentTrip.itinerary as any[]).map((item: any, i: number) => (
-                  <div key={i} className="flex gap-4 relative">
-                    <div className="flex flex-col items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-primary shrink-0 mt-1.5" />
-                      {i < (mostRecentTrip.itinerary as any[]).length - 1 && <div className="w-px flex-1 bg-primary/20" />}
-                    </div>
-                    <div className="pb-5">
-                      <p className="text-xs font-semibold text-primary">{item.time}</p>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm text-foreground">{item.activity}</p>
-                        {item.location && (
-                          <CompassButton destination={item.location} context={item.land} />
-                        )}
-                      </div>
-                      {item.badge && <p className={`text-xs mt-0.5 ${item.badgeColor}`}>{item.badge}</p>}
-                    </div>
+          {/* ROW 1 — Stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {/* Active Alerts */}
+            <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-1">Active Alerts</p>
+              <p className="text-2xl md:text-3xl font-extrabold text-primary">{activeAlertCount ?? "—"}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                {activeAlertCount === null ? "Loading..." : activeAlertCount === 0 ? "No active alerts" : "Dining reservation alerts"}
+              </p>
+              {activeAlertCount === 0 && (
+                <Link to="/dining-alerts" className="text-xs text-primary hover:underline block mt-1">Set one →</Link>
+              )}
+            </div>
+
+            {/* Days to Trip */}
+            <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-1">Days to Trip</p>
+              <p className="text-2xl md:text-3xl font-extrabold text-primary">{daysToTrip ?? "—"}</p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                {mostRecentTrip ? `${mostRecentTrip.parks?.[0] || "Disney"} · ${mostRecentTrip.start_date}` : "No trips planned"}
+              </p>
+              {!mostRecentTrip && (
+                <Link to="/trip-planner" className="text-xs text-primary hover:underline block mt-1">Plan a trip →</Link>
+              )}
+            </div>
+
+            {/* Est. Trip Savings */}
+            <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-1">Est. Trip Savings</p>
+              <p className="text-2xl md:text-3xl font-extrabold text-green-400">
+                {estimatedSavings !== null ? `$${estimatedSavings.toLocaleString()}` : "—"}
+              </p>
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                {estimatedSavings !== null ? "Gift cards + CC cashback" : "Add a budget to see savings"}
+              </p>
+              {!mostRecentTrip && (
+                <Link to="/gift-card-tracker" className="text-xs text-primary hover:underline block mt-1">See how to save →</Link>
+              )}
+            </div>
+
+            {/* Budget Status */}
+            <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
+              <p className="text-[10px] md:text-xs text-muted-foreground mb-1">Budget Status</p>
+              {tripExpenses !== null ? (
+                <>
+                  <p className="text-2xl md:text-3xl font-extrabold text-foreground">${tripExpenses.total.toLocaleString()}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-1">of ${tripExpenses.budget.toLocaleString()} budget used</p>
+                  <div className="w-full bg-white/10 rounded-full h-1.5 mt-1.5">
+                    <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, (tripExpenses.total / tripExpenses.budget) * 100)}%`, background: tripExpenses.total > tripExpenses.budget ? "#F43F5E" : "#F5C842" }} />
                   </div>
-                ))}
+                </>
+              ) : (
+                <>
+                  <p className="text-2xl md:text-3xl font-extrabold text-muted-foreground">—</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground mt-1">Add a budget to track spending</p>
+                  <Link to="/budget-manager" className="text-xs text-primary hover:underline block mt-1">Set budget →</Link>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* ROW 2 — Two columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 md:gap-6">
+            {/* Itinerary — 3 cols */}
+            <div className="lg:col-span-3 rounded-xl border border-white/8 p-4 md:p-5" style={{ background: "#111827" }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  📅 Your Trip Itinerary
+                </h3>
+                <Link to="/trip-planner" className="text-xs text-primary hover:underline">
+                  {mostRecentTrip ? "Full plan →" : "Create one →"}
+                </Link>
+              </div>
+
+              {itinerary.length > 0 ? (
+                <>
+                  {mostRecentTrip?.itinerary?.[0] && (
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-base">{mostRecentTrip.itinerary[0].parkEmoji || "🏰"}</span>
+                      <p className="text-xs font-bold text-foreground">{mostRecentTrip.itinerary[0].park} — {mostRecentTrip.itinerary[0].date}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${mostRecentTrip.itinerary[0].crowdLevel <= 4 ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                        {mostRecentTrip.itinerary[0].crowdLevel <= 4 ? "Low" : mostRecentTrip.itinerary[0].crowdLevel <= 6 ? "Moderate" : "Busy"} Crowds
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-2 mb-3">
+                    {itinerary.slice(0, 6).map((item: any, i: number) => (
+                      <div key={i} className="flex gap-2 md:gap-3 items-start">
+                        <div className="text-[10px] md:text-xs text-muted-foreground w-[52px] md:w-16 shrink-0 pt-0.5">{item.time}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs md:text-sm font-medium text-foreground leading-snug">{item.activity}</p>
+                          {item.badge && <p className="text-[10px] md:text-xs mt-0.5 text-primary">{item.badge}</p>}
+                          {item.walkMinutes > 0 && <p className="text-[10px] text-blue-400 mt-0.5">🚶 {item.walkMinutes} min walk{item.waitMinutes > 0 ? ` · ⏱️ ${item.waitMinutes} min wait` : ""}</p>}
+                        </div>
+                        {item.location && <CompassButton destination={item.location} context={item.land || ""} size="inline" />}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="py-6 text-center">
+                  <p className="text-3xl mb-3">🏰</p>
+                  <p className="text-sm font-semibold text-foreground mb-1">No itinerary planned</p>
+                  <p className="text-xs text-muted-foreground mb-4">Create a trip to see your day-by-day schedule here</p>
+                  <Link to="/trip-planner" className="px-5 py-2 rounded-lg font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+                    Create My First Trip →
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Right column — Alerts + Recommendation */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Active Alerts */}
+              <div className="rounded-xl border border-white/8 p-4" style={{ background: "#111827" }}>
+                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">🔔 Active Alerts</h3>
+                {realAlerts.length > 0 ? (
+                  <div className="space-y-2">
+                    {realAlerts.map((alert: any) => (
+                      <div key={alert.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">🍽️</span>
+                          <div>
+                            <p className="text-xs font-semibold text-foreground">{alert.restaurant?.name || "Restaurant"}</p>
+                            <p className="text-xs text-muted-foreground">{alert.alert_date} · Party of {alert.party_size}</p>
+                          </div>
+                        </div>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.status === "found" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
+                          {alert.status === "found" ? "AVAILABLE!" : "Watching..."}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-xs text-muted-foreground mb-2">No active dining alerts</p>
+                    <Link to="/dining-alerts" className="text-xs text-primary hover:underline">Set a dining alert →</Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Clark's Recommendation */}
+              <div className="rounded-xl border-l-4 p-4" style={{ background: "#111827", borderLeftColor: "#F5C842" }}>
+                <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1">💡 Clark's Recommendation</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{getClarkRecommendation()}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ROW 3 — Upcoming Disney Dates with weather */}
+          <div>
+            <h3 className="text-sm font-bold text-foreground mb-3">
+              {mostRecentTrip && daysToTrip !== null && daysToTrip <= 70
+                ? `📅 Your Trip — ${mostRecentTrip.name}`
+                : "📅 Next 5 Days at Disney World"}
+            </h3>
+            {upcomingDates.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {upcomingDates.map((day: any, i: number) => {
+                  const w = day.weather;
+                  const dateObj = new Date(day.date + "T12:00:00");
+                  const dateLabel = dateObj.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+                  return (
+                    <div key={i} className="rounded-xl p-3 border border-white/8 text-center" style={{ background: "#111827" }}>
+                      <p className="text-xs text-muted-foreground mb-1">{dateLabel}</p>
+                      {day.park && <p className="text-xs font-semibold text-foreground mb-1 truncate">{day.parkEmoji} {day.park}</p>}
+                      {w && (
+                        <>
+                          <p className="text-2xl mb-1">{w.emoji}</p>
+                          <p className="text-xs font-bold text-foreground">{w.tempHigh}°F / {w.tempLow}°F</p>
+                          <p className="text-xs text-blue-400">💧 {w.rainChance}%</p>
+                          {w.windSpeed > 15 && <p className="text-xs text-muted-foreground">💨 {w.windSpeed} mph</p>}
+                        </>
+                      )}
+                      <div className="flex items-center justify-center gap-1 mt-1.5">
+                        <div className={`w-2 h-2 rounded-full ${crowdDot(day.crowdColor || "green")}`} />
+                        <span className={`text-[10px] font-semibold ${crowdColor(day.crowdLevel)}`}>{day.crowdLabel}</span>
+                      </div>
+                      {w?.rainChance >= 40 && <p className="text-[10px] text-yellow-400 mt-1">⚠️ Rain likely</p>}
+                      {w?.isGoodDay && <p className="text-[10px] text-green-400 mt-1">✅ Great day!</p>}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <Castle className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">No itinerary yet</p>
-                <Link to="/trip-planner" className="text-xs text-primary hover:underline mt-1 inline-block">Plan your trip →</Link>
+              <div className="rounded-xl p-6 text-center border border-white/8" style={{ background: "#111827" }}>
+                <p className="text-xs text-muted-foreground">Loading weather forecast...</p>
               </div>
             )}
           </div>
 
-          {/* Right column — 2/5 */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Active Alerts */}
-            <div className="rounded-xl bg-card gold-border p-4 md:p-5">
-              <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">🔔 Active Alerts</h3>
-              {realAlerts.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {realAlerts.map((alert: any) => (
-                    <div key={alert.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">🍽️</span>
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">{alert.restaurant?.name}</p>
-                          <p className="text-xs text-muted-foreground">{alert.alert_date} · Party of {alert.party_size}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${alert.status === "found" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400"}`}>
-                        {alert.status === "found" ? "AVAILABLE!" : "Watching..."}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="space-y-4">
-                {alerts.map((a, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span className="text-lg">{a.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-foreground truncate">{a.title}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {a.dot && <span className={`w-1.5 h-1.5 rounded-full ${a.dot}`} />}
-                        <span className={`text-xs ${a.statusColor}`}>{a.status}</span>
-                        {a.badge && (
-                          <span className="text-[10px] font-bold bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">
-                            {a.badge}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Clark's Recommendation */}
-            <div className="rounded-xl bg-card gold-border p-4 md:p-5 border-l-4 border-l-primary">
-              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">💡 Clark's Recommendation</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                Space Mountain wait times drop 40% between 1–3 PM while crowds eat lunch. Your itinerary has a rest break scheduled at 1 PM — consider pushing it 30 minutes earlier to hit Space Mountain at peak low-wait window before heading back to the hotel.
-              </p>
-              <button className="inline-flex items-center gap-1 text-xs font-semibold bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-                Adjust My Trip
-                <ChevronRight className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
         </div>
-
-        {/* ROW 3 — Upcoming Dates */}
-        <div className="rounded-xl bg-card gold-border p-4 md:p-6">
-          <h2 className="text-sm md:text-base font-bold text-foreground mb-4">Upcoming Disney Dates</h2>
-          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2">
-            {upcomingDates.map((d) => (
-              <div key={d.date} className="min-w-[150px] md:min-w-[180px] rounded-lg bg-muted/30 gold-border p-3 md:p-4 shrink-0">
-                <p className="text-sm font-bold text-foreground">{d.date}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{d.park}</p>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className={`w-2 h-2 rounded-full ${d.dot}`} />
-                  <span className={`text-xs font-semibold ${d.color}`}>Crowd Level {d.crowd}/10</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
     </>
   );
 };
