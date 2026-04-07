@@ -7,12 +7,12 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
 import ShowTimes from "@/pages/ShowTimes";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -501,6 +501,8 @@ export default function LivePark() {
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
   const [whereAmIOpen, setWhereAmIOpen] = useState(false);
+  const location = useLocation();
+  const hashSection = location.hash.replace("#", "") || "";
   const [activeSubPage, setActiveSubPage] = useState<"none" | "photo-fun" | "show-times" | "magic-beacon" | "line-games">("none");
   const [navigateOpen, setNavigateOpen] = useState(false);
   const [navigateSearch, setNavigateSearch] = useState("");
@@ -869,7 +871,7 @@ export default function LivePark() {
         )}
 
         {/* Tab Bar — desktop only, mobile uses Live Park Menu */}
-        <div className="hidden md:flex gap-1 border-b border-white/10">
+        {!hashSection && <div className="hidden md:flex gap-1 border-b border-white/10">
           {[
             { id: "waits", label: "⚡ Wait Times" },
             { id: "show-times", label: "🎭 Show Times" },
@@ -891,7 +893,7 @@ export default function LivePark() {
           ))}
         </div>
         {/* Current view label on mobile */}
-        <div className="md:hidden flex items-center justify-between">
+        {!hashSection && <div className="md:hidden flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
             Showing: <span className="text-foreground font-semibold">
               {activeSubPage !== "none" ? 
@@ -903,7 +905,15 @@ export default function LivePark() {
           <button onClick={() => setLiveMenuOpen(true)} className="text-xs text-primary font-semibold flex items-center gap-1">
             <Menu className="w-3.5 h-3.5" /> Switch View
           </button>
-        </div>
+        </div>}
+        {hashSection && (
+          <Link to="/live-park" className="text-xs text-primary hover:underline flex items-center gap-1 md:hidden">
+            ← Back to Live Park
+          </Link>
+        )}
+
+        {/* Main content only shows when not on a sub-page */}
+        {!hashSection && <>
 
         {/* ── WAIT TIMES TAB ─────────────────────────────────── */}
         {activeTab === "waits" && (
@@ -1125,7 +1135,8 @@ export default function LivePark() {
             <LineGames />
           </div>
         )}
-                {whereAmIOpen && <WhereAmI onClose={() => setWhereAmIOpen(false)} />}
+                </> /* end main content conditional */}
+        {whereAmIOpen && <WhereAmI onClose={() => setWhereAmIOpen(false)} />}
 
         {/* ── PARK INFO TAB ───────────────────────────────────── */}
         {activeTab === "info" && (
