@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
 import ShowTimes from "@/pages/ShowTimes";
-import { Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -891,7 +890,7 @@ export default function LivePark() {
               {sp === "line-games" ? "🎮 Line Games" : sp === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon"}
             </button>
           ))}
-        </div>
+        </div>}
         {/* Current view label on mobile */}
         {!hashSection && <div className="md:hidden flex items-center justify-between">
           <p className="text-xs text-muted-foreground">
@@ -1028,7 +1027,7 @@ export default function LivePark() {
         )}
 
         {/* ── FIREWORKS TAB ───────────────────────────────────── */}
-        {activeTab === "fireworks" && (
+        {(activeTab as string) === "fireworks" && (
           <div className="space-y-4">
             <div className="rounded-xl p-5 border border-secondary/30" style={{ background: "var(--card)" }}>
               <h3 className="text-sm font-bold text-foreground mb-3">🎆 Fireworks Ride Timing Calculator</h3>
@@ -1124,7 +1123,7 @@ export default function LivePark() {
         )}
 
         {/* Legacy: keep original games tab hidden, render via sub-page instead */}
-        {activeTab === "games_HIDDEN" && (
+        {(activeTab as string) === "games_HIDDEN" && (
           <div className="space-y-4">
             <button
               onClick={() => setWhereAmIOpen(true)}

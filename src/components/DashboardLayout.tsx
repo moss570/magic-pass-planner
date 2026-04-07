@@ -1,5 +1,5 @@
 import { useState, useState as _useState, useEffect } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,12 +13,6 @@ const sidebarNav = [
   { icon: Sparkles, label: "Enchanting Extras", path: "/event-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
-  { icon: Gamepad2, label: "Line Games", path: "/live-park#line-games", indent: true },
-  { icon: Camera, label: "Photo Fun", path: "/live-park#photo-fun", indent: true },
-  { icon: Radio, label: "Magic Beacon", path: "/magic-beacon", indent: true },
-  { icon: Gamepad2, label: "Line Games", path: "/live-park#line-games", indent: true },
-  { icon: Camera, label: "Photo Fun", path: "/live-park#photo-fun", indent: true },
-  { icon: Radio, label: "Magic Beacon", path: "/magic-beacon", indent: true },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
   { icon: Radio, label: "Magic Beacon", path: "/magic-beacon" },
