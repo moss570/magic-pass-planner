@@ -1,73 +1,53 @@
 
 
-# Enchanting Extras — Isolated Event Alert System
+# Enchanting Extras Scraping Strategy
 
-## Overview
-Fully isolated event availability monitoring system (Droid Depot, Dessert Parties, etc.) with its own tables, edge functions, and Railway scraper endpoint. Zero changes to existing dining code.
+## The Core Problem
 
-## Plan
+The event URLs in the database span **6+ different Disney page templates**:
 
-### 1. Database Migration — Two New Tables
-
-**`event_alerts`** — mirrors dining_alerts structure:
-- id, user_id, event_name, event_url, alert_date, party_size, preferred_time (Any/Morning/Afternoon/Evening)
-- alert_email (default true), alert_sms (default false)
-- status (watching/found/cancelled/expired)
-- priority_launch, window_opens_at (for midnight launch)
-- last_checked_at, check_count, availability_found_at, found_times (text[])
-- created_at, updated_at
-- RLS: `auth.uid() = user_id` for ALL (authenticated)
-
-**`event_notifications`** — mirrors dining_notifications:
-- id, alert_id, user_id, event_name, alert_date, party_size, notification_type
-- sent_at, delivery_status, delivery_details, retry_count, created_at
-- RLS: SELECT only for `auth.uid() = user_id`
-
-### 2. Edge Function: `event-alerts`
-CRUD (list/create/cancel) for event alerts. Same auth pattern as `dining-alerts`.
-
-**Midnight Launch Logic**: For alerts 60 days out, `window_opens_at` = **11:59:45 PM ET** the night before (not 6 AM like dining). Sets `priority_launch = true`.
-
-### 3. Edge Function: `event-availability-check`
-Isolated poller calling Railway's new `/check-event` endpoint (separate from `/check`).
-
-- **Standard mode**: Checks all watching event alerts (5-min cron)
-- **Priority mode**: 1-min cron for midnight launch alerts (11:59:45 PM – 12:15 AM ET window)
-- On availability found → insert into `event_notifications` → call `send-notification` with `notification_source: "event"`
-
-The `/check-event` endpoint payload instructs Railway to perform the multi-layer scrape:
-```json
-{
-  "eventUrl": "https://...",
-  "date": "2026-06-05",
-  "partySize": 2,
-  "steps": ["check_available_days", "time_of_day_buttons", "view_more_times", "scrape_pills"]
-}
+```text
+/experiences/...    (Droid Depot, Savi's Workshop)
+/events-tours/...   (Bibbidi Bobbidi, Starlight Safari)
+/dining/...         (Savor the Savanna, Dessert Cruises)
+/recreation/...     (Fishing, Pirate Cruises, Surf)
+/entertainment/...  (Campfire Sing-A-Long, Drawn to Life)
+/shops/...          (Harmony Barber Shop)
+/attractions/...    (NBA Experience)
 ```
-The actual Puppeteer implementation of Steps A-D lives on Railway (outside Lovable scope), but this edge function sends the right parameters.
 
-### 4. Modify `send-notification` (minimal, backward-compatible)
-Add optional `notification_source` field support:
-- When `"event"`: email subject becomes "🎪 Event Alert — [Name] Available!", banner says "EVENT SLOT AVAILABLE!", SMS prefix becomes "🎪 Magic Pass Plus EVENT:"
-- When absent or `"dining"`: existing behavior unchanged
-- Also support reading from `event_notifications` table when source is event
+Each template may have a completely different DOM structure for availability -- or no availability check at all (some are walk-up only). The `/check-event` endpoint we added to your Railway poller was written speculatively and has never been tested against real Disney pages.
 
-### 5. Fix Build Errors in `AdminCommandCenter.tsx`
-Cast `game_sessions` and `user_messages` queries with `as any` to bypass missing generated types — these tables exist in DB but aren't in the auto-generated types file.
+## Recommendation: Keep One Railway Instance, But Diagnose First
 
-### 6. pg_cron Jobs (via SQL insert)
-- `check-event-alerts`: every 5 minutes → `event-availability-check`
-- `priority-event-check`: every 1 minute → `event-availability-check` with `{ "priority": true }`
+A separate Railway instance is **not needed**. The existing poller already isolates event logic into `/check-event` (separate from `/check`). The isolation requirement is met. What we actually need is:
 
-## What is NOT changed
-- `dining_alerts` table, `dining-alerts` function, `dining-availability-check` function — all untouched
-- Railway `index.js` — untouched (new `/check-event` is a separate Railway-side addition)
-- Existing notification delivery logic — preserved, only extended with optional labeling
+### Phase 1 -- Diagnose Real Event Pages
 
-## Files Created/Modified
-- **New migration**: `event_alerts` + `event_notifications` tables with RLS
-- **New**: `supabase/functions/event-alerts/index.ts`
-- **New**: `supabase/functions/event-availability-check/index.ts`
-- **Modified**: `supabase/functions/send-notification/index.ts` (add event labeling)
-- **Modified**: `src/pages/AdminCommandCenter.tsx` (fix type errors)
+Add a `/diagnose-event` endpoint to the existing Railway poller (similar to the existing `/diagnose` for dining). This would visit each event URL and report back what DOM elements exist: datepickers, "Check Availability" buttons, time slots, booking CTAs, etc.
+
+Then run it against all 20+ event URLs to categorize them into scraping "profiles":
+- **Profile A**: Has a `wdpr-datepicker` + time pills (like dining) -- reuse calendar navigation logic
+- **Profile B**: Has a "Check Availability" button that opens a modal/widget
+- **Profile C**: Has a "Book Now" link that goes to an external booking page
+- **Profile D**: No online booking -- walk-up or phone only (skip these)
+
+### Phase 2 -- Build Profile-Specific Scrapers in `/check-event`
+
+Update `/check-event` with branching logic based on what DOM elements are found on the page. The multi-step flow (check_available_days -> time_of_day_buttons -> view_more_times -> scrape_pills) would be one profile. Other profiles might just need to detect a "Sold Out" vs "Book Now" state.
+
+### Phase 3 -- Flag Non-Scrapable Events in the DB
+
+Add a `scrapable` boolean to the `events` table. After diagnosis, mark events that have no online booking flow as `scrapable = false` so the UI can show "Walk-up only" and hide the alert button.
+
+## Files Changed
+
+- **Railway `index.js`**: Add `/diagnose-event` endpoint, refine `/check-event` with profile branching
+- **Migration**: Add `scrapable` column to `events` table
+- **`src/pages/EventAlerts.tsx`**: Hide alert creation for non-scrapable events
+- **`event-availability-check/index.ts`**: Skip non-scrapable events
+
+## What Stays Untouched
+- All dining code (`/check`, `/diagnose`, `dining-alerts`, `dining-availability-check`)
+- Existing Railway `/batch-test` endpoint
 
