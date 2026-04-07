@@ -1034,7 +1034,9 @@ export type Database = {
           disney_plus: boolean | null
           disney_visa: boolean | null
           email: string | null
+          feature_tips_seen: string[] | null
           first_name: string | null
+          has_seen_welcome: boolean | null
           home_park: string | null
           home_zip: string | null
           id: string
@@ -1043,6 +1045,7 @@ export type Database = {
           mock_lng: number | null
           mock_park: string | null
           onboarding_complete: boolean | null
+          onboarding_step: number | null
           phone: string | null
           qr_token: string | null
         }
@@ -1053,7 +1056,9 @@ export type Database = {
           disney_plus?: boolean | null
           disney_visa?: boolean | null
           email?: string | null
+          feature_tips_seen?: string[] | null
           first_name?: string | null
+          has_seen_welcome?: boolean | null
           home_park?: string | null
           home_zip?: string | null
           id: string
@@ -1062,6 +1067,7 @@ export type Database = {
           mock_lng?: number | null
           mock_park?: string | null
           onboarding_complete?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
         }
@@ -1072,7 +1078,9 @@ export type Database = {
           disney_plus?: boolean | null
           disney_visa?: boolean | null
           email?: string | null
+          feature_tips_seen?: string[] | null
           first_name?: string | null
+          has_seen_welcome?: boolean | null
           home_park?: string | null
           home_zip?: string | null
           id?: string
@@ -1081,6 +1089,7 @@ export type Database = {
           mock_lng?: number | null
           mock_park?: string | null
           onboarding_complete?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
         }
