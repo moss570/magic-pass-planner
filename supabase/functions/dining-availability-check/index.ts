@@ -76,14 +76,71 @@ serve(async (req) => {
     try { body = await req.json(); } catch { /* empty body is fine */ }
 
     if (body.test_url) {
-      logStep("DIRECT TEST MODE", { url: body.test_url, date: body.date, partySize: body.party_size, mealPeriods: body.meal_periods });
+      const isInstant = !!body.instant_alert_id;
+      logStep(isInstant ? "INSTANT FIRST CHECK" : "DIRECT TEST MODE", { url: body.test_url, date: body.date, partySize: body.party_size, mealPeriods: body.meal_periods, alertId: body.instant_alert_id });
       const { available, times, bookingUrls } = await checkAvailability(
         body.test_url,
         body.date || "2026-05-06",
         body.party_size || 2,
         body.meal_periods || ["Dinner"]
       );
-      return new Response(JSON.stringify({ test: true, available, times, bookingUrls }), {
+
+      // If this is an instant check triggered on alert creation, update the alert
+      if (isInstant && available) {
+        const alertId = body.instant_alert_id;
+        logStep("INSTANT CHECK - AVAILABILITY FOUND!", { alertId, times });
+
+        // Update the alert
+        await supabase.from("dining_alerts").update({
+          status: "found",
+          availability_found_at: new Date().toISOString(),
+          availability_url: bookingUrls[0] || body.test_url,
+          last_checked_at: new Date().toISOString(),
+          check_count: 1,
+          updated_at: new Date().toISOString(),
+        }).eq("id", alertId);
+
+        // Get alert details for notification
+        const { data: alert } = await supabase.from("dining_alerts")
+          .select("*, restaurant:restaurants(name, disney_url)")
+          .eq("id", alertId).single();
+
+        if (alert) {
+          const { data: userD } = await supabase.auth.admin.getUserById(alert.user_id);
+          if (userD?.user) {
+            const { data: notifData } = await supabase.from("dining_notifications").insert({
+              alert_id: alertId,
+              user_id: alert.user_id,
+              restaurant_name: alert.restaurant?.name || "Restaurant",
+              alert_date: alert.alert_date,
+              party_size: alert.party_size,
+              availability_url: bookingUrls[0] || body.test_url,
+              notification_type: alert.alert_sms ? "sms" : "email",
+              sent_at: null,
+            }).select().single();
+
+            if (notifData) {
+              try {
+                await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-notification`, {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" },
+                  body: JSON.stringify({ notification_id: notifData.id }),
+                });
+                logStep("Instant check notification sent", { alertId });
+              } catch (e) { logStep("Instant notification error (will retry)", { error: String(e) }); }
+            }
+          }
+        }
+      } else if (isInstant) {
+        // No availability found on instant check — just update last_checked_at
+        await supabase.from("dining_alerts").update({
+          last_checked_at: new Date().toISOString(),
+          check_count: 1,
+          updated_at: new Date().toISOString(),
+        }).eq("id", body.instant_alert_id);
+      }
+
+      return new Response(JSON.stringify({ test: !isInstant, instant: isInstant, available, times, bookingUrls }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
     }
