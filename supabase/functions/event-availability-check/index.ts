@@ -11,7 +11,35 @@ const logStep = (step: string, details?: any) => {
   console.log(`[EVENT-CHECK] ${step}${detailsStr}`);
 };
 
-// Check event availability via Railway /check-event endpoint
+const RAILWAY_FETCH_TIMEOUT_MS = 45_000; // 45s timeout per request
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
+
+// Single fetch attempt with timeout
+async function fetchRailwayOnce(
+  railwayUrl: string,
+  railwayApiKey: string,
+  payload: any
+): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), RAILWAY_FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${railwayUrl}/check-event`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": railwayApiKey,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Check event availability via Railway /check-event endpoint with retry
 async function checkEventAvailability(
   eventUrl: string,
   date: string,
@@ -27,44 +55,61 @@ async function checkEventAvailability(
     return { available: false, times: [] };
   }
 
-  try {
-    let urlToCheck = eventUrl;
-    if (cacheBust) {
-      const sep = eventUrl.includes("?") ? "&" : "?";
-      urlToCheck = `${eventUrl}${sep}_cb=${Date.now()}`;
-    }
-
-    logStep("Sending to Railway /check-event", { url: urlToCheck, date, partySize, preferredTime, cacheBust });
-
-    const res = await fetch(`${railwayUrl}/check-event`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": railwayApiKey,
-      },
-      body: JSON.stringify({
-        eventUrl: urlToCheck,
-        date,
-        partySize,
-        preferredTime,
-        steps: ["check_available_days", "time_of_day_buttons", "view_more_times", "scrape_pills"],
-        noCache: cacheBust,
-      }),
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      logStep("Railway /check-event error", { status: res.status, body: errText.slice(0, 200) });
-      return { available: false, times: [] };
-    }
-
-    const data = await res.json();
-    logStep("Railway /check-event response", { available: data.available, timesCount: data.times?.length || 0 });
-    return { available: data.available || false, times: data.times || [] };
-  } catch (err) {
-    logStep("Railway fetch error", { error: err instanceof Error ? err.message : String(err) });
-    return { available: false, times: [] };
+  let urlToCheck = eventUrl;
+  if (cacheBust) {
+    const sep = eventUrl.includes("?") ? "&" : "?";
+    urlToCheck = `${eventUrl}${sep}_cb=${Date.now()}`;
   }
+
+  const payload = {
+    eventUrl: urlToCheck,
+    date,
+    partySize,
+    preferredTime,
+    steps: ["check_available_days", "time_of_day_buttons", "view_more_times", "scrape_pills"],
+    noCache: cacheBust,
+  };
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      if (attempt > 0) {
+        const delay = RETRY_DELAY_MS * attempt;
+        logStep(`Retry attempt ${attempt}/${MAX_RETRIES} after ${delay}ms`);
+        await new Promise(r => setTimeout(r, delay));
+      }
+
+      logStep("Sending to Railway /check-event", { url: urlToCheck, date, partySize, preferredTime, cacheBust, attempt });
+
+      const res = await fetchRailwayOnce(railwayUrl, railwayApiKey, payload);
+
+      if (res.status === 502 || res.status === 503 || res.status === 504) {
+        const errText = await res.text();
+        logStep("Railway transient error (will retry)", { status: res.status, attempt, body: errText.slice(0, 200) });
+        continue; // retry
+      }
+
+      if (!res.ok) {
+        const errText = await res.text();
+        logStep("Railway /check-event error", { status: res.status, body: errText.slice(0, 200) });
+        return { available: false, times: [] };
+      }
+
+      const data = await res.json();
+      logStep("Railway /check-event response", { available: data.available, timesCount: data.times?.length || 0 });
+      return { available: data.available || false, times: data.times || [] };
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      if (errMsg.includes("abort") || errMsg.includes("AbortError")) {
+        logStep("Railway request timed out", { attempt, timeoutMs: RAILWAY_FETCH_TIMEOUT_MS });
+        continue; // retry on timeout
+      }
+      logStep("Railway fetch error", { error: errMsg, attempt });
+      if (attempt < MAX_RETRIES) continue;
+    }
+  }
+
+  logStep("All retry attempts exhausted");
+  return { available: false, times: [] };
 }
 
 // Determine if the current time is within a priority launch window
