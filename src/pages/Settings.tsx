@@ -64,10 +64,39 @@ const Settings = () => {
           setDisneyVisa(data.disney_visa || false);
           setUsername((data as any).username || "");
           setMembershipCategory((data as any).membership_category || "Annual Passholder");
+          setAvatarUrl((data as any).avatar_url || null);
         }
         setLoadingProfile(false);
       });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Upload failed — please try again");
+      setUploadingAvatar(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const url = `${publicUrl}?t=${Date.now()}`;
+    await supabase.from("users_profile").upsert({ id: user.id, avatar_url: url } as any);
+    setAvatarUrl(url);
+    setUploadingAvatar(false);
+    toast.success("Profile photo updated!");
+  };
 
   const handleSaveAccount = async () => {
     if (!user) return;
