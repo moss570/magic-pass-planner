@@ -160,10 +160,10 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
             {subtitle && <p className="hidden md:block text-muted-foreground text-sm mt-1">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-3 md:gap-4">
-            <button className="relative">
+            <Link to="/inbox" className="relative">
               <Bell className="w-5 h-5 text-primary" />
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-destructive" />
-            </button>
+            </Link>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-green-500/15 text-green-400">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 live-pulse" />
               7-day free trial active
