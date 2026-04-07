@@ -1,53 +1,52 @@
 
+# "Connected" Social & Alert Ecosystem — Build Plan
 
-# Enchanting Extras Scraping Strategy
+## Phase 1: Database Schema (Migration)
+- Add `username` and `membership_category` columns to `users_profile`
+- Create `user_blocks` table (blocker_id, blocked_id, created_at) with RLS
+- Create `social_posts` table (user_id, content, image_url, post_type, created_at) with RLS
+- Create `messages` table (sender_id, receiver_id, content, message_type, reference_id, is_read, created_at) with RLS
+- Update existing `friend_requests` table if needed for block status
 
-## The Core Problem
+## Phase 2: Profile Enhancements (Settings Page)
+- Add Username field and Membership Category dropdown (Annual Passholder, DVC Member, Out of State Traveler) to Settings
+- Ensure these persist to `users_profile`
 
-The event URLs in the database span **6+ different Disney page templates**:
+## Phase 3: QR Friendship System (Friends Page)
+- Install `react-qr-code` for QR generation and `html5-qrcode` for scanning
+- Generate QR from user's existing `qr_token` field
+- Add "Scan to Add" button that opens camera scanner
+- Add manual code entry fallback
+- Scanning creates a friend request (pending → accepted flow)
 
-```text
-/experiences/...    (Droid Depot, Savi's Workshop)
-/events-tours/...   (Bibbidi Bobbidi, Starlight Safari)
-/dining/...         (Savor the Savanna, Dessert Cruises)
-/recreation/...     (Fishing, Pirate Cruises, Surf)
-/entertainment/...  (Campfire Sing-A-Long, Drawn to Life)
-/shops/...          (Harmony Barber Shop)
-/attractions/...    (NBA Experience)
-```
+## Phase 4: Social Discovery Feed (New `/feed` Page)
+- Vertical feed showing user posts and admin tips
+- "Connect" / "Add Friend" button on each post
+- Post creation form (text + optional image URL)
+- Block user option on posts
+- Add Feed to sidebar navigation
 
-Each template may have a completely different DOM structure for availability -- or no availability check at all (some are walk-up only). The `/check-event` endpoint we added to your Railway poller was written speculatively and has never been tested against real Disney pages.
+## Phase 5: Friends & Connections Screen (Update Friends Page)
+- "My Friends" tab with membership type badges
+- "Pending Requests" tab (incoming/outgoing)
+- "My QR Code" tab (existing, make functional)
+- Show membership category (AP, DVC, Out of State) next to each friend
 
-## Recommendation: Keep One Railway Instance, But Diagnose First
+## Phase 6: Unified Command Inbox (New `/inbox` Page + Header Bell)
+- Bell icon in header with unread count badge
+- Bell dropdown for quick preview of recent messages
+- Full `/inbox` page with thread types:
+  - Peer-to-peer messages (friends only)
+  - System alerts (dining alerts, event alerts)
+  - Magic Beacon alerts (same-park notifications)
+- "Book Now" buttons on dining alert threads
+- Only friends can message each other
 
-A separate Railway instance is **not needed**. The existing poller already isolates event logic into `/check-event` (separate from `/check`). The isolation requirement is met. What we actually need is:
+## Navigation Updates
+- Add "Feed" to sidebar (with icon)
+- Add "Inbox" to sidebar (with unread badge)
+- Add bell icon to header
 
-### Phase 1 -- Diagnose Real Event Pages
-
-Add a `/diagnose-event` endpoint to the existing Railway poller (similar to the existing `/diagnose` for dining). This would visit each event URL and report back what DOM elements exist: datepickers, "Check Availability" buttons, time slots, booking CTAs, etc.
-
-Then run it against all 20+ event URLs to categorize them into scraping "profiles":
-- **Profile A**: Has a `wdpr-datepicker` + time pills (like dining) -- reuse calendar navigation logic
-- **Profile B**: Has a "Check Availability" button that opens a modal/widget
-- **Profile C**: Has a "Book Now" link that goes to an external booking page
-- **Profile D**: No online booking -- walk-up or phone only (skip these)
-
-### Phase 2 -- Build Profile-Specific Scrapers in `/check-event`
-
-Update `/check-event` with branching logic based on what DOM elements are found on the page. The multi-step flow (check_available_days -> time_of_day_buttons -> view_more_times -> scrape_pills) would be one profile. Other profiles might just need to detect a "Sold Out" vs "Book Now" state.
-
-### Phase 3 -- Flag Non-Scrapable Events in the DB
-
-Add a `scrapable` boolean to the `events` table. After diagnosis, mark events that have no online booking flow as `scrapable = false` so the UI can show "Walk-up only" and hide the alert button.
-
-## Files Changed
-
-- **Railway `index.js`**: Add `/diagnose-event` endpoint, refine `/check-event` with profile branching
-- **Migration**: Add `scrapable` column to `events` table
-- **`src/pages/EventAlerts.tsx`**: Hide alert creation for non-scrapable events
-- **`event-availability-check/index.ts`**: Skip non-scrapable events
-
-## What Stays Untouched
-- All dining code (`/check`, `/diagnose`, `dining-alerts`, `dining-availability-check`)
-- Existing Railway `/batch-test` endpoint
-
+## Libraries to Install
+- `react-qr-code` — QR code generation
+- `html5-qrcode` — Camera-based QR scanning
