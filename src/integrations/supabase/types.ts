@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      beacon_events: {
+        Row: {
+          badge: string | null
+          badge_color: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          emoji: string | null
+          event_date: string
+          event_time: string
+          id: string
+          is_active: boolean | null
+          location: string
+          park: string
+          title: string
+          type: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          badge?: string | null
+          badge_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          emoji?: string | null
+          event_date: string
+          event_time: string
+          id?: string
+          is_active?: boolean | null
+          location: string
+          park: string
+          title: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          badge?: string | null
+          badge_color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          emoji?: string | null
+          event_date?: string
+          event_time?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string
+          park?: string
+          title?: string
+          type?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      beacon_rsvps: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beacon_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "beacon_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dining_alerts: {
         Row: {
           alert_date: string

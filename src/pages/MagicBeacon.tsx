@@ -68,69 +68,7 @@ const VIBE_OPTIONS = [
   "Photography enthusiast 📸",
 ];
 
-// Magic Pass Events (managed by Brandon/Clark)
-const MAGIC_PASS_EVENTS = [
-  {
-    id: "lorcana-epcot-may",
-    title: "Lorcana Card Trading Meetup",
-    type: "trading",
-    emoji: "🃏",
-    park: "EPCOT",
-    location: "CommuniCore Plaza",
-    date: "May 20, 2026",
-    time: "12:00 PM – 2:00 PM",
-    description: "Bring your Lorcana decks and trades! Meet fellow Disney adults for an afternoon of trading and playing in the park. All experience levels welcome.",
-    rsvpCount: 47,
-    daysUntil: 43,
-    badge: "Trading Event",
-    badgeColor: "bg-purple-500/20 text-purple-400",
-  },
-  {
-    id: "coaster-marathon-mk",
-    title: "Space Mountain Ride Marathon",
-    type: "challenge",
-    emoji: "🎢",
-    park: "Magic Kingdom",
-    location: "Tomorrowland — Space Mountain",
-    date: "June 7, 2026",
-    time: "9:00 AM – 12:00 PM",
-    description: "How many times can we ride Space Mountain in 3 hours? Join the challenge — we'll track group rides and crown the marathon champion. Lightning Lane strategies welcome.",
-    rsvpCount: 31,
-    daysUntil: 61,
-    badge: "Ride Marathon",
-    badgeColor: "bg-red-500/20 text-red-400",
-  },
-  {
-    id: "dessert-trail-monorail",
-    title: "Monorail Dessert Trail",
-    type: "foodie",
-    emoji: "🍰",
-    park: "Magic Kingdom Resorts",
-    location: "Monorail loop — Contemporary, Polynesian, Grand Floridian",
-    date: "June 14, 2026",
-    time: "6:00 PM – 9:00 PM",
-    description: "Ride the resort monorail and hit dessert stops at the Contemporary, Polynesian, and Grand Floridian. We'll share our picks and vote on the best dessert of the night.",
-    rsvpCount: 62,
-    daysUntil: 68,
-    badge: "Foodie Trail",
-    badgeColor: "bg-yellow-500/20 text-yellow-400",
-  },
-  {
-    id: "photo-sunset-epcot",
-    title: "EPCOT Golden Hour Photo Walk",
-    type: "photography",
-    emoji: "📸",
-    park: "EPCOT",
-    location: "World Showcase — meet at France Pavilion",
-    date: "June 21, 2026",
-    time: "7:30 PM – 9:00 PM",
-    description: "Join fellow Magic Pass photographers for the best golden hour shots in World Showcase. We'll hit France, Japan, Italy, and the lagoon for sunset reflections.",
-    rsvpCount: 28,
-    daysUntil: 75,
-    badge: "Photo Walk",
-    badgeColor: "bg-orange-500/20 text-orange-400",
-  },
-];
+// Events are now loaded from the database (beacon_events table)
 
 export default function MagicBeacon() {
   const { session } = useAuth();
@@ -138,6 +76,8 @@ export default function MagicBeacon() {
   const [activeTab, setActiveTab] = useState<"beacons" | "events" | "my-beacon">("beacons");
   const [beacons, setBeacons] = useState<any[]>([]);
   const [rsvps, setRsvps] = useState<Set<string>>(new Set());
+  const [dbEvents, setDbEvents] = useState<any[]>([]);
+  const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
 
   // My beacon state
   const [myBeaconActive, setMyBeaconActive] = useState(false);
@@ -182,8 +122,26 @@ export default function MagicBeacon() {
     return () => clearInterval(interval);
   }, [beaconExpiry]);
 
+  // Load events from DB
+  const loadEvents = async () => {
+    const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).eq("is_active", true).order("created_at");
+    setDbEvents(events || []);
+    // Load RSVP counts
+    const counts: Record<string, number> = {};
+    for (const evt of (events || [])) {
+      const { count } = await (supabase.from("beacon_rsvps" as any).select("*", { count: "exact", head: true }) as any).eq("event_id", evt.id);
+      counts[evt.id] = count || 0;
+    }
+    setRsvpCounts(counts);
+    // Load user's own RSVPs
+    if (session?.user?.id) {
+      const { data: myRsvps } = await (supabase.from("beacon_rsvps" as any).select("event_id") as any).eq("user_id", session.user.id);
+      setRsvps(new Set((myRsvps || []).map((r: any) => r.event_id)));
+    }
+  };
+  useEffect(() => { loadEvents(); }, [session]);
+
   // Live beacons — start empty (will be populated from DB when backend is wired)
-  // When user starts their own beacon, it appears in the list for others
 
   // Haversine helper for walk time
   const calcDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
@@ -217,14 +175,21 @@ export default function MagicBeacon() {
     toast({ title: "Beacon stopped" });
   };
 
-  const rsvpEvent = (eventId: string) => {
+  const rsvpEvent = async (eventId: string) => {
     if (!session) { toast({ title: "Log in to RSVP", variant: "destructive" }); return; }
-    setRsvps(prev => {
-      const n = new Set(prev);
-      if (n.has(eventId)) { n.delete(eventId); toast({ title: "RSVP removed" }); }
-      else { n.add(eventId); toast({ title: "✅ You're going!" }); }
-      return n;
-    });
+    const userId = session.user.id;
+    const isGoing = rsvps.has(eventId);
+    if (isGoing) {
+      await (supabase.from("beacon_rsvps" as any).delete() as any).eq("event_id", eventId).eq("user_id", userId);
+      setRsvps(prev => { const n = new Set(prev); n.delete(eventId); return n; });
+      setRsvpCounts(prev => ({ ...prev, [eventId]: Math.max(0, (prev[eventId] || 1) - 1) }));
+      toast({ title: "RSVP removed" });
+    } else {
+      await (supabase.from("beacon_rsvps" as any).insert({ event_id: eventId, user_id: userId }) as any);
+      setRsvps(prev => new Set(prev).add(eventId));
+      setRsvpCounts(prev => ({ ...prev, [eventId]: (prev[eventId] || 0) + 1 }));
+      toast({ title: "✅ You're going!" });
+    }
   };
 
   const groupSizeLabel = { solo: "Solo AP", pair: "With a partner", small: "Small group (3-4)", large: "Large group (5+)" };
@@ -327,27 +292,33 @@ export default function MagicBeacon() {
               <p className="text-xs text-muted-foreground">Official events organized by Magic Pass — free for all subscribers. RSVP to let others know you're coming!</p>
             </div>
 
-            {MAGIC_PASS_EVENTS.map(event => {
+            {dbEvents.length === 0 && (
+              <div className="text-center py-8">
+                <Calendar className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-sm text-foreground font-semibold">No upcoming events yet</p>
+                <p className="text-xs text-muted-foreground mt-1">Check back soon for community meetups!</p>
+              </div>
+            )}
+
+            {dbEvents.map(event => {
               const going = rsvps.has(event.id);
+              const count = rsvpCounts[event.id] || 0;
               return (
                 <div key={event.id} className="rounded-xl border border-white/8 overflow-hidden" style={{ background: "#111827" }}>
                   <div className="px-4 py-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${event.badgeColor}`}>{event.badge}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${event.badge_color}`}>{event.badge}</span>
                         <p className="text-base font-black text-foreground mt-1">{event.emoji} {event.title}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="text-xs text-primary font-bold">{event.daysUntil} days</p>
                       </div>
                     </div>
                     <p className="text-xs text-primary mb-0.5">📍 {event.park} · {event.location}</p>
-                    <p className="text-xs text-muted-foreground mb-0.5">📅 {event.date}</p>
-                    <p className="text-xs text-muted-foreground mb-3">🕐 {event.time}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">{event.description}</p>
+                    <p className="text-xs text-muted-foreground mb-0.5">📅 {event.event_date}</p>
+                    <p className="text-xs text-muted-foreground mb-3">🕐 {event.event_time}</p>
+                    {event.description && <p className="text-xs text-muted-foreground leading-relaxed mb-3">{event.description}</p>}
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">
-                        {event.rsvpCount + (going ? 1 : 0)} {going ? "members" : "members"} going
+                        {count} member{count !== 1 ? "s" : ""} going
                         {going && " (including you! ✅)"}
                       </p>
                       <button onClick={() => rsvpEvent(event.id)}
