@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Gamepad2, Camera, Search, Zap, Trophy } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
-import RideLineQuest from "@/pages/RideLineQuest";
 import WhereAmI from "@/components/WhereAmI";
 
 interface GameCard {
@@ -16,16 +15,6 @@ interface GameCard {
 }
 
 const GAMES: GameCard[] = [
-  {
-    id: "ride-line-quest",
-    emoji: "🪃",
-    title: "Ride Line Quest",
-    subtitle: "Dodge, swat & grab!",
-    description: "A fast-paced arcade game with themed adventures. Tap artifacts, swat bugs, and dodge obstacles while you wait in line!",
-    color: "#F5C842",
-    available: true,
-    tag: "3 Themes",
-  },
   {
     id: "where-am-i",
     emoji: "📸",
@@ -50,10 +39,6 @@ const GAMES: GameCard[] = [
 
 export default function LineGames() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
-
-  if (activeGame === "ride-line-quest") {
-    return <RideLineQuest onClose={() => setActiveGame(null)} />;
-  }
 
   if (activeGame === "where-am-i") {
     return <WhereAmI onClose={() => setActiveGame(null)} />;
