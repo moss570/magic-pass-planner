@@ -183,6 +183,128 @@ export type Database = {
         }
         Relationships: []
       }
+      event_alerts: {
+        Row: {
+          alert_date: string
+          alert_email: boolean | null
+          alert_sms: boolean | null
+          availability_found_at: string | null
+          availability_url: string | null
+          check_count: number | null
+          created_at: string | null
+          event_name: string
+          event_url: string
+          found_times: string[] | null
+          id: string
+          last_checked_at: string | null
+          party_size: number
+          preferred_time: string | null
+          priority_launch: boolean
+          status: string | null
+          updated_at: string | null
+          user_id: string
+          window_opens_at: string | null
+        }
+        Insert: {
+          alert_date: string
+          alert_email?: boolean | null
+          alert_sms?: boolean | null
+          availability_found_at?: string | null
+          availability_url?: string | null
+          check_count?: number | null
+          created_at?: string | null
+          event_name: string
+          event_url: string
+          found_times?: string[] | null
+          id?: string
+          last_checked_at?: string | null
+          party_size?: number
+          preferred_time?: string | null
+          priority_launch?: boolean
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+          window_opens_at?: string | null
+        }
+        Update: {
+          alert_date?: string
+          alert_email?: boolean | null
+          alert_sms?: boolean | null
+          availability_found_at?: string | null
+          availability_url?: string | null
+          check_count?: number | null
+          created_at?: string | null
+          event_name?: string
+          event_url?: string
+          found_times?: string[] | null
+          id?: string
+          last_checked_at?: string | null
+          party_size?: number
+          preferred_time?: string | null
+          priority_launch?: boolean
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+          window_opens_at?: string | null
+        }
+        Relationships: []
+      }
+      event_notifications: {
+        Row: {
+          alert_date: string | null
+          alert_id: string | null
+          availability_url: string | null
+          created_at: string | null
+          delivery_details: Json | null
+          delivery_status: string | null
+          event_name: string | null
+          id: string
+          notification_type: string | null
+          party_size: number | null
+          retry_count: number | null
+          sent_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          alert_date?: string | null
+          alert_id?: string | null
+          availability_url?: string | null
+          created_at?: string | null
+          delivery_details?: Json | null
+          delivery_status?: string | null
+          event_name?: string | null
+          id?: string
+          notification_type?: string | null
+          party_size?: number | null
+          retry_count?: number | null
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          alert_date?: string | null
+          alert_id?: string | null
+          availability_url?: string | null
+          created_at?: string | null
+          delivery_details?: Json | null
+          delivery_status?: string | null
+          event_name?: string | null
+          id?: string
+          notification_type?: string | null
+          party_size?: number | null
+          retry_count?: number | null
+          sent_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "event_alerts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friend_requests: {
         Row: {
           created_at: string | null
