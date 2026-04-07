@@ -429,38 +429,7 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      {/* Section 5: Trip Profiles */}
-      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">🎒 My Saved Trip Profiles</CardTitle>
-          <CardDescription>Save your group, preferences, and past trips for quick planning</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-primary/25 bg-[var(--muted)]/60 p-4 space-y-2">
-              <p className="text-sm font-bold text-foreground">🏰 Moss Family — May 2026</p>
-              <p className="text-xs text-muted-foreground">Magic Kingdom · May 20–23 · Party of 5</p>
-              <div className="flex flex-wrap gap-1.5">
-                <span className="text-[10px] bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded-full">Incredi-Pass ×2</span>
-                <span className="text-[10px] bg-muted text-muted-foreground font-semibold px-2 py-0.5 rounded-full">Day Ticket ×2</span>
-              </div>
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs">Edit</Button>
-                <Button size="sm" className="text-xs">View Itinerary →</Button>
-              </div>
-            </div>
-            <div className="rounded-xl border border-primary/10 bg-[var(--muted)]/30 p-4 space-y-2 opacity-80">
-              <p className="text-sm font-bold text-foreground">🌍 EPCOT Food & Wine — Oct 2025</p>
-              <p className="text-xs text-muted-foreground">EPCOT · Oct 14–16 · Party of 2</p>
-              <span className="text-[10px] text-green-400 font-semibold">Completed ✅</span>
-              <div className="pt-1">
-                <Button variant="outline" size="sm" className="border-muted text-muted-foreground hover:text-foreground text-xs">View Summary</Button>
-              </div>
-            </div>
-          </div>
-          <button className="w-full rounded-xl border-2 border-dashed border-primary/30 py-4 text-sm font-medium text-primary hover:border-primary/60 transition-colors">+ Create New Trip Profile</button>
-        </CardContent>
-      </Card>
+      <TripProfilesSection userId={user?.id} navigate={navigate} />
 
       {/* Section 6: Referral Program */}
       <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden">
