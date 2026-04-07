@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Radio, MapPin, Clock, Users, Plus, X, Calendar, ChevronRight, Star, Navigation } from "lucide-react";
+import { Radio, MapPin, Clock, Users, Plus, X, Calendar, Star, Navigation } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
