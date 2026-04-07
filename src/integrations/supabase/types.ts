@@ -1158,6 +1158,7 @@ export type Database = {
         Row: {
           ap_expiration: string | null
           ap_pass_tier: string | null
+          avatar_url: string | null
           created_at: string | null
           disney_plus: boolean | null
           disney_visa: boolean | null
@@ -1180,6 +1181,7 @@ export type Database = {
         Insert: {
           ap_expiration?: string | null
           ap_pass_tier?: string | null
+          avatar_url?: string | null
           created_at?: string | null
           disney_plus?: boolean | null
           disney_visa?: boolean | null
@@ -1202,6 +1204,7 @@ export type Database = {
         Update: {
           ap_expiration?: string | null
           ap_pass_tier?: string | null
+          avatar_url?: string | null
           created_at?: string | null
           disney_plus?: boolean | null
           disney_visa?: boolean | null

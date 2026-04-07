@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link } from "react-router-dom";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const Settings = () => {
   const { user } = useAuth();
@@ -22,6 +23,9 @@ const Settings = () => {
   const [homeZip, setHomeZip] = useState("");
   const [username, setUsername] = useState("");
   const [membershipCategory, setMembershipCategory] = useState("Annual Passholder");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [apTier, setApTier] = useState("None");
   const [apExpiration, setApExpiration] = useState("");
@@ -60,10 +64,39 @@ const Settings = () => {
           setDisneyVisa(data.disney_visa || false);
           setUsername((data as any).username || "");
           setMembershipCategory((data as any).membership_category || "Annual Passholder");
+          setAvatarUrl((data as any).avatar_url || null);
         }
         setLoadingProfile(false);
       });
   }, [user]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const filePath = `${user.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (uploadError) {
+      toast.error("Upload failed — please try again");
+      setUploadingAvatar(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    const url = `${publicUrl}?t=${Date.now()}`;
+    await supabase.from("users_profile").upsert({ id: user.id, avatar_url: url } as any);
+    setAvatarUrl(url);
+    setUploadingAvatar(false);
+    toast.success("Profile photo updated!");
+  };
 
   const handleSaveAccount = async () => {
     if (!user) return;
@@ -156,10 +189,15 @@ const Settings = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg font-bold shrink-0">
-              {firstName ? firstName[0].toUpperCase() : "?"}
-            </div>
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Upload className="w-3.5 h-3.5 mr-1" /> Upload Photo</Button>
+            <Avatar className="w-14 h-14">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
+              <AvatarFallback className="text-lg font-bold">{firstName ? firstName[0].toUpperCase() : "?"}</AvatarFallback>
+            </Avatar>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
+              {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1" />}
+              {uploadingAvatar ? "Uploading…" : "Upload Photo"}
+            </Button>
           </div>
           <Button className="text-xs" onClick={handleSaveAccount} disabled={savingAccount}>
             {savingAccount ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
