@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Radio, MapPin, Clock, Users, Plus, X, Calendar, ChevronRight, Star } from "lucide-react";
+import { Radio, MapPin, Clock, Users, Plus, X, Calendar, Star, Navigation } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import CompassModal from "@/components/CompassModal";
 
 const PARKS = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Typhoon Lagoon", "Blizzard Beach"];
 
@@ -19,6 +20,41 @@ const QUEUE_MAP: Record<string, string[]> = {
   "Animal Kingdom": AK_SPOTS,
   "Typhoon Lagoon": ["Main Entrance", "Crush 'n' Gusher Queue", "Wave Pool Shore"],
   "Blizzard Beach": ["Main Entrance", "Summit Plummet Queue", "Melt-Away Bay Shore"],
+};
+
+// GPS coordinates for meeting spots
+const SPOT_COORDS: Record<string, { lat: number; lng: number }> = {
+  "Main Gate / Town Square": { lat: 28.4167, lng: -81.5812 },
+  "Cinderella Castle Steps": { lat: 28.4195, lng: -81.5812 },
+  "Space Mountain Entrance": { lat: 28.4210, lng: -81.5778 },
+  "Tomorrowland Terrace": { lat: 28.4203, lng: -81.5790 },
+  "Fantasyland Carousel": { lat: 28.4205, lng: -81.5815 },
+  "Big Thunder Mountain Entrance": { lat: 28.4199, lng: -81.5845 },
+  "Haunted Mansion Queue": { lat: 28.4209, lng: -81.5830 },
+  "Pirates Entrance": { lat: 28.4186, lng: -81.5838 },
+  "Adventureland Bridge": { lat: 28.4183, lng: -81.5828 },
+  "Tiana's Bayou Entrance": { lat: 28.4192, lng: -81.5850 },
+  "Crystal Palace Front": { lat: 28.4187, lng: -81.5810 },
+  "Spaceship Earth": { lat: 28.3747, lng: -81.5494 },
+  "World Showcase Plaza": { lat: 28.3710, lng: -81.5494 },
+  "France Pavilion Bridge": { lat: 28.3688, lng: -81.5530 },
+  "Japan Pavilion": { lat: 28.3695, lng: -81.5535 },
+  "Canada Pavilion": { lat: 28.3700, lng: -81.5460 },
+  "Test Track Queue": { lat: 28.3735, lng: -81.5475 },
+  "Guardians Queue": { lat: 28.3740, lng: -81.5510 },
+  "Sunshine Seasons": { lat: 28.3738, lng: -81.5502 },
+  "Hollywood Blvd Entrance": { lat: 28.3576, lng: -81.5593 },
+  "Chinese Theater": { lat: 28.3549, lng: -81.5588 },
+  "Galaxy's Edge Entrance": { lat: 28.3535, lng: -81.5620 },
+  "Slinky Dog Dash Queue": { lat: 28.3555, lng: -81.5618 },
+  "Tower of Terror Entrance": { lat: 28.3595, lng: -81.5605 },
+  "Echo Lake": { lat: 28.3565, lng: -81.5580 },
+  "Main Entrance / Oasis": { lat: 28.3553, lng: -81.5901 },
+  "Tree of Life": { lat: 28.3571, lng: -81.5904 },
+  "Pandora Bridge": { lat: 28.3558, lng: -81.5930 },
+  "Africa - Harambe": { lat: 28.3590, lng: -81.5920 },
+  "Asia - Expedition Everest Queue": { lat: 28.3580, lng: -81.5880 },
+  "Discovery Island": { lat: 28.3575, lng: -81.5900 },
 };
 
 const VIBE_OPTIONS = [
@@ -116,6 +152,7 @@ export default function MagicBeacon() {
   const [duration, setDuration] = useState<"30" | "60" | "120" | "close">("60");
   const [beaconExpiry, setBeaconExpiry] = useState<Date | null>(null);
   const [timeLeft, setTimeLeft] = useState("");
+  const [compassTarget, setCompassTarget] = useState<{ spot: string; park: string } | null>(null);
 
   const BEACON_ACTIVITIES = [
     "Speed Walking Group",
@@ -145,14 +182,22 @@ export default function MagicBeacon() {
     return () => clearInterval(interval);
   }, [beaconExpiry]);
 
-  // Demo beacons
-  useEffect(() => {
-    setBeacons([
-      { id: "1", park: "Magic Kingdom", spot: "Space Mountain Entrance", vibe: "Love coasters, happy to ride together 🎢", passTier: "Incredi-Pass", groupSize: "solo", expiresIn: "42 min", isExpired: false },
-      { id: "2", park: "Magic Kingdom", spot: "Fantasyland Carousel", vibe: "Family of Disney adults, first timers welcome 🏰", passTier: "Sorcerer Pass", groupSize: "small", expiresIn: "1h 18min", isExpired: false },
-      { id: "3", park: "EPCOT", spot: "France Pavilion Bridge", vibe: "EPCOT food lover, let's chat 🍷", passTier: "Incredi-Pass", groupSize: "pair", expiresIn: "28 min", isExpired: false },
-    ]);
-  }, []);
+  // Live beacons — start empty (will be populated from DB when backend is wired)
+  // When user starts their own beacon, it appears in the list for others
+
+  // Haversine helper for walk time
+  const calcDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371000;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  const headingOver = (beacon: any) => {
+    toast({ title: "📡 On my way!", description: `The beacon host has been notified you're heading to ${beacon.spot}` });
+    setCompassTarget({ spot: beacon.spot, park: beacon.park });
+  };
 
   const startBeacon = () => {
     if (!beaconTitle.trim()) { toast({ title: "Enter a beacon title", variant: "destructive" }); return; }
@@ -211,10 +256,12 @@ export default function MagicBeacon() {
         {/* LIVE BEACONS */}
         {activeTab === "beacons" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 live-pulse" />
-              <p className="text-xs font-semibold text-green-400">{beacons.length} active beacons nearby</p>
-            </div>
+            {beacons.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-400 live-pulse" />
+                <p className="text-xs font-semibold text-green-400">{beacons.length} active beacon{beacons.length !== 1 ? "s" : ""} nearby</p>
+              </div>
+            )}
             {beacons.map(b => (
               <div key={b.id} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -227,26 +274,49 @@ export default function MagicBeacon() {
                     <p className="text-xs font-bold text-yellow-400">{b.expiresIn}</p>
                   </div>
                 </div>
+                {b.activity && <p className="text-xs text-primary mb-1">🎯 {b.activity}</p>}
                 <p className="text-xs text-muted-foreground italic mb-2">"{b.vibe}"</p>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">{b.passTier}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">{groupSizeLabel[b.groupSize as keyof typeof groupSizeLabel] || b.groupSize}</span>
                   </div>
-                  <button className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
-                    I'm heading over <ChevronRight className="w-3 h-3" />
+                  <button onClick={() => headingOver(b)}
+                    className="text-xs font-semibold flex items-center gap-1 px-3 py-1.5 rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors">
+                    <Navigation className="w-3 h-3" /> I'm heading over
                   </button>
                 </div>
               </div>
             ))}
             {beacons.length === 0 && (
-              <div className="text-center py-8">
-                <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No active beacons near you</p>
-                <p className="text-xs text-muted-foreground mt-1">Start your own beacon to let other APs find you!</p>
+              <div className="text-center py-12">
+                <Radio className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-base font-bold text-foreground mb-2">No Beacons currently live now</p>
+                <p className="text-sm text-muted-foreground mb-5">Start a Beacon and meet a new friend.</p>
+                <button onClick={() => setActiveTab("my-beacon")}
+                  className="px-6 py-3 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                  🏰 Start My Beacon
+                </button>
               </div>
             )}
           </div>
+        )}
+
+        {/* Compass Modal for navigation */}
+        {compassTarget && SPOT_COORDS[compassTarget.spot] && (
+          <CompassModal
+            open={!!compassTarget}
+            onClose={() => setCompassTarget(null)}
+            destination={compassTarget.spot}
+            land={compassTarget.park}
+            walkTime={gpsLocation && SPOT_COORDS[compassTarget.spot]
+              ? `${Math.max(1, Math.round(calcDistance(gpsLocation.lat, gpsLocation.lng, SPOT_COORDS[compassTarget.spot].lat, SPOT_COORDS[compassTarget.spot].lng) / 80))} min`
+              : "5 min"}
+            distance={gpsLocation && SPOT_COORDS[compassTarget.spot]
+              ? (() => { const m = calcDistance(gpsLocation.lat, gpsLocation.lng, SPOT_COORDS[compassTarget.spot].lat, SPOT_COORDS[compassTarget.spot].lng); const ft = m * 3.28084; return ft > 5280 ? `${(ft / 5280).toFixed(1)} miles` : `${Math.round(ft)} ft`; })()
+              : "nearby"}
+            directions={["Follow park signage toward " + compassTarget.spot]}
+          />
         )}
 
         {/* MAGIC PASS EVENTS */}
