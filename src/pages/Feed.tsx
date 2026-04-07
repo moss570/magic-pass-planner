@@ -62,10 +62,10 @@ export default function Feed() {
       const enriched: Post[] = [];
       for (const post of (postsData || [])) {
         if (blockSet.has(post.user_id)) continue; // filter blocked
-        const { data: profile } = await supabase.from("users_profile").select("username, first_name, last_name, membership_category").eq("id", post.user_id).single();
+        const { data: profile } = await supabase.from("users_profile").select("first_name, last_name").eq("id", post.user_id).single();
         enriched.push({
           ...post,
-          username: profile?.username || undefined,
+          username: (profile as any)?.username || undefined,
           first_name: profile?.first_name || undefined,
           last_name: profile?.last_name || undefined,
           membership_category: (profile as any)?.membership_category || undefined,
