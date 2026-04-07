@@ -23,6 +23,9 @@ const Settings = () => {
   const [homeZip, setHomeZip] = useState("");
   const [username, setUsername] = useState("");
   const [membershipCategory, setMembershipCategory] = useState("Annual Passholder");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [apTier, setApTier] = useState("None");
   const [apExpiration, setApExpiration] = useState("");
