@@ -256,10 +256,12 @@ export default function MagicBeacon() {
         {/* LIVE BEACONS */}
         {activeTab === "beacons" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 live-pulse" />
-              <p className="text-xs font-semibold text-green-400">{beacons.length} active beacons nearby</p>
-            </div>
+            {beacons.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-green-400 live-pulse" />
+                <p className="text-xs font-semibold text-green-400">{beacons.length} active beacon{beacons.length !== 1 ? "s" : ""} nearby</p>
+              </div>
+            )}
             {beacons.map(b => (
               <div key={b.id} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
                 <div className="flex items-start justify-between gap-2 mb-2">
@@ -272,26 +274,51 @@ export default function MagicBeacon() {
                     <p className="text-xs font-bold text-yellow-400">{b.expiresIn}</p>
                   </div>
                 </div>
+                {b.activity && <p className="text-xs text-primary mb-1">🎯 {b.activity}</p>}
                 <p className="text-xs text-muted-foreground italic mb-2">"{b.vibe}"</p>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary">{b.passTier}</span>
                     <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground">{groupSizeLabel[b.groupSize as keyof typeof groupSizeLabel] || b.groupSize}</span>
                   </div>
-                  <button className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
-                    I'm heading over <ChevronRight className="w-3 h-3" />
+                  <button onClick={() => headingOver(b)}
+                    className="text-xs font-semibold flex items-center gap-1 px-3 py-1.5 rounded-full border border-primary/40 text-primary hover:bg-primary/10 transition-colors">
+                    <Navigation className="w-3 h-3" /> I'm heading over
                   </button>
                 </div>
               </div>
             ))}
             {beacons.length === 0 && (
-              <div className="text-center py-8">
-                <Radio className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">No active beacons near you</p>
-                <p className="text-xs text-muted-foreground mt-1">Start your own beacon to let other APs find you!</p>
+              <div className="text-center py-12">
+                <Radio className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-base font-bold text-foreground mb-2">No Beacons currently live now</p>
+                <p className="text-sm text-muted-foreground mb-5">Start a Beacon and meet a new friend.</p>
+                <button onClick={() => setActiveTab("my-beacon")}
+                  className="px-6 py-3 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                  🏰 Start My Beacon
+                </button>
               </div>
             )}
           </div>
+        )}
+
+        {/* Compass Modal for navigation */}
+        {compassTarget && SPOT_COORDS[compassTarget.spot] && (
+          <CompassModal
+            open={!!compassTarget}
+            onClose={() => setCompassTarget(null)}
+            destination={compassTarget.spot}
+            land={compassTarget.park}
+            walkTime={gpsLocation && SPOT_COORDS[compassTarget.spot]
+              ? `${Math.max(1, Math.round(calcDistance(gpsLocation.lat, gpsLocation.lng, SPOT_COORDS[compassTarget.spot].lat, SPOT_COORDS[compassTarget.spot].lng) / 80))} min`
+              : "5 min"}
+            distance={gpsLocation && SPOT_COORDS[compassTarget.spot]
+              ? (() => { const m = calcDistance(gpsLocation.lat, gpsLocation.lng, SPOT_COORDS[compassTarget.spot].lat, SPOT_COORDS[compassTarget.spot].lng); const ft = m * 3.28084; return ft > 5280 ? `${(ft / 5280).toFixed(1)} miles` : `${Math.round(ft)} ft`; })()
+              : "nearby"}
+            directions={["Follow park signage toward " + compassTarget.spot]}
+            destLat={SPOT_COORDS[compassTarget.spot].lat}
+            destLng={SPOT_COORDS[compassTarget.spot].lng}
+          />
         )}
 
         {/* MAGIC PASS EVENTS */}
