@@ -329,6 +329,9 @@ export default function Admin() {
             <p className="text-muted-foreground text-sm">Magic Pass Plus — Operations Center</p>
           </div>
           <div className="flex items-center gap-3">
+            <a href="/admin/command-center" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
+              🎛️ Command Center
+            </a>
             <span className="text-xs text-muted-foreground">Last refresh: {lastRefresh.toLocaleTimeString()}</span>
             <button
               onClick={loadStats}

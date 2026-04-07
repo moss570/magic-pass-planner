@@ -28,6 +28,7 @@ import TermsOfService from "./pages/TermsOfService";
 import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
+import AdminCommandCenter from "./pages/AdminCommandCenter";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/faq" element={<FAQ />} />
             <Route path="/game-developer" element={<ProtectedRoute><GameDeveloper /></ProtectedRoute>} />
             <Route path="/photo-contest" element={<ProtectedRoute><PhotoContest /></ProtectedRoute>} />
+            <Route path="/admin/command-center" element={<ProtectedRoute><AdminCommandCenter /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
