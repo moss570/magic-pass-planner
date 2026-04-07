@@ -122,6 +122,7 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
   };
 
   return (
+    <DashboardLayout title="📸 Photo Fun" subtitle="Sunset spots, fireworks rides & PhotoPass locations">
     <div className="space-y-4">
       {/* PhotoPass proximity alert banner */}
       {nearbyPhotoPass.length > 0 && (
