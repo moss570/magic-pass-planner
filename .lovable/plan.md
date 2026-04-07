@@ -1,65 +1,49 @@
 
 
-## Plan: Update Scraper Flow + Match Disney's Reservation UI Filters
+## What Changed and When
 
-### What the Screenshots Revealed
+### Timeline of Changes
 
-Disney's `/dine-res/restaurant/{slug}` page is a multi-step SPA:
+**1:46 AM** — Chef Mickey's found availability successfully. The poller received the original `/dining/contemporary-resort/chef-mickeys/` URL and returned `available: true` with 4 time slots. Everything was working.
 
-```text
-1. Page loads with Party Size selector + Calendar
-2. User picks a date on the calendar (green dots = availability)
-3. User clicks "Next" button
-4. Time slots render as pills grouped by meal period (e.g. "07:40 AM")
-```
+**1:46 AM (message #342)** — You asked to fix notifications + add instant checks. I edited three files:
+- `dining-alerts/index.ts` — added instant first check on alert creation
+- `send-notification/index.ts` — added email/SMS preference checks
+- `dining-availability-check/index.ts` — added instant check handler (`instant_alert_id` support)
 
-The page ignores URL query parameters entirely -- all interaction is JavaScript-driven. Our current scraper just loads the URL and scans for text, which is why it always returns 0 results.
+**1:52 AM (message #344)** — You reported SMS not delivering and booking URL not deep-linking. I edited:
+- `send-notification/index.ts` — added phone normalization to E.164
+- `dining-availability-check/index.ts` — added `buildBookingUrl()` that constructs `/dine-res/restaurant/{slug}/` URLs **for notification links only** (not for scraping)
 
-Additionally, the user wants the app's alert form to mirror Disney's own filter options (party size, date, meal period) so the scraper searches for exactly what the user specified.
+**2:03 AM (message #346)** — You reported the date URL didn't work. I edited:
+- `dining-availability-check/index.ts` — simplified `buildBookingUrl()` to drop query params. Still only affected notification links.
 
-### Changes
+**9:07 AM** — Chef Mickey's was checked again and STILL found availability using the original `/dining/` URL. **The scraper was still working at this point.**
 
-#### 1. Edge Function: Stop appending query params to URL
+**9:05 AM** — Tiffins checked 221 times, all returning `available: false`. The poller was receiving `/dining/animal-kingdom/tiffins-restaurant/` — the original URL.
+
+**9:16 AM (message #360)** — **THE BREAKING CHANGE.** I added `buildScrapingUrl()` which transforms ALL URLs sent to the poller from `/dining/` to `/dine-res/restaurant/{slug}/`. This broke scraping because `/dine-res/` requires Disney login.
+
+### Root Cause
+
+The `/dining/` info pages were NOT all broken. Chef Mickey's `/dining/` page was working fine at 9:07 AM. I incorrectly concluded all `/dining/` pages were 404 and deployed a change that redirected the poller to `/dine-res/` pages (which require login).
+
+The Tiffins issue was likely a **different problem** — either the specific `/dining/animal-kingdom/tiffins-restaurant/` page has different DOM structure, or the datepicker selectors don't work on that particular page. The poller wasn't returning errors (no "blocked" or "no-dialog") — it was returning `available: false`, meaning it loaded the page but found no availability slots. This could be a selector issue specific to that page, not a global URL problem.
+
+### The Fix
+
+1. **Revert `buildScrapingUrl`** — Remove the URL transformation that sends `/dine-res/` URLs to the poller. Go back to sending the original `/dining/` URLs from the database, which is what was working for Chef Mickey's.
+
+2. **Keep `buildBookingUrl`** — The notification "Book Now" links should still point to `/dine-res/restaurant/{slug}/` since that's the actual reservation flow for users (who are logged in).
+
+3. **Investigate Tiffins specifically** — After reverting, test both Chef Mickey's and Tiffins to see if Chef Mickey's works again and whether Tiffins has a page-specific issue vs. a genuine "no availability" result.
+
+### Technical Details
 
 **File**: `supabase/functions/dining-availability-check/index.ts`
 
-- Simplify `transformToReservationUrl` to return the bare `/dine-res/restaurant/{slug}` URL without query params
-- The `date`, `partySize`, and `mealPeriod` are already sent as separate JSON fields to the Railway poller -- no change needed there
-
-#### 2. Edge Function: Pass `mealPeriods` array instead of single period
-
-**File**: `supabase/functions/dining-availability-check/index.ts`
-
-- Change the body sent to Railway from `{ mealPeriod: "Dinner" }` to `{ mealPeriods: ["Dinner", "Lunch"] }` to match whatever the user selected
-- This lets the scraper filter results to only the meal periods the user cares about
-
-#### 3. Railway Poller v3 (provided as pasteable code)
-
-Complete rewrite of the `/check` endpoint interaction flow:
-
-- **Navigate** to bare `/dine-res/restaurant/{slug}` (no query params)
-- **Set party size**: Find the party size control and adjust if different from default (2)
-- **Navigate calendar**: Click forward/back arrows to reach the correct month, then click the target date cell
-- **Click "Next"**: Find and click the "Next" button to trigger time slot loading
-- **Filter by meal period**: Only collect times that appear under the user's selected meal period headers (Breakfast/Lunch/Dinner)
-- **Poll for results**: Check for time-slot pills matching `/\d{1,2}:\d{2}\s*(AM|PM)/` up to 20 seconds
-- **Diagnostics**: If no results found, capture page text snippet to distinguish "no availability" from "scraper error"
-
-#### 4. UI: Add preferred time input to match Disney's filters
-
-**File**: `src/pages/DiningAlerts.tsx`
-
-The current form already has: Restaurant search, Date picker, Party Size (1-12), Meal Time pills (Breakfast/Lunch/Dinner/Any), and notification toggles. This closely matches Disney's own filters. One addition:
-
-- Add an optional **"Preferred Time"** text hint (e.g. "around 6 PM") that gets saved to the existing `preferred_time` column. This won't affect the scraper search (it checks all times for the meal period) but helps the notification say "We found 5:45 PM -- close to your preferred 6 PM!"
-
-No database changes needed -- `preferred_time` column already exists.
-
-### Files Modified
-
-| File | Change |
-|------|--------|
-| `supabase/functions/dining-availability-check/index.ts` | Remove query params from URL transform; pass `mealPeriods` array to poller |
-| `src/pages/DiningAlerts.tsx` | Add optional "Preferred Time" input field; wire to existing `preferred_time` column |
-| Railway `index.js` (provided as pasteable code) | Full rewrite: calendar navigation, date click, "Next" button, meal period filtering |
+- Remove `buildScrapingUrl()` function (lines 31-39)
+- In `checkAvailability()`, stop calling `buildScrapingUrl()` and pass the original `restaurantUrl` directly to the poller
+- Keep `buildBookingUrl()` for notification links
+- Redeploy the edge function
 
