@@ -85,7 +85,7 @@ const Dashboard = () => {
         const tripId = trips[0].id;
         const budget = trips[0].estimated_total || 0;
         const { data: expenses } = await supabase.from("trip_expenses").select("amount").eq("trip_id", tripId);
-        const total = (expenses || []).reduce((s, e) => s + parseFloat(e.amount), 0);
+        const total = (expenses || []).reduce((s, e) => s + parseFloat(String(e.amount)), 0);
         setTripExpenses({ total, budget });
       });
 
