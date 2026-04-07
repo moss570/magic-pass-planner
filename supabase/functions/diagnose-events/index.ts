@@ -89,19 +89,25 @@ serve(async (req) => {
         });
         const data = await res.json();
 
+        // Derive scrapable from response: if page loaded and has availability UI elements
+        const derivedScrapable = data.ok === true && (data.hasCheckAvailBtn === true || data.hasMorningBtn === true);
+        
         const result: any = {
           event_name: event.event_name,
           url: event.event_url,
-          profile: data.profile || "error",
-          profileReason: data.profileReason || data.error || "unknown",
-          scrapable: data.scrapable,
+          ok: data.ok || false,
+          hasCheckAvailBtn: data.hasCheckAvailBtn || false,
+          hasMorningBtn: data.hasMorningBtn || false,
+          scrapable: typeof data.scrapable === "boolean" ? data.scrapable : derivedScrapable,
+          title: data.title || "unknown",
+          bodySnippet: data.bodySnippet ? data.bodySnippet.slice(0, 200) : undefined,
+          // Legacy fields for backward compat
+          profile: data.profile || (data.ok ? "ok" : "error"),
           blocked: data.blocked || false,
-          templateType: data.templateType || "unknown",
         };
 
-        // Auto-update scrapable
-        if (body.autoUpdate && typeof data.scrapable === "boolean" && event.scrapable !== data.scrapable) {
-          await supabase.from("events").update({ scrapable: data.scrapable }).eq("id", event.id);
+        if (body.autoUpdate && typeof result.scrapable === "boolean" && event.scrapable !== result.scrapable) {
+          await supabase.from("events").update({ scrapable: result.scrapable }).eq("id", event.id);
           result.dbUpdated = true;
           updated++;
         }
