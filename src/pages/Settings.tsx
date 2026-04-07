@@ -189,10 +189,15 @@ const Settings = () => {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-lg font-bold shrink-0">
-              {firstName ? firstName[0].toUpperCase() : "?"}
-            </div>
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs"><Upload className="w-3.5 h-3.5 mr-1" /> Upload Photo</Button>
+            <Avatar className="w-14 h-14">
+              {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
+              <AvatarFallback className="text-lg font-bold">{firstName ? firstName[0].toUpperCase() : "?"}</AvatarFallback>
+            </Avatar>
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
+              {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1" />}
+              {uploadingAvatar ? "Uploading…" : "Upload Photo"}
+            </Button>
           </div>
           <Button className="text-xs" onClick={handleSaveAccount} disabled={savingAccount}>
             {savingAccount ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
