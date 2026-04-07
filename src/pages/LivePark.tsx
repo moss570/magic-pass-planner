@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Zap, MapPin, Clock, Navigation, Trophy, Gamepad2, RefreshCw,
   ChevronDown, ChevronUp, Star, Sparkles, Timer, AlertTriangle,
