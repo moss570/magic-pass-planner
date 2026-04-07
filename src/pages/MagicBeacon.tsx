@@ -122,8 +122,26 @@ export default function MagicBeacon() {
     return () => clearInterval(interval);
   }, [beaconExpiry]);
 
+  // Load events from DB
+  const loadEvents = async () => {
+    const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).eq("is_active", true).order("created_at");
+    setDbEvents(events || []);
+    // Load RSVP counts
+    const counts: Record<string, number> = {};
+    for (const evt of (events || [])) {
+      const { count } = await (supabase.from("beacon_rsvps" as any).select("*", { count: "exact", head: true }) as any).eq("event_id", evt.id);
+      counts[evt.id] = count || 0;
+    }
+    setRsvpCounts(counts);
+    // Load user's own RSVPs
+    if (session?.user?.id) {
+      const { data: myRsvps } = await (supabase.from("beacon_rsvps" as any).select("event_id") as any).eq("user_id", session.user.id);
+      setRsvps(new Set((myRsvps || []).map((r: any) => r.event_id)));
+    }
+  };
+  useEffect(() => { loadEvents(); }, [session]);
+
   // Live beacons — start empty (will be populated from DB when backend is wired)
-  // When user starts their own beacon, it appears in the list for others
 
   // Haversine helper for walk time
   const calcDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
