@@ -174,7 +174,7 @@ export default function AdminCommandCenter() {
         replied_at: new Date().toISOString(),
         replied_by: user?.email || "admin",
         status: "replied",
-      }).eq("id", selectedMessage.id);
+      }) as any).eq("id", selectedMessage.id);
       toast({ title: "✅ Reply sent!" });
       setReplyText("");
       setSelectedMessage(null);
