@@ -546,6 +546,7 @@ export type Database = {
           is_live: boolean | null
           last_verified: string | null
           notes: string | null
+          priority: number | null
           retailer: string
           sale_price: number
           savings: number | null
@@ -560,6 +561,7 @@ export type Database = {
           is_live?: boolean | null
           last_verified?: string | null
           notes?: string | null
+          priority?: number | null
           retailer: string
           sale_price: number
           savings?: number | null
@@ -574,6 +576,7 @@ export type Database = {
           is_live?: boolean | null
           last_verified?: string | null
           notes?: string | null
+          priority?: number | null
           retailer?: string
           sale_price?: number
           savings?: number | null
