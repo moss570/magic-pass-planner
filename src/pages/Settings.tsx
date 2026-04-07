@@ -58,6 +58,8 @@ const Settings = () => {
           setHomePark(data.home_park || "Magic Kingdom");
           setDisneyPlus(data.disney_plus || false);
           setDisneyVisa(data.disney_visa || false);
+          setUsername((data as any).username || "");
+          setMembershipCategory((data as any).membership_category || "Annual Passholder");
         }
         setLoadingProfile(false);
       });
