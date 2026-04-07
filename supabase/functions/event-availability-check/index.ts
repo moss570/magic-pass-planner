@@ -297,6 +297,7 @@ serve(async (req) => {
     // Exclude priority alerts in active window (handled by priority cron)
     const standardAlerts = (alerts || []).filter((a: any) => {
       if (a.priority_launch && a.window_opens_at && isInPriorityWindow(a.window_opens_at)) return false;
+      if (nonScrapableUrls.has(a.event_url)) return false;
       return true;
     });
 
