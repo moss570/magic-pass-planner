@@ -159,7 +159,20 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Best Spots in {selectedPark}</p>
           {sunsetSpots.length === 0 ? (
             <p className="text-xs text-muted-foreground">Select a park to see sunset spots</p>
-          ) : sunsetSpots.map((spot, i) => (
+          ) : sunsetSpots.map((spot, i) => {
+            // Calculate walk time from user location
+            let walkMinutes: number | null = null;
+            let distanceFt: number | null = null;
+            if (userLat && userLng) {
+              const R = 6371000;
+              const dLat = (spot.lat - userLat) * Math.PI / 180;
+              const dLng = (spot.lng - userLng) * Math.PI / 180;
+              const a = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(spot.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+              const meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              walkMinutes = Math.round(meters / 80); // ~80 m/min standard walk
+              distanceFt = Math.round(meters * 3.281);
+            }
+            return (
             <div key={i} className="rounded-xl p-4 border border-white/8" style={{ background: "#111827" }}>
               <div className="flex items-start justify-between gap-2 mb-1">
                 <p className="text-sm font-bold text-foreground">{spot.name}</p>
@@ -168,13 +181,19 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
               <p className="text-xs text-muted-foreground mb-1">{spot.description}</p>
               <p className="text-xs text-primary">📸 {spot.tip}</p>
               <p className="text-xs text-muted-foreground mt-1">Facing: {spot.direction}</p>
-              {inPark && (
-                <div className="mt-2">
-                  <CompassButton destination={spot.name} context={`${selectedPark} · Sunset spot`} size="inline" />
+              {walkMinutes !== null && (
+                <div className="mt-2 pt-2 border-t border-white/8 flex items-center gap-3">
+                  <span className="text-xs text-muted-foreground">🚶</span>
+                  <span className="text-xs font-semibold text-foreground">{walkMinutes} min walk</span>
+                  <span className="text-xs text-muted-foreground">({distanceFt! >= 1000 ? `${(distanceFt! / 5280).toFixed(1)} mi` : `${distanceFt} ft`})</span>
                 </div>
               )}
+              <div className="mt-2">
+                <CompassButton destination={spot.name} context={`${selectedPark} · Sunset spot`} size="inline" />
+              </div>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
 
