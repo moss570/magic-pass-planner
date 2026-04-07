@@ -72,18 +72,20 @@ serve(async (req) => {
     const restaurantName = notification.restaurant_name || alert?.restaurant?.name || "Restaurant";
     const bookingUrl = notification.availability_url || alert?.restaurant?.disney_url || "https://disneyworld.disney.go.com/dining";
 
-    const results = [];
+    // Build notification promises for concurrent dispatch
+    const promises: Array<Promise<{ channel: string; success: boolean; status: number; sid?: string }>> = [];
 
-    // Send email
+    // Email promise
     if (wantsEmail && userEmail && BREVO_KEY) {
-      const emailResp = await fetch("https://api.brevo.com/v3/smtp/email", {
-        method: "POST",
-        headers: { "api-key": BREVO_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sender: { name: "Magic Pass Plus", email: "alerts@magicpassplus.com" },
-          to: [{ email: userEmail }],
-          subject: `🍽️ ${restaurantName} — Reservation Available! Book Now`,
-          htmlContent: `
+      promises.push(
+        fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: { "api-key": BREVO_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender: { name: "Magic Pass Plus", email: "alerts@magicpassplus.com" },
+            to: [{ email: userEmail }],
+            subject: `🍽️ ${restaurantName} — Reservation Available! Book Now`,
+            htmlContent: `
 <div style="font-family:Arial,sans-serif;max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
   <div style="background:linear-gradient(135deg,#1565C0,#1976D2);padding:28px;text-align:center;">
     <p style="color:#FFD700;font-size:22px;font-weight:bold;margin:0;">🏰 Magic Pass Plus</p>
@@ -107,17 +109,20 @@ serve(async (req) => {
     <p style="color:#4B5563;font-size:11px;margin:0;">© 2026 Magic Pass Plus LLC · magicpassplus.com<br>Not affiliated with Disney</p>
   </div>
 </div>`,
-        }),
-      });
-      results.push({ channel: "email", success: emailResp.ok, status: emailResp.status });
+          }),
+        }).then(async (emailResp) => ({
+          channel: "email" as const,
+          success: emailResp.ok,
+          status: emailResp.status,
+        }))
+      );
     }
 
-    // Send SMS if user has phone and opted in
+    // SMS promise
     const twilioSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const twilioToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const twilioFrom = Deno.env.get("TWILIO_MESSAGING_SERVICE_SID") || Deno.env.get("TWILIO_PHONE_NUMBER");
 
-    // Normalize phone to E.164 format (US numbers)
     const normalizePhone = (raw: string): string => {
       const digits = raw.replace(/\D/g, "");
       if (digits.length === 10) return `+1${digits}`;
@@ -136,23 +141,29 @@ serve(async (req) => {
         ...(twilioFrom.startsWith("MG") ? { MessagingServiceSid: twilioFrom } : { From: twilioFrom }),
       });
 
-      const smsResp = await fetch(
-        `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": "Basic " + btoa(`${twilioSid}:${twilioToken}`),
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: smsParams.toString(),
-        }
+      promises.push(
+        fetch(
+          `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Messages.json`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": "Basic " + btoa(`${twilioSid}:${twilioToken}`),
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: smsParams.toString(),
+          }
+        ).then(async (smsResp) => {
+          const smsBody = await smsResp.json();
+          if (!smsResp.ok) {
+            console.log("[SEND-NOTIFICATION] SMS error:", JSON.stringify(smsBody));
+          }
+          return { channel: "sms" as const, success: smsResp.ok, status: smsResp.status, sid: smsBody.sid };
+        })
       );
-      const smsBody = await smsResp.json();
-      if (!smsResp.ok) {
-        console.log("[SEND-NOTIFICATION] SMS error:", JSON.stringify(smsBody));
-      }
-      results.push({ channel: "sms", success: smsResp.ok, status: smsResp.status, sid: smsBody.sid });
     }
+
+    // Fire all channels concurrently
+    const results = await Promise.all(promises);
 
     // Mark notification as sent with delivery status tracking
     const allSuccess = results.length > 0 && results.every(r => r.success);
