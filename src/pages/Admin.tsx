@@ -203,12 +203,16 @@ export default function Admin() {
   const loadVips = async () => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) return;
     try {
-      // Load directly from Supabase to get all fields including is_game_developer
-      const { data, error } = await supabase
-        .from("vip_accounts")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (!error) setVips(data || []);
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=list`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "x-client-authorization": `Bearer ${token}`,
+          "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+        },
+      });
+      const data = await resp.json();
+      setVips(data.vips || []);
     } catch (err) {
       console.error("Failed to load VIPs:", err);
     }
