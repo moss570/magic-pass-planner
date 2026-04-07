@@ -1,69 +1,68 @@
 
 
-## Plan: Add Diagnostic Mode & Batch Restaurant Testing
+## Plan: Build Complete Disney Restaurant Database (408 Restaurants)
 
-### Problem
-The poller works for Chef Mickey's but fails silently for other restaurants (like Citricos) because Disney uses different page templates/DOM structures across restaurant categories. We need to identify exactly what differs and make the scraper resilient to all templates.
+### Current State
+- Database has **73 restaurants** across 17 locations
+- Disney's website lists **408 dining options** across all parks, resorts, Disney Springs, water parks, and BoardWalk
 
 ### Approach
 
-**Step 1: Add `/diagnose` endpoint to Railway poller (`index.js`)**
+**Step 1: Write a parsing script to extract all 408 restaurants from Disney's dining page**
 
-A new endpoint that visits a restaurant's `/dining/` page and returns a detailed report of what it "sees" — without trying to extract availability. This tells us exactly which selectors match and which don't for each restaurant.
+The scraped markdown contains structured data for every restaurant:
+- Name, service type (Table Service / Quick Service), location, price range, cuisine tags, and Disney URL
 
-Returns:
-- Page title, URL after redirects
-- Whether datepicker was found and which selector matched
-- Whether meal periods were found and which selector matched  
-- Whether calendar month/year headings were found
-- Whether day cells exist
-- Raw text snippets from relevant page sections
-- Any block/login/captcha detection triggered
+The script will parse each restaurant entry and produce a structured JSON with fields matching our `restaurants` table schema.
 
-**Step 2: Add `/batch-test` endpoint to Railway poller**
+**Step 2: Map Disney locations to our `location` and `location_type` columns**
 
-Accepts an array of restaurant URLs and runs `/diagnose` on each (with delays between). Returns a summary report showing which restaurants' pages have matching selectors vs which don't.
+Categorize each into:
+- **Park**: Magic Kingdom, EPCOT, Hollywood Studios, Animal Kingdom, Typhoon Lagoon, Blizzard Beach
+- **Resort**: All resort hotels (Contemporary, Grand Floridian, Polynesian, etc.)
+- **Disney Springs**: Disney Springs restaurants
+- **Other**: ESPN Wide World of Sports, Four Seasons, BoardWalk (non-resort)
 
-**Step 3: Update edge function with a `diagnose` mode**
+**Step 3: Determine `requires_reservation` and service attributes**
 
-Add a `diagnose: true` flag to the edge function's test mode that passes through to the poller's `/diagnose` endpoint, so we can trigger diagnostics from Supabase without needing direct Railway access.
+- Restaurants with "Check Availability Calendar" links = `requires_reservation: true`
+- Quick Service only = `requires_reservation: false, accepts_walk_ins: true`
+- Table Service = `requires_reservation: true`
 
-**Step 4: Run batch diagnosis against all 73 restaurants**
+**Step 4: Deduplicate against existing 73 restaurants**
 
-Execute the batch test and categorize results:
-- **Working**: datepicker + meal periods found (like Chef Mickey's)
-- **Partial**: some selectors match but not all
-- **Failed**: no selectors match — needs new selectors
+Match by `disney_url` slug to avoid duplicates. For existing restaurants, skip insertion. For new ones (~335), insert with all parsed fields.
 
-**Step 5: Update poller selectors to handle all template variants**
+**Step 5: Insert into database**
 
-Based on the diagnostic results, add fallback selectors for each template variant so the poller works across all restaurant types.
+Use the Supabase insert tool to add all new restaurants in batches.
 
 ### Technical Details
 
-**New `/diagnose` endpoint response shape:**
-```json
-{
-  "url": "...",
-  "title": "...",
-  "blocked": false,
-  "datepicker": { "found": true, "selector": "wdpr-datepicker", "state": "visible" },
-  "mealPeriods": { "found": true, "count": 3, "texts": ["Breakfast...", "Lunch...", "Dinner..."] },
-  "calendar": { "monthTitle": "April 2026", "nextButton": true, "dayCells": 30 },
-  "rawSnippets": { "bodyLength": 45000, "first500chars": "..." }
-}
+**Data extraction from the scraped markdown:**
+Each restaurant block follows this pattern:
+```
+[cuisine tags\\\name\\\service type\\\location\\\price range](disney_url)
 ```
 
-**Edge function changes** (`dining-availability-check/index.ts`):
-- Add handling for `body.diagnose === true` that calls `/diagnose` on Railway instead of `/check`
-- Add handling for `body.batch_diagnose` with array of URLs
+**Column mapping:**
+| Scraped Field | DB Column |
+|---|---|
+| Restaurant name | `name` |
+| Disney URL path | `disney_url` (converted to .com) |
+| Location text | `location` |
+| Park/Resort/Springs | `location_type` |
+| Price range text | `price_range` |
+| Cuisine tags | `cuisine` |
+| Table/Quick Service | `requires_reservation`, `accepts_walk_ins` |
+| Has "Check Availability" link | `requires_reservation: true` |
+
+**URL conversion:** Scraped URLs use `.co.uk` domain (geo-redirect). Convert to `disneyworld.disney.go.com` for the US version.
 
 **Files modified:**
-1. Railway `index.js` — add `/diagnose` and `/batch-test` endpoints
-2. `supabase/functions/dining-availability-check/index.ts` — add diagnose pass-through
+1. No codebase changes needed -- this is a data-only operation
+2. Database: ~335 new rows inserted into `restaurants` table via insert tool
 
-### What You Need To Do
-- Update the Railway `index.js` with the new endpoints (I'll provide the exact code)
-- I'll update and deploy the edge function
-- Then we run the batch test and fix any selector gaps
+### What You'll Get
+A complete database of all 408 Disney World dining locations with accurate URLs, locations, cuisine types, and price ranges -- ready for the dining alerts feature to reference.
 
