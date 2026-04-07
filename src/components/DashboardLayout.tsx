@@ -13,6 +13,8 @@ const sidebarNav = [
   { icon: Sparkles, label: "Enchanting Extras", path: "/event-alerts" },
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
+  { icon: Camera, label: "Photo Fun", path: "/photo-fun" },
+  { icon: Gamepad2, label: "Line Games", path: "/ride-line-quest" },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
   { icon: Radio, label: "Magic Beacon", path: "/magic-beacon" },

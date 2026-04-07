@@ -884,12 +884,6 @@ export default function LivePark() {
               {tab.label}
             </button>
           ))}
-          {["line-games","photo-fun","magic-beacon"].map(sp => (
-            <button key={sp} onClick={() => setActiveSubPage(sp as any)}
-              className={`px-3 py-2 text-xs font-semibold transition-colors whitespace-nowrap ${activeSubPage === sp ? "text-secondary border-b-2 border-secondary -mb-px" : "text-muted-foreground hover:text-foreground"}`}>
-              {sp === "line-games" ? "🎮 Line Games" : sp === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon"}
-            </button>
-          ))}
         </div>}
         {/* Current view label on mobile */}
         {!hashSection && <div className="md:hidden flex items-center justify-between">
