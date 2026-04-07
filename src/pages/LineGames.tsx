@@ -55,6 +55,10 @@ export default function LineGames() {
     return <WhereAmI onClose={() => setActiveGame(null)} />;
   }
 
+  if (activeGame === "trivia") {
+    return <DisneyTrivia onClose={() => setActiveGame(null)} />;
+  }
+
   return (
     <DashboardLayout title="🎮 Line Games" subtitle="Fun while you wait in line!">
       <div className="space-y-5">
