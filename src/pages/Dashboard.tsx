@@ -85,7 +85,7 @@ const Dashboard = () => {
         const tripId = trips[0].id;
         const budget = trips[0].estimated_total || 0;
         const { data: expenses } = await supabase.from("trip_expenses").select("amount").eq("trip_id", tripId);
-        const total = (expenses || []).reduce((s, e) => s + parseFloat(e.amount), 0);
+        const total = (expenses || []).reduce((s, e) => s + parseFloat(String(e.amount)), 0);
         setTripExpenses({ total, budget });
       });
 
@@ -132,13 +132,18 @@ const Dashboard = () => {
   const upcomingDates = (() => {
     if (mostRecentTrip?.start_date && daysToTrip !== null && daysToTrip <= 70 && mostRecentTrip.itinerary) {
       // Use trip dates
-      return mostRecentTrip.itinerary.slice(0, 5).map((day: any, i: number) => ({
-        date: day.date,
-        park: day.park,
-        parkEmoji: day.parkEmoji,
-        crowdLevel: day.crowdLevel,
-        weather: weatherForecast[i] || null,
-      }));
+      return mostRecentTrip.itinerary.slice(0, 5).map((day: any, i: number) => {
+        const w = weatherForecast[i] || null;
+        return {
+          date: day.date,
+          park: day.park,
+          parkEmoji: day.parkEmoji,
+          crowdLevel: w?.crowdLevel ?? day.crowdLevel,
+          crowdLabel: w?.crowdLabel ?? (day.crowdLevel <= 3 ? "Low" : day.crowdLevel <= 5 ? "Moderate" : day.crowdLevel <= 7 ? "Busy" : "Packed"),
+          crowdColor: w?.crowdColor ?? (day.crowdLevel <= 3 ? "green" : day.crowdLevel <= 5 ? "yellow" : day.crowdLevel <= 7 ? "orange" : "red"),
+          weather: w,
+        };
+      });
     }
     // Use next 5 days with weather
     return weatherForecast.slice(0, 5).map((w: any) => ({
@@ -146,6 +151,8 @@ const Dashboard = () => {
       park: null,
       parkEmoji: null,
       crowdLevel: w.crowdLevel,
+      crowdLabel: w.crowdLabel,
+      crowdColor: w.crowdColor,
       weather: w,
     }));
   })();
@@ -337,9 +344,12 @@ const Dashboard = () => {
                           {w.windSpeed > 15 && <p className="text-xs text-muted-foreground">💨 {w.windSpeed} mph</p>}
                         </>
                       )}
-                      <div className="flex items-center justify-center gap-1 mt-1.5">
-                        <div className={`w-2 h-2 rounded-full ${crowdDot(day.crowdColor || "green")}`} />
-                        <span className={`text-[10px] font-semibold ${crowdColor(day.crowdLevel)}`}>{day.crowdLabel}</span>
+                      <div className="mt-2 pt-2 border-t border-white/8">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <div className={`w-2.5 h-2.5 rounded-full ${crowdDot(day.crowdColor || "green")}`} />
+                          <span className={`text-xs font-bold ${crowdColor(day.crowdLevel)}`}>{day.crowdLevel}/10</span>
+                        </div>
+                        <p className={`text-[10px] font-semibold mt-0.5 ${crowdColor(day.crowdLevel)}`}>👥 {day.crowdLabel || "Unknown"}</p>
                       </div>
                       {w?.rainChance >= 40 && <p className="text-[10px] text-yellow-400 mt-1">⚠️ Rain likely</p>}
                       {w?.isGoodDay && <p className="text-[10px] text-green-400 mt-1">✅ Great day!</p>}
