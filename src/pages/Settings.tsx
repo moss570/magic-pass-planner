@@ -5,15 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, ClipboardCopy, Loader2 } from "lucide-react";
+import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, ClipboardCopy, Loader2, Trash2, Pencil, Eye } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const Settings = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [firstName, setFirstName] = useState("");
@@ -427,38 +429,7 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      {/* Section 5: Trip Profiles */}
-      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg">🎒 My Saved Trip Profiles</CardTitle>
-          <CardDescription>Save your group, preferences, and past trips for quick planning</CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-primary/25 bg-[var(--muted)]/60 p-4 space-y-2">
-              <p className="text-sm font-bold text-foreground">🏰 Moss Family — May 2026</p>
-              <p className="text-xs text-muted-foreground">Magic Kingdom · May 20–23 · Party of 5</p>
-              <div className="flex flex-wrap gap-1.5">
-                <span className="text-[10px] bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded-full">Incredi-Pass ×2</span>
-                <span className="text-[10px] bg-muted text-muted-foreground font-semibold px-2 py-0.5 rounded-full">Day Ticket ×2</span>
-              </div>
-              <div className="flex gap-2 pt-1">
-                <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs">Edit</Button>
-                <Button size="sm" className="text-xs">View Itinerary →</Button>
-              </div>
-            </div>
-            <div className="rounded-xl border border-primary/10 bg-[var(--muted)]/30 p-4 space-y-2 opacity-80">
-              <p className="text-sm font-bold text-foreground">🌍 EPCOT Food & Wine — Oct 2025</p>
-              <p className="text-xs text-muted-foreground">EPCOT · Oct 14–16 · Party of 2</p>
-              <span className="text-[10px] text-green-400 font-semibold">Completed ✅</span>
-              <div className="pt-1">
-                <Button variant="outline" size="sm" className="border-muted text-muted-foreground hover:text-foreground text-xs">View Summary</Button>
-              </div>
-            </div>
-          </div>
-          <button className="w-full rounded-xl border-2 border-dashed border-primary/30 py-4 text-sm font-medium text-primary hover:border-primary/60 transition-colors">+ Create New Trip Profile</button>
-        </CardContent>
-      </Card>
+      <TripProfilesSection userId={user?.id} navigate={navigate} />
 
       {/* Section 6: Referral Program */}
       <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden">
@@ -544,6 +515,158 @@ const Settings = () => {
   );
 };
 
+
+// Trip Profiles Section Component
+function TripProfilesSection({ userId, navigate }: { userId?: string; navigate: ReturnType<typeof useNavigate> }) {
+  const [trips, setTrips] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [summaryTrip, setSummaryTrip] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("saved_trips")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setTrips(data || []);
+        setLoading(false);
+      });
+  }, [userId]);
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("saved_trips").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete trip");
+    } else {
+      setTrips((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Trip deleted");
+    }
+  };
+
+  const isPast = (endDate: string | null) => {
+    if (!endDate) return false;
+    return new Date(endDate) < new Date();
+  };
+
+  const formatDateRange = (start: string | null, end: string | null) => {
+    if (!start) return "";
+    const s = new Date(start);
+    const e = end ? new Date(end) : null;
+    const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+    if (e) return `${s.toLocaleDateString("en-US", opts)}–${e.toLocaleDateString("en-US", opts)}`;
+    return s.toLocaleDateString("en-US", opts);
+  };
+
+  const partySize = (t: any) => (t.adults || 0) + (t.children || 0);
+
+  return (
+    <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
+      <CardHeader className="p-4 md:p-6">
+        <CardTitle className="text-base md:text-lg">🎒 My Saved Trip Profiles</CardTitle>
+        <CardDescription>Save your group, preferences, and past trips for quick planning</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
+        {loading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading trips…
+          </div>
+        ) : trips.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No saved trips yet. Create one from the Trip Planner or tap below!</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {trips.map((trip) => {
+              const past = isPast(trip.end_date);
+              return (
+                <div
+                  key={trip.id}
+                  className={`rounded-xl border p-4 space-y-2 ${past ? "border-primary/10 bg-muted/30 opacity-80" : "border-primary/25 bg-muted/60"}`}
+                >
+                  <p className="text-sm font-bold text-foreground">
+                    {past ? "🌍" : "🏰"} {trip.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {trip.parks?.join(", ") || "No parks"} · {formatDateRange(trip.start_date, trip.end_date)}
+                    {partySize(trip) > 0 ? ` · Party of ${partySize(trip)}` : ""}
+                  </p>
+                  {trip.ll_option && (
+                    <span className="text-[10px] bg-primary/15 text-primary font-semibold px-2 py-0.5 rounded-full">
+                      {trip.ll_option === "multi" ? "LL Multi Pass" : trip.ll_option === "individual" ? "Individual LL" : trip.ll_option}
+                    </span>
+                  )}
+                  {past && <span className="text-[10px] text-green-400 font-semibold block">Completed ✅</span>}
+                  <div className="flex gap-2 pt-1">
+                    {past ? (
+                      <Button variant="outline" size="sm" className="border-muted text-muted-foreground hover:text-foreground text-xs" onClick={() => setSummaryTrip(trip)}>
+                        <Eye className="w-3 h-3 mr-1" /> View Summary
+                      </Button>
+                    ) : (
+                      <>
+                        <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs" onClick={() => navigate("/trip-planner", { state: { tripId: trip.id } })}>
+                          <Pencil className="w-3 h-3 mr-1" /> Edit
+                        </Button>
+                        <Button size="sm" className="text-xs" onClick={() => setSummaryTrip(trip)}>
+                          <Eye className="w-3 h-3 mr-1" /> View Summary
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10 text-xs" onClick={() => handleDelete(trip.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <button
+          className="w-full rounded-xl border-2 border-dashed border-primary/30 py-4 text-sm font-medium text-primary hover:border-primary/60 transition-colors"
+          onClick={() => navigate("/trip-planner")}
+        >
+          + Create New Trip Profile
+        </button>
+      </CardContent>
+
+      {/* Summary Dialog */}
+      <Dialog open={!!summaryTrip} onOpenChange={(open) => !open && setSummaryTrip(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg">📋 {summaryTrip?.name}</DialogTitle>
+          </DialogHeader>
+          {summaryTrip && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div><span className="text-muted-foreground">Parks:</span> <span className="text-foreground">{summaryTrip.parks?.join(", ") || "—"}</span></div>
+                <div><span className="text-muted-foreground">Dates:</span> <span className="text-foreground">{formatDateRange(summaryTrip.start_date, summaryTrip.end_date) || "—"}</span></div>
+                <div><span className="text-muted-foreground">Adults:</span> <span className="text-foreground">{summaryTrip.adults ?? 0}</span></div>
+                <div><span className="text-muted-foreground">Children:</span> <span className="text-foreground">{summaryTrip.children ?? 0}</span></div>
+                <div><span className="text-muted-foreground">Budget:</span> <span className="text-foreground">${summaryTrip.budget?.toLocaleString() ?? "—"}</span></div>
+                <div><span className="text-muted-foreground">Est. Total:</span> <span className="text-foreground">${summaryTrip.estimated_total?.toLocaleString() ?? "—"}</span></div>
+                <div><span className="text-muted-foreground">LL Option:</span> <span className="text-foreground">{summaryTrip.ll_option || "—"}</span></div>
+                <div><span className="text-muted-foreground">Ride Pref:</span> <span className="text-foreground">{summaryTrip.ride_preference || "—"}</span></div>
+              </div>
+              {summaryTrip.special_notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Notes:</p>
+                  <p className="text-xs text-foreground bg-muted/50 rounded-lg p-2">{summaryTrip.special_notes}</p>
+                </div>
+              )}
+              {summaryTrip.itinerary && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Itinerary:</p>
+                  <pre className="text-[10px] text-foreground bg-muted/50 rounded-lg p-2 overflow-x-auto max-h-60 whitespace-pre-wrap">
+                    {typeof summaryTrip.itinerary === "string" ? summaryTrip.itinerary : JSON.stringify(summaryTrip.itinerary, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
+}
 
 // Disney Account Connect Component
 function DisneyConnectSection() {
