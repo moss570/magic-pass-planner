@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Gamepad2, MessageSquare, Image, HelpCircle, Shield, RefreshCw,
+  Gamepad2, MessageSquare, Image, HelpCircle, Shield, RefreshCw, Globe,
   Edit2, Trash2, Check, X, Send, Eye, Archive, ChevronDown, ChevronUp,
   TrendingUp, Clock, Users, Star, Plus, Search, Calendar, Activity, AlertTriangle, Play
 } from "lucide-react";
@@ -44,6 +44,9 @@ export default function AdminCommandCenter() {
 
   // Events data
   const [beaconEvents, setBeaconEvents] = useState<any[]>([]);
+  const [newsSources, setNewsSources] = useState<any[]>([]);
+  const [showAddSource, setShowAddSource] = useState(false);
+  const [newSource, setNewSource] = useState({ name: "", url: "", category: "disney_deals", notes: "", scrape_frequency: "daily" });
   const [eventRsvps, setEventRsvps] = useState<Record<string, any[]>>({});
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [editingEvent, setEditingEvent] = useState<any>(null);
@@ -120,6 +123,10 @@ export default function AdminCommandCenter() {
         setMessages(data || []);
       }
 
+      if (t === "sources") {
+        const { data: src } = await supabase.from("news_sources").select("*").order("category").order("name");
+        setNewsSources(src || []);
+      }
       if (t === "events") {
         const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).order("created_at", { ascending: false });
         setBeaconEvents(events || []);
@@ -298,6 +305,7 @@ export default function AdminCommandCenter() {
     { id: "trivia", label: "Trivia Questions", icon: HelpCircle, badge: triviaQuestions.filter(q => q.is_active).length },
     { id: "photos", label: "Photo Review", icon: Image, badge: pendingPhotos.length },
     { id: "messages", label: "User Messages", icon: MessageSquare, badge: messages.filter(m => m.status === "unread").length },
+    { id: "sources", label: "News Sources", icon: Globe },
   ];
 
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
@@ -975,6 +983,91 @@ export default function AdminCommandCenter() {
           </div>
         )}
       </div>
+
+        {/* SOURCES TAB */}
+        {tab === "sources" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-foreground">Intelligence Sources ({newsSources.length})</p>
+                <p className="text-xs text-muted-foreground">Sources Clark checks 5x daily for Disney deals and news</p>
+              </div>
+              <button onClick={() => setShowAddSource(s => !s)}
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2"
+                style={{ background: "#F5C842" }}>
+                + Add Source
+              </button>
+            </div>
+            {showAddSource && (
+              <div className="rounded-xl p-4 border border-primary/20" style={{ background: "#111827" }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <input value={newSource.name} onChange={e => setNewSource(s => ({...s, name: e.target.value}))} placeholder="Source name *"
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                  <input value={newSource.url} onChange={e => setNewSource(s => ({...s, url: e.target.value}))} placeholder="URL * (https://...)"
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                  <select value={newSource.category} onChange={e => setNewSource(s => ({...s, category: e.target.value}))}
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    {["disney_deals","disney_news","ap_exclusive","dining","orlando_attractions","entertainment"].map(c => <option key={c} value={c}>{c.replace("_"," ")}</option>)}
+                  </select>
+                  <select value={newSource.scrape_frequency} onChange={e => setNewSource(s => ({...s, scrape_frequency: e.target.value}))}
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    {["realtime","daily","weekly"].map(f => <option key={f} value={f}>{f}</option>)}
+                  </select>
+                </div>
+                <input value={newSource.notes} onChange={e => setNewSource(s => ({...s, notes: e.target.value}))} placeholder="Notes (optional)"
+                  className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                <button onClick={async () => {
+                  if (!newSource.name || !newSource.url) return;
+                  await supabase.from("news_sources").insert(newSource);
+                  toast({ title: "✅ Source added!" });
+                  setShowAddSource(false);
+                  setNewSource({ name: "", url: "", category: "disney_deals", notes: "", scrape_frequency: "daily" });
+                  loadTab("sources");
+                }} className="px-6 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                  Add Source
+                </button>
+              </div>
+            )}
+            <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "#111827" }}>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/8">
+                    <th className="text-left px-4 py-3 text-xs text-primary">Source</th>
+                    <th className="text-left px-4 py-3 text-xs text-primary hidden md:table-cell">Category</th>
+                    <th className="text-left px-4 py-3 text-xs text-primary hidden md:table-cell">Frequency</th>
+                    <th className="text-left px-4 py-3 text-xs text-primary hidden lg:table-cell">Last Checked</th>
+                    <th className="px-4 py-3 text-xs text-primary">Active</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {newsSources.map((src, i) => (
+                    <tr key={src.id} className={i < newsSources.length - 1 ? "border-b border-white/5" : ""}>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium text-foreground">{src.name}</p>
+                        <a href={src.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate block max-w-xs">{src.url}</a>
+                        {src.notes && <p className="text-xs text-muted-foreground">{src.notes}</p>}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground capitalize">{src.category?.replace("_"," ")}</span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground hidden md:table-cell">{src.scrape_frequency}</td>
+                      <td className="px-4 py-3 text-xs text-muted-foreground hidden lg:table-cell">{src.last_scraped ? new Date(src.last_scraped).toLocaleString() : "Never"}</td>
+                      <td className="px-4 py-3">
+                        <button onClick={async () => {
+                          await supabase.from("news_sources").update({ is_active: !src.is_active }).eq("id", src.id);
+                          loadTab("sources");
+                        }} className={`text-xs px-2.5 py-1 rounded-full font-semibold ${src.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                          {src.is_active ? "✅ On" : "❌ Off"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
     </div>
   );
 }

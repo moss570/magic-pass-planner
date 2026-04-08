@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Castle, Info } from "lucide-react";
 import CompassButton from "@/components/CompassButton";
 import DashboardLayout from "@/components/DashboardLayout";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -30,6 +32,31 @@ const today = 3;
 
 const APCommandCenter = () => {
   const [discountFilter, setDiscountFilter] = useState("All");
+  const [liveOffers, setLiveOffers] = useStateOld<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("disney_offers")
+      .select("*")
+      .eq("is_active", true)
+      .order("importance", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(8)
+      .then(({ data }) => setLiveOffers(data || []));
+  }, []);
+  const [liveOffers, setLiveOffers] = useState<any[]>([]);
+  const [offersLoading, setOffersLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from("disney_offers")
+      .select("*")
+      .eq("is_active", true)
+      .order("importance", { ascending: false })
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setLiveOffers(data || []);
+        setOffersLoading(false);
+      });
+  }, []);
   const [hotelAlert, setHotelAlert] = useState(true);
   const [merchAlert, setMerchAlert] = useState(true);
   const [billAmount, setBillAmount] = useState("120");
@@ -150,6 +177,40 @@ const APCommandCenter = () => {
               📅 Add Best Days to My Calendar
             </button>
           </div>
+        </div>
+
+        {/* LIVE DISNEY OFFERS */}
+        <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">🚨 Current Disney Offers</h2>
+              <p className="text-xs text-muted-foreground">Live from disneyworld.disney.go.com · Updated 5x daily</p>
+            </div>
+            <Link to="/feed" className="text-xs text-primary hover:underline">Insider Feed →</Link>
+          </div>
+          {liveOffers.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-3">Loading current offers...</p>
+          ) : (
+            <div className="space-y-3">
+              {liveOffers.map((offer: any) => (
+                <div key={offer.id} className={`rounded-xl p-3 border ${offer.importance === "breaking" ? "border-red-500/30 bg-red-500/5" : "border-white/8 bg-white/3"}`}>
+                  <div className="flex items-start gap-2 flex-wrap mb-1">
+                    {offer.importance === "breaking" && <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-bold">🚨 BREAKING</span>}
+                    {offer.importance === "high" && <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 font-semibold">⚡ HOT</span>}
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-muted-foreground capitalize">{offer.category?.replace("_"," ")}</span>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{offer.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{offer.summary}</p>
+                  {offer.valid_through && (
+                    <p className="text-xs text-yellow-400 mt-1">⏰ Valid through {new Date(offer.valid_through + "T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</p>
+                  )}
+                  {offer.offer_url && (
+                    <a href={offer.offer_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-1.5 block">Book at Disney World →</a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Section 3: AP Discounts */}
