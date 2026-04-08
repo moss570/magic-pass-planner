@@ -997,7 +997,6 @@ export default function AdminCommandCenter() {
             </div>
           </div>
         )}
-      </div>
 
         {/* SOURCES TAB */}
         {tab === "sources" && (
