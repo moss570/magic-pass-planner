@@ -1,52 +1,41 @@
 
-# "Connected" Social & Alert Ecosystem — Build Plan
 
-## Phase 1: Database Schema (Migration)
-- Add `username` and `membership_category` columns to `users_profile`
-- Create `user_blocks` table (blocker_id, blocked_id, created_at) with RLS
-- Create `social_posts` table (user_id, content, image_url, post_type, created_at) with RLS
-- Create `messages` table (sender_id, receiver_id, content, message_type, reference_id, is_read, created_at) with RLS
-- Update existing `friend_requests` table if needed for block status
+# Line Mind Game + Admin Management
 
-## Phase 2: Profile Enhancements (Settings Page)
-- Add Username field and Membership Category dropdown (Annual Passholder, DVC Member, Out of State Traveler) to Settings
-- Ensure these persist to `users_profile`
+## Overview
+Build "Line Mind" — a forehead-guessing party game (like the popular "heads up" format) with Disney-only words. Players hold the phone to their forehead while friends give clues. Tilt to answer. Admins manage the word bank from the Admin Command Center.
 
-## Phase 3: QR Friendship System (Friends Page)
-- Install `react-qr-code` for QR generation and `html5-qrcode` for scanning
-- Generate QR from user's existing `qr_token` field
-- Add "Scan to Add" button that opens camera scanner
-- Add manual code entry fallback
-- Scanning creates a friend request (pending → accepted flow)
+## 1. Database Migration
+- Create `headsup_words` table: `id` (uuid), `word` (text), `category` (text: characters/rides/food/movies/parks/general), `is_active` (boolean), `created_at` (timestamptz)
+- Seed ~50 Disney words across categories
+- RLS: public SELECT for active words; admin-only INSERT/UPDATE/DELETE
 
-## Phase 4: Social Discovery Feed (New `/feed` Page)
-- Vertical feed showing user posts and admin tips
-- "Connect" / "Add Friend" button on each post
-- Post creation form (text + optional image URL)
-- Block user option on posts
-- Add Feed to sidebar navigation
+## 2. Game Component: `src/components/LineMind.tsx`
+- **Menu screen**: Pick category (All, Characters, Rides, Food, Movies, Parks), see rules, tap "Start"
+- **Countdown**: 3-2-1 animation, prompts user to raise phone to forehead
+- **Playing screen**: Large centered word, 60-second timer, device tilt detection via DeviceOrientationEvent (tilt down = correct/green flash, tilt up = skip/red flash), fallback tap buttons for non-gyro devices
+- **Game over**: Score summary with correct/skipped word lists, play again button
 
-## Phase 5: Friends & Connections Screen (Update Friends Page)
-- "My Friends" tab with membership type badges
-- "Pending Requests" tab (incoming/outgoing)
-- "My QR Code" tab (existing, make functional)
-- Show membership category (AP, DVC, Out of State) next to each friend
+## 3. Line Games Integration: `src/pages/LineGames.tsx`
+- Add new card: id `"linemind"`, emoji "🤳", title "Line Mind", subtitle "Hold phone to forehead", tag "Party", color `#F59E0B`
+- Route to `LineMind` component when selected
 
-## Phase 6: Unified Command Inbox (New `/inbox` Page + Header Bell)
-- Bell icon in header with unread count badge
-- Bell dropdown for quick preview of recent messages
-- Full `/inbox` page with thread types:
-  - Peer-to-peer messages (friends only)
-  - System alerts (dining alerts, event alerts)
-  - Magic Beacon alerts (same-park notifications)
-- "Book Now" buttons on dining alert threads
-- Only friends can message each other
+## 4. Admin Tab: `src/pages/AdminCommandCenter.tsx`
+- Add `"linemind"` to the `Tab` type
+- New tab with Smartphone icon showing:
+  - Word list with category filter and search
+  - Add new word form (word + category dropdown)
+  - Inline edit/delete for existing words
+  - Toggle active/inactive
+- Follows existing trivia admin patterns
 
-## Navigation Updates
-- Add "Feed" to sidebar (with icon)
-- Add "Inbox" to sidebar (with unread badge)
-- Add bell icon to header
+## 5. Bug Fix: `src/pages/Settings.tsx`
+- Line 105: Replace `toast({ title: ..., description: ..., variant: ... })` with `toast.error("Username required — please set a username for your public profile")`
 
-## Libraries to Install
-- `react-qr-code` — QR code generation
-- `html5-qrcode` — Camera-based QR scanning
+## Files Changed
+1. **New migration** — `headsup_words` table + seed data
+2. **New** `src/components/LineMind.tsx` — game component
+3. **Edit** `src/pages/LineGames.tsx` — add Line Mind card
+4. **Edit** `src/pages/AdminCommandCenter.tsx` — add linemind admin tab
+5. **Edit** `src/pages/Settings.tsx` — fix toast build error
+
