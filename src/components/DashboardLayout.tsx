@@ -20,7 +20,7 @@ const sidebarNav = [
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
   { icon: Radio, label: "Magic Beacon", path: "/magic-beacon" },
-  { icon: Megaphone, label: "Insider Feed", path: "/feed" },
+  { icon: Megaphone, label: "Social Feed", path: "/feed" },
   { icon: UserPlus, label: "Friends", path: "/friends" },
   { icon: Wallet, label: "Budget Manager", path: "/budget-manager" },
   { icon: Settings, label: "Settings", path: "/settings" },
