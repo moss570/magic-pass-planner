@@ -102,7 +102,7 @@ const Settings = () => {
 
   const handleSaveAccount = async () => {
     if (!username.trim()) {
-      toast({ title: "Username required", description: "Please set a username for your public profile on Social Feed", variant: "destructive" });
+      toast.error("Username required — please set a username for your public profile");
       return;
     }
     if (!user) return;

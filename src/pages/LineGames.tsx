@@ -3,6 +3,7 @@ import { Gamepad2, Camera, Search, Zap, Trophy } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
+import LineMind from "@/components/LineMind";
 
 interface GameCard {
   id: string;
