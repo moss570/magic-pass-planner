@@ -136,6 +136,14 @@ export default function AdminCommandCenter() {
         const { data: src } = await supabase.from("news_sources").select("*").order("category").order("name");
         setNewsSources(src || []);
       }
+
+      if (t === "linemind") {
+        const { data } = await (supabase.from("headsup_words" as any).select("*") as any).order("category").order("word");
+        setLineMindWords(data || []);
+      }
+        const { data: src } = await supabase.from("news_sources").select("*").order("category").order("name");
+        setNewsSources(src || []);
+      }
       if (t === "events") {
         const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).order("created_at", { ascending: false });
         setBeaconEvents(events || []);
