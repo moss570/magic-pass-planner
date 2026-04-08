@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Castle, Info } from "lucide-react";
 import CompassButton from "@/components/CompassButton";
 import DashboardLayout from "@/components/DashboardLayout";
