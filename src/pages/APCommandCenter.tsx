@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Castle, Info } from "lucide-react";
 import CompassButton from "@/components/CompassButton";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -32,17 +32,6 @@ const today = 3;
 
 const APCommandCenter = () => {
   const [discountFilter, setDiscountFilter] = useState("All");
-  const [liveOffers, setLiveOffers] = useStateOld<any[]>([]);
-
-  useEffect(() => {
-    supabase.from("disney_offers")
-      .select("*")
-      .eq("is_active", true)
-      .order("importance", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(8)
-      .then(({ data }) => setLiveOffers(data || []));
-  }, []);
   const [liveOffers, setLiveOffers] = useState<any[]>([]);
   const [offersLoading, setOffersLoading] = useState(true);
 
