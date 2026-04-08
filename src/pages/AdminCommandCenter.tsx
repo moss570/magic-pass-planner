@@ -320,6 +320,7 @@ export default function AdminCommandCenter() {
     { id: "photos", label: "Photo Review", icon: Image, badge: pendingPhotos.length },
     { id: "messages", label: "User Messages", icon: MessageSquare, badge: messages.filter(m => m.status === "unread").length },
     { id: "sources", label: "News Sources", icon: Globe },
+    { id: "linemind", label: "Line Mind Words", icon: Smartphone },
   ];
 
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
