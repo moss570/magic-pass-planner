@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          id: string
+          is_sent: boolean | null
+          link_url: string | null
+          notification_type: string | null
+          sent_at: string | null
+          target_audience: string | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          id?: string
+          is_sent?: boolean | null
+          link_url?: string | null
+          notification_type?: string | null
+          sent_at?: string | null
+          target_audience?: string | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          id?: string
+          is_sent?: boolean | null
+          link_url?: string | null
+          notification_type?: string | null
+          sent_at?: string | null
+          target_audience?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       beacon_events: {
         Row: {
           badge: string | null
@@ -229,6 +265,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      disney_offers: {
+        Row: {
+          category: string
+          created_at: string | null
+          eligible_for: string[] | null
+          full_details: string | null
+          id: string
+          importance: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          offer_url: string | null
+          source: string | null
+          summary: string
+          title: string
+          updated_at: string | null
+          valid_from: string | null
+          valid_through: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          eligible_for?: string[] | null
+          full_details?: string | null
+          id?: string
+          importance?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          offer_url?: string | null
+          source?: string | null
+          summary: string
+          title: string
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_through?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          eligible_for?: string[] | null
+          full_details?: string | null
+          id?: string
+          importance?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          offer_url?: string | null
+          source?: string | null
+          summary?: string
+          title?: string
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_through?: string | null
+        }
+        Relationships: []
       }
       disney_sessions: {
         Row: {
@@ -712,6 +802,45 @@ export type Database = {
         }
         Relationships: []
       }
+      news_sources: {
+        Row: {
+          added_by: string | null
+          category: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_scraped: string | null
+          name: string
+          notes: string | null
+          scrape_frequency: string | null
+          url: string
+        }
+        Insert: {
+          added_by?: string | null
+          category: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scraped?: string | null
+          name: string
+          notes?: string | null
+          scrape_frequency?: string | null
+          url: string
+        }
+        Update: {
+          added_by?: string | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_scraped?: string | null
+          name?: string
+          notes?: string | null
+          scrape_frequency?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       photo_submissions: {
         Row: {
           created_at: string | null
@@ -791,6 +920,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      post_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          reaction_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       restaurants: {
         Row: {
@@ -915,6 +1068,57 @@ export type Database = {
           start_date?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      social_feed: {
+        Row: {
+          author: string | null
+          author_emoji: string | null
+          author_role: string | null
+          category: string
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          is_pinned: boolean | null
+          is_published: boolean | null
+          like_count: number | null
+          link_label: string | null
+          link_url: string | null
+          tags: string[] | null
+        }
+        Insert: {
+          author?: string | null
+          author_emoji?: string | null
+          author_role?: string | null
+          category: string
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean | null
+          is_published?: boolean | null
+          like_count?: number | null
+          link_label?: string | null
+          link_url?: string | null
+          tags?: string[] | null
+        }
+        Update: {
+          author?: string | null
+          author_emoji?: string | null
+          author_role?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_pinned?: boolean | null
+          is_published?: boolean | null
+          like_count?: number | null
+          link_label?: string | null
+          link_url?: string | null
+          tags?: string[] | null
         }
         Relationships: []
       }
