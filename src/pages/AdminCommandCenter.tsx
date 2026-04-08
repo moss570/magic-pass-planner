@@ -62,6 +62,14 @@ export default function AdminCommandCenter() {
   const [diagRunning, setDiagRunning] = useState(false);
   const [diagProgress, setDiagProgress] = useState("");
 
+  // Line Mind data
+  const [lineMindWords, setLineMindWords] = useState<any[]>([]);
+  const [lineMindSearch, setLineMindSearch] = useState("");
+  const [lineMindCategory, setLineMindCategory] = useState("all");
+  const [showAddWord, setShowAddWord] = useState(false);
+  const [newWord, setNewWord] = useState({ word: "", category: "characters" });
+  const [editingWord, setEditingWord] = useState<any>(null);
+
   useEffect(() => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
       navigate("/dashboard");
