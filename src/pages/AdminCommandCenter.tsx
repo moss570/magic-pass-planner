@@ -1206,6 +1206,7 @@ export default function AdminCommandCenter() {
           </div>
         )}
 
-
+      </div>
+    </div>
   );
 }
