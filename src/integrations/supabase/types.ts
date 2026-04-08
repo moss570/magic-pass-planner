@@ -807,6 +807,30 @@ export type Database = {
         }
         Relationships: []
       }
+      headsup_words: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          word: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          word: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          word?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
