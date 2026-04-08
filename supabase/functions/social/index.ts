@@ -286,6 +286,76 @@ serve(async (req) => {
       return new Response(JSON.stringify({ expenses: expenses || [], settleUp, totalShared: (expenses || []).filter(e => e.expense_type === "shared").reduce((sum, e) => sum + e.amount, 0) }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // ── SEND FRIEND REQUEST BY USER ID ──────────────────────
+    if (action === "send-friend-request-by-id" && req.method === "POST") {
+      const { target_user_id, from_name } = await req.json();
+      if (!target_user_id) throw new Error("target_user_id required");
+      if (target_user_id === userId) throw new Error("Can't friend yourself");
+
+      // Check if already friends
+      const { data: existing } = await supabase.from("friendships")
+        .select("id").or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
+        .limit(1);
+      const alreadyFriends = existing?.some(f => 
+        (f.user_id_1 === userId && f.user_id_2 === target_user_id) ||
+        (f.user_id_1 === target_user_id && f.user_id_2 === userId)
+      );
+      if (alreadyFriends) return new Response(JSON.stringify({ error: "Already friends!" }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 });
+
+      // Check if request already sent
+      const { data: pendingReq } = await supabase.from("friend_requests")
+        .select("id").eq("from_user_id", userId).eq("to_user_id", target_user_id).eq("status", "pending").single();
+      if (pendingReq) return new Response(JSON.stringify({ error: "Request already sent!" }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 });
+
+      // Get sender name
+      const { data: myProfile } = await supabase.from("users_profile").select("username, first_name, last_name").eq("id", userId).single();
+      const myName = from_name || myProfile?.username || `${myProfile?.first_name || ""} ${myProfile?.last_name || ""}`.trim() || "A Magic Pass member";
+
+      // Get target email for notification
+      const { data: targetUser } = await supabase.auth.admin.getUserById(target_user_id);
+
+      // Create friend request
+      await supabase.from("friend_requests").insert({
+        from_user_id: userId,
+        to_user_id: target_user_id,
+        from_name: myName,
+        status: "pending",
+      });
+
+      // Send email notification
+      const brevoKey = Deno.env.get("BREVO_API_KEY");
+      if (brevoKey && targetUser?.user?.email) {
+        await fetch("https://api.brevo.com/v3/smtp/email", {
+          method: "POST",
+          headers: { "api-key": brevoKey, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender: { name: "Magic Pass Plus", email: "alerts@magicpassplus.com" },
+            to: [{ email: targetUser.user.email }],
+            subject: `${myName} wants to be your Magic Pass friend 🏰`,
+            htmlContent: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
+              <div style="background:linear-gradient(135deg,#080E1E,#0D1230);padding:28px;text-align:center;border-bottom:2px solid #F5C842;">
+                <p style="color:#F5C842;font-size:20px;font-weight:bold;margin:0;">🏰 Magic Pass Plus</p>
+              </div>
+              <div style="padding:28px;">
+                <p style="color:#F9FAFB;font-size:16px;margin:0 0 12px 0;">Hey! 👋</p>
+                <p style="color:#9CA3AF;font-size:14px;line-height:1.6;"><strong style="color:#F9FAFB;">${myName}</strong> saw your post on Magic Pass Social and wants to be your friend!</p>
+                <div style="text-align:center;margin:24px 0;">
+                  <a href="https://magicpassplus.com/friends" style="background:#F5C842;color:#080E1E;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">
+                    Accept Friend Request →
+                  </a>
+                </div>
+                <p style="color:#6B7280;font-size:12px;text-align:center;">Magic Pass Plus · magicpassplus.com</p>
+              </div>
+            </div>`,
+          }),
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, message: `Friend request sent to ${targetUser?.user?.email || "user"}` }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     throw new Error("Unknown action");
 
   } catch (error) {

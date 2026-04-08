@@ -101,6 +101,10 @@ const Settings = () => {
   };
 
   const handleSaveAccount = async () => {
+    if (!username.trim()) {
+      toast({ title: "Username required", description: "Please set a username for your public profile on Social Feed", variant: "destructive" });
+      return;
+    }
     if (!user) return;
     setSavingAccount(true);
     const updateData: any = {
@@ -161,8 +165,9 @@ const Settings = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Username <span className="text-muted-foreground/60">— Your public display name</span></label>
-              <Input value={username} onChange={(e) => setUsername(e.target.value.replace(/\s/g, "").toLowerCase())} placeholder="@magicfan123" className="bg-background/50 border-primary/20 text-sm" maxLength={30} />
+              <label className="text-xs text-muted-foreground mb-1 block">Username <span className="text-red-400 font-bold">*</span> <span className="text-muted-foreground/60">— Shown publicly on Social Feed</span></label>
+              <Input value={username} onChange={(e) => setUsername(e.target.value.replace(/\s/g, "").toLowerCase())} placeholder="@magicfan123" className="bg-background/50 border-primary/20 text-sm" maxLength={30} required />
+              <p className="text-xs text-muted-foreground mt-1">This is your public identity — your real name is never shown on Social Feed</p>
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Membership Category</label>

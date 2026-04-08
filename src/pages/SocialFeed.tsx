@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Heart, MessageCircle, Send, Image as ImageIcon, X, ChevronDown,
-  ChevronUp, Sparkles, MapPin, Camera, Star
+  ChevronUp, Sparkles, MapPin, Camera, Star, UserPlus
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,6 +58,8 @@ export default function SocialFeed() {
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [postingComment, setPostingComment] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("Magic Pass Member");
+  const [username, setUsername] = useState("");
+  const [myUserId, setMyUserId] = useState<string | null>(null);
 
   // New post state
   const [showCompose, setShowCompose] = useState(false);
@@ -70,9 +72,12 @@ export default function SocialFeed() {
 
   useEffect(() => {
     if (user) {
-      supabase.from("users_profile").select("first_name, last_name").eq("id", user.id).single()
+      setMyUserId(user.id);
+      supabase.from("users_profile").select("username, first_name, last_name").eq("id", user.id).single()
         .then(({ data }) => {
-          if (data) setDisplayName(`${data.first_name || ""} ${data.last_name || ""}`.trim() || "Magic Pass Member");
+          const uname = data?.username?.trim();
+          setUsername(uname || "");
+          setDisplayName(uname || `${data?.first_name || ""} ${data?.last_name || ""}`.trim() || "Magic Pass Member");
         });
     }
     // Load liked posts
@@ -122,14 +127,16 @@ export default function SocialFeed() {
         }
       }
 
+      const displayUsername = username || displayName;
       await supabase.from("social_feed").insert({
         user_id: user?.id,
-        display_name: displayName,
-        author: displayName,
+        display_name: displayUsername,
+        username: username || null,
+        author: displayUsername,
         author_role: "Magic Pass Member",
         author_emoji: "👤",
         content: newPostContent.trim(),
-        category: newPostCategory,
+        category: "community",
         post_type: "user",
         park: newPostPark || null,
         image_urls: imageUrls.length > 0 ? imageUrls : null,
@@ -137,7 +144,7 @@ export default function SocialFeed() {
         comment_count: 0,
         is_published: true,
         is_pinned: false,
-        tags: [newPostCategory, newPostPark].filter(Boolean),
+        tags: ["community", newPostPark].filter(Boolean),
       });
 
       toast({ title: "✅ Post shared!" });
@@ -187,7 +194,8 @@ export default function SocialFeed() {
       const { data: newComment } = await supabase.from("feed_comments").insert({
         post_id: postId,
         user_id: user?.id,
-        display_name: displayName,
+        display_name: username || displayName,
+        username: username || null,
         content: commentText[postId].trim(),
       }).select().single();
 
@@ -286,13 +294,6 @@ export default function SocialFeed() {
                 )}
 
                 <div className="flex flex-wrap gap-2 items-center">
-                  {/* Category selector */}
-                  <select value={newPostCategory} onChange={e => setNewPostCategory(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-white/10 focus:outline-none focus:border-primary/40"
-                    style={{ background: "#0D1230" }}>
-                    {POST_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                  </select>
-
                   {/* Park selector */}
                   <select value={newPostPark} onChange={e => setNewPostPark(e.target.value)}
                     className="px-2.5 py-1.5 rounded-lg text-xs border border-white/10 text-muted-foreground focus:outline-none focus:border-primary/40"
@@ -303,9 +304,12 @@ export default function SocialFeed() {
 
                   {/* Photo button */}
                   <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                    <Camera className="w-3.5 h-3.5" /> Photo
+                    <Camera className="w-3.5 h-3.5" /> Add Photo
                   </button>
                   <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleImageSelect} />
+
+                  {/* Always community — show badge */}
+                  <span className="text-xs px-2 py-1 rounded-full bg-secondary/20 text-secondary font-semibold">👥 Community Post</span>
                 </div>
 
                 <button onClick={submitPost} disabled={posting || !newPostContent.trim()}
@@ -411,6 +415,34 @@ export default function SocialFeed() {
                     <MessageCircle className="w-4 h-4" />
                     {post.comment_count || 0} {isCommentsOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
+                  {/* Add Friend button — only show on user posts that aren't the current user */}
+                  {post.post_type === "user" && post.user_id && post.user_id !== myUserId && session && (
+                    <button
+                      onClick={async () => {
+                        const email = ""; // We don't have email from post — use user_id approach
+                        // Send friend request via social edge function
+                        const resp = await fetch("https://wknelhrmgspuztehetpa.supabase.co/functions/v1/social?action=send-friend-request-by-id", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${session.access_token}`,
+                            "x-client-authorization": `Bearer ${session.access_token}`,
+                            "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+                          },
+                          body: JSON.stringify({ target_user_id: post.user_id, from_name: username || displayName }),
+                        });
+                        const data = await resp.json();
+                        if (data.success) {
+                          toast({ title: "✅ Friend request sent!", description: `Request sent to ${post.display_name || post.username}` });
+                        } else {
+                          toast({ title: data.error || "Already sent or already friends", variant: "destructive" });
+                        }
+                      }}
+                      className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors ml-auto"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" /> Add Friend
+                    </button>
+                  )}
                 </div>
 
                 {/* Comments section */}
