@@ -31,6 +31,7 @@ import PhotoContest from "./pages/PhotoContest";
 import AdminCommandCenter from "./pages/AdminCommandCenter";
 import MagicBeacon from "./pages/MagicBeacon";
 import PhotoFun from "./pages/PhotoFun";
+import SocialFeed from "./pages/SocialFeed";
 import EventAlerts from "./pages/EventAlerts";
 import LineGames from "./pages/LineGames";
 import Feed from "./pages/Feed";
@@ -71,6 +72,7 @@ const App = () => (
             <Route path="/admin/command-center" element={<ProtectedRoute><AdminCommandCenter /></ProtectedRoute>} />
             <Route path="/magic-beacon" element={<ProtectedRoute><MagicBeacon /></ProtectedRoute>} />
             <Route path="/photo-fun" element={<ProtectedRoute><PhotoFun /></ProtectedRoute>} />
+            <Route path="/feed" element={<ProtectedRoute><SocialFeed /></ProtectedRoute>} />
             <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
             <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
