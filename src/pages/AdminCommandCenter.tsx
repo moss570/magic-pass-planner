@@ -1083,6 +1083,129 @@ export default function AdminCommandCenter() {
           </div>
         )}
 
-    </div>
+        {/* ── LINE MIND WORDS ──────────────────────────────── */}
+        {tab === "linemind" && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input value={lineMindSearch} onChange={e => setLineMindSearch(e.target.value)} placeholder="Search words..."
+                  className="w-full pl-9 pr-4 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                  style={{ background: "#111827" }} />
+              </div>
+              <select value={lineMindCategory} onChange={e => setLineMindCategory(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#111827" }}>
+                <option value="all">All Categories</option>
+                {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <button onClick={() => setShowAddWord(s => !s)}
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2 shrink-0"
+                style={{ background: "#F5C842" }}>
+                <Plus className="w-4 h-4" /> Add Word
+              </button>
+            </div>
+
+            {/* Add word form */}
+            {showAddWord && (
+              <div className="rounded-xl p-5 border border-primary/20" style={{ background: "#111827" }}>
+                <p className="text-sm font-bold text-foreground mb-4">➕ New Line Mind Word</p>
+                <div className="flex gap-3 mb-3">
+                  <input value={newWord.word} onChange={e => setNewWord(w => ({...w, word: e.target.value}))}
+                    placeholder="Disney word or phrase *"
+                    className="flex-1 px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
+                    style={{ background: "#0D1230" }} />
+                  <select value={newWord.category} onChange={e => setNewWord(w => ({...w, category: e.target.value}))}
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowAddWord(false)} className="flex-1 py-2 rounded-lg border border-white/10 text-sm text-muted-foreground">Cancel</button>
+                  <button onClick={async () => {
+                    if (!newWord.word.trim()) { toast({ title: "Enter a word", variant: "destructive" }); return; }
+                    const { error } = await (supabase.from("headsup_words" as any).insert({ word: newWord.word.trim(), category: newWord.category, is_active: true }) as any);
+                    if (!error) { toast({ title: "✅ Word added!" }); setShowAddWord(false); setNewWord({ word: "", category: "characters" }); loadTab("linemind"); }
+                    else toast({ title: "Failed", description: error.message, variant: "destructive" });
+                  }} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Add Word</button>
+                </div>
+              </div>
+            )}
+
+            {/* Words list */}
+            {(() => {
+              const filtered = lineMindWords.filter(w => {
+                const matchSearch = !lineMindSearch || w.word.toLowerCase().includes(lineMindSearch.toLowerCase());
+                const matchCat = lineMindCategory === "all" || w.category === lineMindCategory;
+                return matchSearch && matchCat;
+              });
+              const catCounts: Record<string, number> = {};
+              lineMindWords.forEach(w => { catCounts[w.category] = (catCounts[w.category] || 0) + 1; });
+              return (
+                <>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {Object.entries(catCounts).map(([cat, count]) => (
+                      <span key={cat} className="px-2.5 py-1 rounded-full bg-white/8 text-muted-foreground">
+                        {cat}: {count}
+                      </span>
+                    ))}
+                    <span className="px-2.5 py-1 rounded-full bg-primary/20 text-primary font-semibold">
+                      Total: {lineMindWords.length}
+                    </span>
+                  </div>
+                  <div className="rounded-xl overflow-hidden border border-white/8" style={{ background: "#111827" }}>
+                    <div className="px-4 py-3 border-b border-white/8">
+                      <p className="text-xs font-bold text-foreground">Words ({filtered.length})</p>
+                    </div>
+                    <div className="divide-y divide-white/5" style={{ maxHeight: 600, overflowY: "auto" }}>
+                      {filtered.map(w => (
+                        <div key={w.id} className="px-4 py-3">
+                          {editingWord?.id === w.id ? (
+                            <div className="flex gap-2 items-center">
+                              <input value={editingWord.word} onChange={e => setEditingWord((ew: any) => ({...ew, word: e.target.value}))}
+                                className="flex-1 px-2 py-1.5 rounded border border-white/10 text-sm text-foreground bg-[#0D1230] focus:outline-none" />
+                              <select value={editingWord.category} onChange={e => setEditingWord((ew: any) => ({...ew, category: e.target.value}))}
+                                className="px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0D1230]">
+                                {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                              <button onClick={async () => {
+                                await (supabase.from("headsup_words" as any).update({ word: editingWord.word, category: editingWord.category }) as any).eq("id", editingWord.id);
+                                toast({ title: "✅ Word updated" }); setEditingWord(null); loadTab("linemind");
+                              }} className="px-3 py-1.5 rounded text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Save</button>
+                              <button onClick={() => setEditingWord(null)} className="px-2 py-1.5 rounded text-xs text-muted-foreground border border-white/10">✕</button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <span className="text-sm font-medium text-foreground">{w.word}</span>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-white/8 text-muted-foreground">{w.category}</span>
+                                {!w.is_active && <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">Inactive</span>}
+                              </div>
+                              <div className="flex gap-1 shrink-0">
+                                <button onClick={async () => {
+                                  await (supabase.from("headsup_words" as any).update({ is_active: !w.is_active }) as any).eq("id", w.id);
+                                  loadTab("linemind");
+                                }} className={`text-xs px-2 py-1 rounded-full font-semibold ${w.is_active ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
+                                  {w.is_active ? "On" : "Off"}
+                                </button>
+                                <button onClick={() => setEditingWord({...w})} className="p-1.5 rounded hover:bg-primary/10 text-muted-foreground hover:text-primary"><Edit2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={async () => {
+                                  if (!confirm("Delete this word?")) return;
+                                  await (supabase.from("headsup_words" as any).delete() as any).eq("id", w.id);
+                                  toast({ title: "Word deleted" }); loadTab("linemind");
+                                }} className="p-1.5 rounded hover:bg-red-500/10 text-muted-foreground hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
+
+
   );
 }
