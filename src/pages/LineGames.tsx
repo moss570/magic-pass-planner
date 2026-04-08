@@ -70,6 +70,10 @@ export default function LineGames() {
     return <DisneyTrivia onClose={() => setActiveGame(null)} />;
   }
 
+  if (activeGame === "linemind") {
+    return <LineMind onClose={() => setActiveGame(null)} />;
+  }
+
   return (
     <DashboardLayout title="🎮 Line Games" subtitle="Fun while you wait in line!">
       <div className="space-y-5">
