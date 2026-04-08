@@ -529,6 +529,44 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          display_name: string
+          id: string
+          post_id: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          display_name: string
+          id?: string
+          post_id: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_feed"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       friend_requests: {
         Row: {
           created_at: string | null
@@ -1077,48 +1115,69 @@ export type Database = {
           author_emoji: string | null
           author_role: string | null
           category: string
+          comment_count: number | null
           content: string
           created_at: string | null
+          display_name: string | null
           id: string
           image_url: string | null
+          image_urls: string[] | null
           is_pinned: boolean | null
           is_published: boolean | null
           like_count: number | null
           link_label: string | null
           link_url: string | null
+          park: string | null
+          post_type: string | null
           tags: string[] | null
+          user_id: string | null
+          username: string | null
         }
         Insert: {
           author?: string | null
           author_emoji?: string | null
           author_role?: string | null
           category: string
+          comment_count?: number | null
           content: string
           created_at?: string | null
+          display_name?: string | null
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           is_pinned?: boolean | null
           is_published?: boolean | null
           like_count?: number | null
           link_label?: string | null
           link_url?: string | null
+          park?: string | null
+          post_type?: string | null
           tags?: string[] | null
+          user_id?: string | null
+          username?: string | null
         }
         Update: {
           author?: string | null
           author_emoji?: string | null
           author_role?: string | null
           category?: string
+          comment_count?: number | null
           content?: string
           created_at?: string | null
+          display_name?: string | null
           id?: string
           image_url?: string | null
+          image_urls?: string[] | null
           is_pinned?: boolean | null
           is_published?: boolean | null
           like_count?: number | null
           link_label?: string | null
           link_url?: string | null
+          park?: string | null
+          post_type?: string | null
           tags?: string[] | null
+          user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
