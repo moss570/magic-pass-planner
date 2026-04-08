@@ -38,6 +38,16 @@ const GAMES: GameCard[] = [
     tag: "Quiz",
   },
   {
+    id: "linemind",
+    emoji: "🤳",
+    title: "Line Mind",
+    subtitle: "Hold phone to forehead",
+    description: "One player holds the phone on their forehead while friends give clues. Tilt to answer — how many can you guess in 60 seconds?",
+    color: "#F59E0B",
+    available: true,
+    tag: "Party",
+  },
+  {
     id: "scavenger-hunt",
     emoji: "🔍",
     title: "Queue Scavenger Hunt",
