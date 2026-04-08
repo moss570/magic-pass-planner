@@ -20,6 +20,15 @@ interface Post {
   membership_category?: string;
 }
 
+interface ReactionMap {
+  [postId: string]: { like: number; love: number; userReaction: "like" | "love" | null };
+}
+
+interface FriendEntry {
+  id: string;
+  name: string;
+}
+
 export default function Feed() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -28,6 +37,8 @@ export default function Feed() {
   const [friendIds, setFriendIds] = useState<Set<string>>(new Set());
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
   const [pendingSent, setPendingSent] = useState<Set<string>>(new Set());
+  const [reactions, setReactions] = useState<ReactionMap>({});
+  const [friendsList, setFriendsList] = useState<FriendEntry[]>([]);
 
   const loadPosts = async () => {
     if (!user) return;
@@ -49,10 +60,28 @@ export default function Feed() {
 
       const { data: f1 } = await supabase.from("friendships").select("user_id_2").eq("user_id_1", user.id);
       const { data: f2 } = await supabase.from("friendships").select("user_id_1").eq("user_id_2", user.id);
-      setFriendIds(new Set([
+      const fIds = new Set([
         ...(f1 || []).map(f => f.user_id_2),
         ...(f2 || []).map(f => f.user_id_1),
-      ]));
+      ]);
+      setFriendIds(fIds);
+
+      // Load friend names for share feature
+      const friendIdArray = Array.from(fIds);
+      if (friendIdArray.length > 0) {
+        const { data: friendProfiles } = await supabase
+          .from("users_profile")
+          .select("id, first_name, last_name, username")
+          .in("id", friendIdArray);
+        setFriendsList(
+          (friendProfiles || []).map(p => ({
+            id: p.id,
+            name: p.username || `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Friend",
+          }))
+        );
+      } else {
+        setFriendsList([]);
+      }
 
       const { data: sentReqs } = await supabase.from("friend_requests").select("to_user_id").eq("from_user_id", user.id).eq("status", "pending");
       setPendingSent(new Set((sentReqs || []).map(r => r.to_user_id).filter(Boolean) as string[]));
@@ -70,6 +99,28 @@ export default function Feed() {
         });
       }
       setPosts(enriched);
+
+      // Load reactions for all visible posts
+      const postIds = enriched.map(p => p.id);
+      if (postIds.length > 0) {
+        const { data: allReactions } = await supabase
+          .from("post_reactions")
+          .select("post_id, user_id, reaction_type")
+          .in("post_id", postIds);
+
+        const rMap: ReactionMap = {};
+        for (const pid of postIds) {
+          rMap[pid] = { like: 0, love: 0, userReaction: null };
+        }
+        for (const r of allReactions || []) {
+          if (rMap[r.post_id]) {
+            if (r.reaction_type === "like") rMap[r.post_id].like++;
+            else if (r.reaction_type === "love") rMap[r.post_id].love++;
+            if (r.user_id === user.id) rMap[r.post_id].userReaction = r.reaction_type as "like" | "love";
+          }
+        }
+        setReactions(rMap);
+      }
     } catch (err) {
       console.error("Feed load error:", err);
     } finally {
@@ -78,6 +129,44 @@ export default function Feed() {
   };
 
   useEffect(() => { if (user) loadPosts(); }, [user]);
+
+  const handleReact = async (postId: string, type: "like" | "love") => {
+    if (!user) return;
+    const current = reactions[postId];
+    if (!current) return;
+
+    try {
+      if (current.userReaction === type) {
+        // Remove reaction
+        await supabase.from("post_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
+        setReactions(prev => ({
+          ...prev,
+          [postId]: {
+            ...prev[postId],
+            [type]: Math.max(0, prev[postId][type] - 1),
+            userReaction: null,
+          },
+        }));
+      } else {
+        if (current.userReaction) {
+          // Switch reaction type
+          await supabase.from("post_reactions").delete().eq("post_id", postId).eq("user_id", user.id);
+        }
+        await supabase.from("post_reactions").insert({ post_id: postId, user_id: user.id, reaction_type: type });
+        setReactions(prev => {
+          const old = prev[postId];
+          const updated = { ...old, userReaction: type as "like" | "love" };
+          updated[type] = old[type] + 1;
+          if (old.userReaction && old.userReaction !== type) {
+            updated[old.userReaction] = Math.max(0, old[old.userReaction] - 1);
+          }
+          return { ...prev, [postId]: updated };
+        });
+      }
+    } catch {
+      toast({ title: "Reaction failed", variant: "destructive" });
+    }
+  };
 
   const sendFriendRequest = async (toUserId: string) => {
     if (!user) return;
@@ -147,8 +236,12 @@ export default function Feed() {
               isSelf={post.user_id === user?.id}
               isFriend={friendIds.has(post.user_id)}
               isPendingSent={pendingSent.has(post.user_id)}
+              currentUserId={user?.id}
+              reactions={reactions[post.id] || { like: 0, love: 0, userReaction: null }}
+              friends={friendsList}
               onSendFriendRequest={sendFriendRequest}
               onBlockUser={blockUser}
+              onReact={handleReact}
             />
           ))
         )}
