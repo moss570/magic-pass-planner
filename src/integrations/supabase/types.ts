@@ -807,6 +807,36 @@ export type Database = {
         }
         Relationships: []
       }
+      haaaa_prompts: {
+        Row: {
+          category: string
+          created_at: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          prompt: string
+          real_answer: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          prompt: string
+          real_answer: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          prompt?: string
+          real_answer?: string
+        }
+        Relationships: []
+      }
       headsup_words: {
         Row: {
           category: string
