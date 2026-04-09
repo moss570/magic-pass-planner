@@ -49,6 +49,16 @@ const GAMES: GameCard[] = [
     tag: "Party",
   },
   {
+    id: "haaaa",
+    emoji: "🤪",
+    title: "Haaaa!!",
+    subtitle: "Bluff your friends",
+    description: "A Disney trivia prompt appears — everyone makes up a fake answer. Then guess which one is real! Fool your friends for bonus points.",
+    color: "#EC4899",
+    available: true,
+    tag: "Party",
+  },
+  {
     id: "scavenger-hunt",
     emoji: "🔍",
     title: "Queue Scavenger Hunt",

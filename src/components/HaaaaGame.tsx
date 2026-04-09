@@ -72,7 +72,7 @@ export default function HaaaaGame({ onClose }: Props) {
     if (category !== "all") query = query.eq("category", category);
     const { data } = await (query as any);
     if (data && data.length > 0) {
-      setPrompts(shuffleArray(data).slice(0, ROUND_COUNT));
+      setPrompts(shuffleArray(data as Prompt[]).slice(0, ROUND_COUNT));
     }
   };
 
