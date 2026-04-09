@@ -333,6 +333,7 @@ export default function AdminCommandCenter() {
     { id: "messages", label: "User Messages", icon: MessageSquare, badge: messages.filter(m => m.status === "unread").length },
     { id: "sources", label: "News Sources", icon: Globe },
     { id: "linemind", label: "Line Mind Words", icon: Smartphone },
+    { id: "haaaa", label: "Haaaa!! Prompts", icon: Laugh },
   ];
 
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
