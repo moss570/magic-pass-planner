@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { Gamepad2, Camera, Search, Zap, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Gamepad2, Camera, Search, Zap, Trophy, Code } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
 import LineMind from "@/components/LineMind";
 import HaaaaGame from "@/components/HaaaaGame";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GameCard {
   id: string;
@@ -72,6 +75,16 @@ const GAMES: GameCard[] = [
 
 export default function LineGames() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [isGameDev, setIsGameDev] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("is_game_developer", { _user_id: user.id }).then(({ data }) => {
+      if (data) setIsGameDev(true);
+    });
+  }, [user]);
 
   if (activeGame === "where-am-i") {
     return <WhereAmI onClose={() => setActiveGame(null)} />;
@@ -103,7 +116,27 @@ export default function LineGames() {
           </div>
         </div>
 
-        {/* Game cards */}
+        {/* Game Dev entry point */}
+        {isGameDev && (
+          <button
+            onClick={() => navigate("/game-developer")}
+            className="w-full text-left rounded-2xl border border-amber-500/30 p-4 transition-all hover:border-amber-500/50 active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg, hsl(45 80% 20% / 0.3), hsl(var(--card)))" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500/20">
+                <Code className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-amber-300">Game Developer Mode</h3>
+                <p className="text-xs text-muted-foreground">Submit new game content &amp; manage your submissions</p>
+              </div>
+              <Zap className="w-4 h-4 text-amber-400" />
+            </div>
+          </button>
+        )}
+
+
         <div className="space-y-3">
           {GAMES.map((game) => (
             <button
