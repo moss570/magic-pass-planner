@@ -116,7 +116,27 @@ export default function LineGames() {
           </div>
         </div>
 
-        {/* Game cards */}
+        {/* Game Dev entry point */}
+        {isGameDev && (
+          <button
+            onClick={() => navigate("/game-developer")}
+            className="w-full text-left rounded-2xl border border-amber-500/30 p-4 transition-all hover:border-amber-500/50 active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg, hsl(45 80% 20% / 0.3), hsl(var(--card)))" }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-500/20">
+                <Code className="w-5 h-5 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-amber-300">Game Developer Mode</h3>
+                <p className="text-xs text-muted-foreground">Submit new game content &amp; manage your submissions</p>
+              </div>
+              <Zap className="w-4 h-4 text-amber-400" />
+            </div>
+          </button>
+        )}
+
+
         <div className="space-y-3">
           {GAMES.map((game) => (
             <button
