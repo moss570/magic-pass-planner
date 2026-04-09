@@ -4,7 +4,7 @@ import {
   Gamepad2, MessageSquare, Image, HelpCircle, Shield, RefreshCw, Globe,
   Edit2, Trash2, Check, X, Send, Eye, Archive, ChevronDown, ChevronUp,
   TrendingUp, Clock, Users, Star, Plus, Search, Calendar, Activity, AlertTriangle, Play,
-  Smartphone
+  Smartphone, Laugh
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
