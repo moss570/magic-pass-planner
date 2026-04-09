@@ -14,6 +14,16 @@ const CATEGORIES = [
   { id: "food", label: "Food", emoji: "🍦" },
   { id: "movies", label: "Movies", emoji: "🎬" },
   { id: "parks", label: "Parks", emoji: "🏰" },
+  { id: "star_wars", label: "Star Wars", emoji: "⚔️" },
+  { id: "pixar", label: "Pixar", emoji: "🎨" },
+  { id: "muppets", label: "Muppets", emoji: "🐸" },
+  { id: "villains", label: "Villains", emoji: "😈" },
+  { id: "songs", label: "Songs", emoji: "🎵" },
+  { id: "history", label: "History", emoji: "📜" },
+  { id: "shows", label: "Shows", emoji: "📺" },
+  { id: "animals", label: "Animals", emoji: "🐾" },
+  { id: "locations", label: "Locations", emoji: "📍" },
+  { id: "items", label: "Items", emoji: "✨" },
 ];
 
 type Phase = "menu" | "countdown" | "playing" | "gameover";
