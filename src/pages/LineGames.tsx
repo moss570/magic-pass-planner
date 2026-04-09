@@ -75,6 +75,16 @@ const GAMES: GameCard[] = [
 
 export default function LineGames() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [isGameDev, setIsGameDev] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc("is_game_developer", { _user_id: user.id }).then(({ data }) => {
+      if (data) setIsGameDev(true);
+    });
+  }, [user]);
 
   if (activeGame === "where-am-i") {
     return <WhereAmI onClose={() => setActiveGame(null)} />;
