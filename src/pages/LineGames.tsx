@@ -85,6 +85,10 @@ export default function LineGames() {
     return <LineMind onClose={() => setActiveGame(null)} />;
   }
 
+  if (activeGame === "haaaa") {
+    return <HaaaaGame onClose={() => setActiveGame(null)} />;
+  }
+
   return (
     <DashboardLayout title="🎮 Line Games" subtitle="Fun while you wait in line!">
       <div className="space-y-5">
