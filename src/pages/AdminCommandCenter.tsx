@@ -149,6 +149,10 @@ export default function AdminCommandCenter() {
         const { data } = await (supabase.from("headsup_words" as any).select("*") as any).order("category").order("word");
         setLineMindWords(data || []);
       }
+      if (t === "haaaa") {
+        const { data } = await (supabase.from("haaaa_prompts" as any).select("*") as any).order("category").order("prompt");
+        setHaaaaPrompts(data || []);
+      }
       if (t === "events") {
         const { data: events } = await (supabase.from("beacon_events" as any).select("*") as any).order("created_at", { ascending: false });
         setBeaconEvents(events || []);
