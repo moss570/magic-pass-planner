@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
 import LineMind from "@/components/LineMind";
+import HaaaaGame from "@/components/HaaaaGame";
 
 interface GameCard {
   id: string;
@@ -48,6 +49,16 @@ const GAMES: GameCard[] = [
     tag: "Party",
   },
   {
+    id: "haaaa",
+    emoji: "🤪",
+    title: "Haaaa!!",
+    subtitle: "Bluff your friends",
+    description: "A Disney trivia prompt appears — everyone makes up a fake answer. Then guess which one is real! Fool your friends for bonus points.",
+    color: "#EC4899",
+    available: true,
+    tag: "Party",
+  },
+  {
     id: "scavenger-hunt",
     emoji: "🔍",
     title: "Queue Scavenger Hunt",
@@ -72,6 +83,10 @@ export default function LineGames() {
 
   if (activeGame === "linemind") {
     return <LineMind onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "haaaa") {
+    return <HaaaaGame onClose={() => setActiveGame(null)} />;
   }
 
   return (
