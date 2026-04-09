@@ -1,23 +1,17 @@
 
 
-# Fix Transparent Dropdown Backgrounds on Dining & Event Alerts
+# Add Game Developer Mode Entry Point
 
 ## Problem
-The search dropdowns on both the Dining Alerts and Enchanting Extras (Event Alerts) pages have see-through backgrounds, making items hard to read against the page content behind them.
+The Game Developer page exists at `/game-developer` but has zero UI entry points — no links, buttons, or menu items anywhere in the app. A user with `is_game_developer = true` has no way to discover or navigate to it.
 
-## Root Cause
-Both dropdowns use `style={{ background: "var(--card)" }}` in inline styles. CSS custom variables with HSL values (e.g., `217 47% 11%`) without the `hsl()` wrapper don't work correctly in inline `background` properties, resulting in a transparent/missing background.
+## Solution
+Add a conditional entry point on the **Line Games** page. If the user has `is_game_developer` access, show a "Game Developer Mode" button/banner at the top of the Line Games page that links to `/game-developer`.
 
-## Fix
-Replace `var(--card)` with a solid hex color (`#141C2E`) matching the card color, and ensure text colors are explicitly set for readability.
+## Files Changed
 
-### Files Changed
-
-**1. `src/pages/DiningAlerts.tsx`** (line ~285)
-- Change the restaurant dropdown container from `style={{ background: "var(--card)", maxHeight: 280 }}` to `style={{ background: "#141C2E", maxHeight: 280 }}`
-
-**2. `src/pages/EventAlerts.tsx`** (line ~271)
-- Change the event dropdown container from `style={{ background: "var(--card)", maxHeight: 280 }}` to `style={{ background: "#141C2E", maxHeight: 280 }}`
-
-Both dropdowns already have `text-foreground` on item text and `text-muted-foreground` on secondary text, so no text color changes needed — just the solid background fix.
+**1. `src/pages/LineGames.tsx`**
+- Add a `useEffect` that checks `vip_accounts.is_game_developer` for the current user
+- If true, render a small banner/button at the top of the games list: "🎮 Game Developer Mode — Submit new game content" linking to `/game-developer`
+- Styled as a subtle card with the gold accent color, only visible to game devs
 
