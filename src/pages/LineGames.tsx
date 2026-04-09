@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { Gamepad2, Camera, Search, Zap, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Gamepad2, Camera, Search, Zap, Trophy, Code } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
 import LineMind from "@/components/LineMind";
 import HaaaaGame from "@/components/HaaaaGame";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface GameCard {
   id: string;
