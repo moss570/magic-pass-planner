@@ -282,7 +282,7 @@ export default function DiningAlerts() {
                   </p>
 
                   {showRestaurantDropdown && filteredRestaurants.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-white/10 overflow-hidden shadow-xl" style={{ background: "var(--card)", maxHeight: 280 }}>
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 rounded-lg border border-white/10 overflow-hidden shadow-xl" style={{ background: "#141C2E", maxHeight: 280 }}>
                       <div className="overflow-y-auto" style={{ maxHeight: 280 }}>
                         {filteredRestaurants.slice(0, 30).map(r => (
                           <button
