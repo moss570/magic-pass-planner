@@ -70,6 +70,14 @@ export default function AdminCommandCenter() {
   const [newWord, setNewWord] = useState({ word: "", category: "characters" });
   const [editingWord, setEditingWord] = useState<any>(null);
 
+  // Haaaa!! data
+  const [haaaaPrompts, setHaaaaPrompts] = useState<any[]>([]);
+  const [haaaaSearch, setHaaaaSearch] = useState("");
+  const [haaaaCategory, setHaaaaCategory] = useState("all");
+  const [showAddHaaaa, setShowAddHaaaa] = useState(false);
+  const [newPrompt, setNewPrompt] = useState({ prompt: "", real_answer: "", category: "general", difficulty: "medium" });
+  const [editingPrompt, setEditingPrompt] = useState<any>(null);
+
   useEffect(() => {
     if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
       navigate("/dashboard");
