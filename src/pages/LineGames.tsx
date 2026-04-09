@@ -4,6 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
 import LineMind from "@/components/LineMind";
+import HaaaaGame from "@/components/HaaaaGame";
 
 interface GameCard {
   id: string;
