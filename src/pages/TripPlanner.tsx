@@ -1067,6 +1067,11 @@ function TripPlannerLegacy() {
             onExportPDF={() => { window.print(); toast({ title: "📄 Print dialog opened" }); }}
             onSyncDining={syncDiningAlerts}
             onRegenerate={generateItinerary} generating={generating}
+            onDayUpdated={(dayIndex, newPlan) => setPlans(prev => prev.map((p, i) => i === dayIndex ? newPlan : p))}
+            getHeaders={getHeaders}
+            supabaseUrl={SUPABASE_URL}
+            walkingSpeedKmh={2.5}
+            tripId={savedTripId}
           />
         )}
 
