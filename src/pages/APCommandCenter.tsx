@@ -11,6 +11,8 @@ import ActiveDiscountsSection from "@/components/ap/ActiveDiscountsSection";
 import HotelDealAlertsSection from "@/components/ap/HotelDealAlertsSection";
 import MerchDropAlertsSection from "@/components/ap/MerchDropAlertsSection";
 import StackingCalculator from "@/components/ap/StackingCalculator";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 
 // Calendar helpers
@@ -20,6 +22,7 @@ const today = 3;
 const APCommandCenter = () => {
   const [liveOffers, setLiveOffers] = useState<any[]>([]);
   const [offersLoading, setOffersLoading] = useState(true);
+  const { access } = useSubscription();
 
   useEffect(() => {
     supabase.from("disney_offers")
