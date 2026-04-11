@@ -175,14 +175,14 @@ const CompassModal = ({
     };
   }, []);
 
-  if (!open) return null;
-
-  // Current step info
+  // Current step info (must be before early return)
   const currentStep = route?.steps[currentStepIdx];
   const remainingDist = useMemo(() => {
     if (!route) return 0;
     return route.steps.slice(currentStepIdx).reduce((sum, s) => sum + s.distanceM, 0);
   }, [route, currentStepIdx]);
+
+  if (!open) return null;
 
   // Arrow rotation
   let arrowRotation = 0;
