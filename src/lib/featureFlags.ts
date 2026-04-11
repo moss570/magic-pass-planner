@@ -13,6 +13,9 @@ export const featureFlags = {
 
   /** Use the new multi-step Trip Planner wizard */
   tripPlannerWizardV2: true,
+
+  /** Enhanced itinerary cards with passing points, stopping here, add block, nudges */
+  itineraryCardEnhancements: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
