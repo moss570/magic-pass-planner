@@ -43,7 +43,7 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: false,
     dataDeletesOnExpiry: true,
     stripePriceIds: {
-      oneTime: 'price_REPLACE_90DAY_PLANNER',
+      oneTime: 'price_1TIFUJHGyELqjZIIs9kh5fxU',
     },
   },
   ninety_day_friend: {
@@ -55,7 +55,7 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: false,
     dataDeletesOnExpiry: true,
     stripePriceIds: {
-      oneTime: 'price_REPLACE_90DAY_FRIEND',
+      oneTime: 'price_1TL6ncHGyELqjZIItXdgKKLt',
     },
   },
   magic_pass_planner: {
@@ -67,8 +67,8 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      monthly: 'price_REPLACE_MPP_MONTHLY',
-      annual: 'price_REPLACE_MPP_ANNUAL',
+      monthly: 'price_1TL6pTHGyELqjZIIHzN49S29',
+      annual: 'price_1TL6oyHGyELqjZIIzgPyCYTV',
     },
   },
   magic_pass_plus: {
@@ -80,8 +80,8 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      monthly: 'price_REPLACE_MPPLUS_MONTHLY',
-      annual: 'price_REPLACE_MPPLUS_ANNUAL',
+      monthly: 'price_1TL6shHGyELqjZIIIE8I8au3',
+      annual: 'price_1TL6sKHGyELqjZIIfvrVZxhJ',
     },
   },
   founders_pass: {
@@ -93,7 +93,7 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      annual: 'price_REPLACE_FOUNDERS_ANNUAL',
+      annual: 'price_1TL6tbHGyELqjZII6iClFSFM',
     },
   },
 };
