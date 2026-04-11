@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { buildBookingUrl, getGenericBookingUrl } from "@/lib/affiliate";
+import { getGenericBookingUrl } from "@/lib/affiliate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
@@ -202,7 +202,7 @@ export default function HotelAlerts() {
 
                   <div className="flex gap-2 mt-3">
                     {alert.status === "found" && (
-                      <a href={alert.booking_link || buildBookingUrl("hotels", getGenericBookingUrl("hotels"), {})}
+                      <a href={alert.booking_link || getGenericBookingUrl("hotels")}
                         target="_blank" rel="noopener noreferrer"
                         className="flex-1 text-center py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-500 transition-colors">
                         Book Now →

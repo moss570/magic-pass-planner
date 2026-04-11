@@ -34,6 +34,12 @@ export const featureFlags = {
 
   /** Budget upgrades with auto-expenses, category caps, timeline, CSV export */
   budgetUpgrades: true,
+
+  /** Admin: Affiliate Networks management tab */
+  affiliateNetworks: true,
+
+  /** Admin: Park Content CMS tab */
+  parkContentCms: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
