@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import BestDaysWidget from "@/components/ap/BestDaysWidget";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
 
 const discountFilters = ["All", "Dining", "Merchandise", "Hotels", "Experiences"];
 
