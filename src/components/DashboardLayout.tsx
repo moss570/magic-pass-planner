@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useState, useState as _useState, useEffect } from "react";
 import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail, Star, Heart, Vote, MapPin, Sun } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";

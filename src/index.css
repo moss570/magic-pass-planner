@@ -310,3 +310,97 @@ html, body, #root {
   background-color: #111827 !important;
   color: #F9FAFB !important;
 }
+
+/* ─── Premium Site-Wide Polish ─── */
+
+/* Smoother gold borders */
+.gold-border {
+  border: 1px solid hsl(42 92% 56% / 0.12);
+  transition: border-color 0.2s ease;
+}
+.gold-border:hover {
+  border-color: hsl(42 92% 56% / 0.25);
+}
+
+/* Glass effect for cards */
+.glass-card {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Gradient text utility */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #ffd700, #ffaa00, #ff8c00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-teal {
+  background: linear-gradient(135deg, #06d6a0, #00b4d8, #4cc9f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa, #c4b5fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(42 92% 56% / 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(42 92% 56% / 0.3);
+}
+
+/* Button glow on hover */
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(245, 200, 66, 0.15);
+}
+
+/* Ambient background shimmer */
+@keyframes shimmer {
+  0% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+  100% { opacity: 0.1; }
+}
+.ambient-shimmer {
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth focus rings */
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(42 92% 56% / 0.3);
+}
+
+/* Better select dropdowns */
+select {
+  background-color: #111827 !important;
+  color: #F9FAFB !important;
+}
+
+/* Transition all interactive elements */
+a, button, [role="button"] {
+  transition: all 0.15s ease;
+}

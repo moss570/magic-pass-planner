@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Music } from "lucide-react";
+import ConfettiEffect from "@/components/ConfettiEffect";
 
 const SONGS = [
   { lyric: "Is this the real life? Is this just ___?", answer: "fantasy", options: ["fantasy","reality","a dream","imaginary"], song: "Bohemian Rhapsody", artist: "Queen" },
@@ -52,6 +53,7 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
       </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-yellow-500/30 max-w-md w-full">
+          <ConfettiEffect trigger={score >= 200} />
           <Music className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
           <p className="text-2xl font-bold text-white mb-2">Game Over!</p>
           <p className="text-4xl font-black text-yellow-400 mb-6">{score}/{SONGS.length * 25} points</p>

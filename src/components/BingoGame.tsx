@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Volume2 } from "lucide-react";
+import ConfettiEffect from "@/components/ConfettiEffect";
 
 const PATTERNS = [
   { name: "5 in a Row", check: (card: boolean[][]) => {
@@ -177,7 +178,7 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
 
         {/* Win Animation */}
         <AnimatePresence>
-          {won && (
+          {won && (<><ConfettiEffect trigger={true} />
             <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 flex items-center justify-center bg-black/70 z-50">
               <div className="text-center">
@@ -185,7 +186,7 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
                   className="text-6xl font-black text-yellow-400 mb-4">🎉 BINGO!</motion.p>
                 <p className="text-xl text-white">+{[100,150,200,100][round]} points!</p>
               </div>
-            </motion.div>
+            </motion.div></>
           )}
         </AnimatePresence>
 

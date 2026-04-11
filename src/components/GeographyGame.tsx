@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Globe } from "lucide-react";
+import ConfettiEffect from "@/components/ConfettiEffect";
 
 const QUESTIONS = [
   { q: "What is the capital of France?", answer: "Paris", options: ["Paris","London","Berlin","Madrid"] },
@@ -53,6 +54,7 @@ export default function GeographyGame({ onClose }: { onClose: () => void }) {
       </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-green-500/30 max-w-md w-full">
+          <ConfettiEffect trigger={score >= 500} />
           <Globe className="w-16 h-16 text-green-400 mx-auto mb-4" />
           <p className="text-2xl font-bold text-white mb-2">Game Over!</p>
           <p className="text-4xl font-black text-yellow-400 mb-6">{score} points</p>

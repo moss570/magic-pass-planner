@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Search } from "lucide-react";
+import ConfettiEffect from "@/components/ConfettiEffect";
 
 const SUSPECTS = [
   { name: "Detective Parker", emoji: "🕵️" },
@@ -155,7 +156,7 @@ export default function WhoDidItGame({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {phase === "result" && (
+        {phase === "result" && (<><ConfettiEffect trigger={score >= 200} />
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
             className="text-center p-6 rounded-xl bg-black/40 border border-yellow-500/30">
             <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
@@ -178,7 +179,7 @@ export default function WhoDidItGame({ onClose }: { onClose: () => void }) {
 
             <p className="text-3xl font-black text-yellow-400 mb-4">{score} points!</p>
             <button onClick={onClose} className="px-6 py-2 bg-purple-500 text-white font-bold rounded-lg">Back to Games</button>
-          </motion.div>
+          </motion.div></>
         )}
       </div>
     </div>

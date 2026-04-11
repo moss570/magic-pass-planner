@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import { UserPlus, QrCode, Search, Check, X, Users, Mail, Scan, Clock, Shield, Ban, Camera, MessageSquare } from "lucide-react";
 import QRCode from "react-qr-code";
