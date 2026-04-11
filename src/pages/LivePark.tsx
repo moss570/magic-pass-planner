@@ -497,7 +497,8 @@ export default function LivePark() {
   const [showOnlyOpen, setShowOnlyOpen] = useState(true);
   const [showFireworksOnly, setShowFireworksOnly] = useState(false);
   const [fireworksTime, setFireworksTime] = useState("21:00");
-  const [activeTab, setActiveTab] = useState<"waits" | "show-times" | "info">("waits");
+  const [activeTab, setActiveTab] = useState<"waits" | "show-times" | "info" | "ll-gaps">("waits");
+  const llHistoryRef = useRef<Record<string, { time: string; wait: number }[]>>({});
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [liveMenuOpen, setLiveMenuOpen] = useState(false);
   const [whereAmIOpen, setWhereAmIOpen] = useState(false);
@@ -733,6 +734,7 @@ export default function LivePark() {
               <div className="p-4 grid grid-cols-2 gap-3 pb-8">
                 {[
                   { id: "waits", icon: "⚡", label: "Wait Times", sub: "Live ride waits + sort by distance" },
+                  { id: "ll-gaps", icon: "⚡", label: "LL Gap Finder", sub: "Find Lightning Lane drops" },
                   { id: "fireworks", icon: "🎆", label: "Fireworks Calculator", sub: "Ride timing for best views" },
                   { id: "games", icon: "🎮", label: "Line Games", sub: "Play while you wait" },
                   { id: "info", icon: "ℹ️", label: "Park Info", sub: "Hours, crowds, Lightning Lane" },
@@ -877,6 +879,7 @@ export default function LivePark() {
         {!hashSection && <div className="hidden md:flex gap-1 border-b border-white/10">
           {[
             { id: "waits", label: "⚡ Wait Times" },
+            { id: "ll-gaps", label: "⚡ LL Gaps" },
             { id: "show-times", label: "🎭 Show Times" },
             { id: "info", label: "ℹ️ Park Info" },
           ].map(tab => (
@@ -895,7 +898,7 @@ export default function LivePark() {
             Showing: <span className="text-foreground font-semibold">
               {activeSubPage !== "none" ? 
                 (activeSubPage === "line-games" ? "🎮 Line Games" : activeSubPage === "photo-fun" ? "📸 Photo Fun" : "🏰 Magic Beacon") :
-                (activeTab === "waits" ? "⚡ Wait Times" : activeTab === "show-times" ? "🎭 Show Times" : "ℹ️ Park Info")
+                (activeTab === "waits" ? "⚡ Wait Times" : activeTab === "ll-gaps" ? "⚡ LL Gap Finder" : activeTab === "show-times" ? "🎭 Show Times" : "ℹ️ Park Info")
               }
             </span>
           </p>
