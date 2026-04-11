@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
@@ -226,13 +228,9 @@ export default function DiningAlerts() {
   const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
   const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
 
-  const diningLimit = (() => {
-    try {
-      const { useSubscription: useSub } = require("@/hooks/useSubscription");
-      // Can't call hooks conditionally — handle below
-    } catch {}
-    return undefined;
-  })();
+  const { access } = useSubscription();
+  const diningLimit = access.diningAlerts;
+  const { canAddAlert } = useAlertLimitGuard(diningLimit, activeAlerts.length);
 
   return (
     <DashboardLayout
@@ -240,6 +238,8 @@ export default function DiningAlerts() {
       subtitle="We watch 24/7 and alert you the instant your table opens up"
     >
       <div className="space-y-6">
+
+        <AlertLimitBanner limit={diningLimit} currentCount={activeAlerts.length} alertTypeName="Dining Alerts" />
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
         <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
