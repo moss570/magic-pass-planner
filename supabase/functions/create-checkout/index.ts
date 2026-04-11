@@ -22,6 +22,12 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
+  );
+
   try {
     logStep("Function started");
 
@@ -53,16 +59,16 @@ serve(async (req) => {
       throw new Error("Request body is empty. Expected JSON with priceId.");
     }
 
-    let parsed: { priceId?: string; planName?: string };
+    let parsed: { priceId?: string; planName?: string; discountCode?: string };
     try {
       parsed = JSON.parse(rawBody);
     } catch {
       throw new Error(`Invalid JSON in request body: ${rawBody.substring(0, 100)}`);
     }
 
-    const { priceId, planName } = parsed;
+    const { priceId, planName, discountCode } = parsed;
     if (!priceId) throw new Error("priceId is required");
-    logStep("Checkout request", { priceId, planName });
+    logStep("Checkout request", { priceId, planName, discountCode: discountCode || "none" });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -74,9 +80,88 @@ serve(async (req) => {
       logStep("Existing Stripe customer found", { customerId });
     }
 
+    // Resolve discount code to Stripe coupon if provided
+    let stripeCouponId: string | undefined;
+    if (discountCode) {
+      // Look up in discount_codes table
+      const { data: dc } = await supabaseAdmin
+        .from("discount_codes")
+        .select("*")
+        .eq("code", discountCode)
+        .eq("user_id", user.id)
+        .is("used_at", null)
+        .single();
+
+      if (dc) {
+        // Check expiry
+        if (new Date(dc.expires_at) > new Date()) {
+          // Create or reuse Stripe coupon
+          if (dc.stripe_coupon_id) {
+            stripeCouponId = dc.stripe_coupon_id;
+          } else {
+            const coupon = await stripe.coupons.create({
+              percent_off: dc.percent_off,
+              duration: "once",
+              name: `Travel Party Invite - ${dc.percent_off}% off`,
+            });
+            stripeCouponId = coupon.id;
+            // Save back the Stripe coupon ID
+            await supabaseAdmin
+              .from("discount_codes")
+              .update({ stripe_coupon_id: coupon.id })
+              .eq("id", dc.id);
+          }
+          // Mark as used
+          await supabaseAdmin
+            .from("discount_codes")
+            .update({ used_at: new Date().toISOString() })
+            .eq("id", dc.id);
+          logStep("Discount applied", { code: discountCode, couponId: stripeCouponId });
+        } else {
+          logStep("Discount expired", { code: discountCode });
+        }
+      } else {
+        logStep("Discount code not found or already used", { code: discountCode });
+      }
+    }
+
+    // Also check for any unused discount code for this user (auto-apply)
+    if (!stripeCouponId) {
+      const { data: pendingDc } = await supabaseAdmin
+        .from("discount_codes")
+        .select("*")
+        .eq("user_id", user.id)
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .limit(1)
+        .single();
+
+      if (pendingDc) {
+        if (pendingDc.stripe_coupon_id) {
+          stripeCouponId = pendingDc.stripe_coupon_id;
+        } else {
+          const coupon = await stripe.coupons.create({
+            percent_off: pendingDc.percent_off,
+            duration: "once",
+            name: `Travel Party Invite - ${pendingDc.percent_off}% off`,
+          });
+          stripeCouponId = coupon.id;
+          await supabaseAdmin
+            .from("discount_codes")
+            .update({ stripe_coupon_id: coupon.id })
+            .eq("id", pendingDc.id);
+        }
+        await supabaseAdmin
+          .from("discount_codes")
+          .update({ used_at: new Date().toISOString() })
+          .eq("id", pendingDc.id);
+        logStep("Auto-applied pending discount", { couponId: stripeCouponId });
+      }
+    }
+
     const origin = req.headers.get("origin") || "https://magicpassplus.com";
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
@@ -90,7 +175,13 @@ serve(async (req) => {
       },
       success_url: `${origin}/dashboard?checkout=success`,
       cancel_url: `${origin}/pricing`,
-    });
+    };
+
+    if (stripeCouponId) {
+      sessionParams.discounts = [{ coupon: stripeCouponId }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
