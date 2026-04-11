@@ -1267,6 +1267,27 @@ export type Database = {
           },
         ]
       }
+      founders_pass_slots: {
+        Row: {
+          id: string
+          remaining: number
+          total_slots: number
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          remaining?: number
+          total_slots?: number
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          remaining?: number
+          total_slots?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       friend_requests: {
         Row: {
           created_at: string | null
@@ -3568,6 +3589,7 @@ export type Database = {
     }
     Functions: {
       generate_forwarding_token: { Args: never; Returns: string }
+      get_founders_remaining: { Args: never; Returns: number }
       is_game_developer: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
