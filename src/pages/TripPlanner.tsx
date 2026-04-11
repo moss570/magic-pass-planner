@@ -349,7 +349,21 @@ function ResultsView({
       </div>
 
       {plans.map((plan, i) => (
-        <DayCard key={i} plan={plan} dayNum={i + 1} />
+        useEnhancedCards ? (
+          <ItineraryCard
+            key={i}
+            plan={plan}
+            dayNum={i + 1}
+            dayIndex={i}
+            tripId={tripId}
+            onDayUpdated={onDayUpdated}
+            getHeaders={getHeaders}
+            supabaseUrl={supabaseUrl}
+            walkingSpeedKmh={walkingSpeedKmh}
+          />
+        ) : (
+          <DayCard key={i} plan={plan} dayNum={i + 1} />
+        )
       ))}
 
       {tripCoverage && tripCoverage.totalAttractionsScheduled > 0 && (
