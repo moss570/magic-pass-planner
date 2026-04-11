@@ -68,7 +68,7 @@ export default function ForwardingAddressCard({ token, userId, onTokenRotated }:
         <div className="flex items-center gap-2 rounded-lg bg-muted p-3 font-mono text-sm break-all">
           <span className="flex-1">{fullAddress}</span>
           <Button variant="ghost" size="icon" onClick={handleCopy} className="shrink-0">
-            {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+            {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
           </Button>
         </div>
         <div className="mt-3 flex justify-end">
