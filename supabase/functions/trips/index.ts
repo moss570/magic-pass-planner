@@ -216,6 +216,47 @@ serve(async (req) => {
       });
     }
 
+    // ── ADD EXPENSE ─────────────────────────────────────
+    if (action === "add-expense" && req.method === "POST") {
+      const body = await req.json();
+      if (!body.tripId) throw new Error("tripId required");
+      if (!body.category || !body.description || body.amount == null) throw new Error("category, description, and amount required");
+
+      const expense = {
+        id: crypto.randomUUID(),
+        tripId: body.tripId,
+        versionId: body.versionId || null,
+        category: body.category,
+        description: body.description,
+        amount: Number(body.amount),
+        paidByUserId: body.paidByUserId || null,
+        splitWithUserIds: body.splitWithUserIds || [],
+        source: body.source || "manual",
+        sourceRef: body.sourceRef || null,
+        date: body.date || new Date().toISOString().split("T")[0],
+        createdAt: new Date().toISOString(),
+      };
+
+      // Load current trip to append expense to itinerary budget data
+      const { data: trip, error: loadErr } = await supabase.from("saved_trips").select("itinerary").eq("id", body.tripId).eq("user_id", userId).single();
+      if (loadErr) throw loadErr;
+
+      const itinerary = (trip?.itinerary as any) || {};
+      const budgetExpenses = itinerary.budgetExpenses || [];
+      budgetExpenses.push(expense);
+      itinerary.budgetExpenses = budgetExpenses;
+
+      const { error: updateErr } = await supabase.from("saved_trips").update({
+        itinerary,
+        updated_at: new Date().toISOString(),
+      }).eq("id", body.tripId).eq("user_id", userId);
+
+      if (updateErr) throw updateErr;
+      return new Response(JSON.stringify({ expense, success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 201,
+      });
+    }
+
     throw new Error("Unknown action");
 
   } catch (error) {

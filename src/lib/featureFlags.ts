@@ -31,6 +31,9 @@ export const featureFlags = {
 
   /** Itinerary Versions (up to 3) + side-by-side compare */
   itineraryVersions: true,
+
+  /** Budget upgrades with auto-expenses, category caps, timeline, CSV export */
+  budgetUpgrades: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
