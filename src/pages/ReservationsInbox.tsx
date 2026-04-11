@@ -281,6 +281,7 @@ export default function ReservationsInbox() {
           <InboxFeed items={items} onReparse={handleReparse} reparsing={reparsing} />
         </div>
       </div>
+      </FeatureGate>
 
       <ParseResultModal
         open={modalOpen}
