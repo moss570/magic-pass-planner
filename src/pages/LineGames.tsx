@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Gamepad2, Camera, Search, Zap, Trophy, Code } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
@@ -73,8 +73,25 @@ const GAMES: GameCard[] = [
   },
 ];
 
+// Map GamesDiscovery query params to LineGames game IDs
+const gameParamMap: { [key: string]: string } = {
+  "trivia": "trivia",
+  "bingo": "where-am-i", // Placeholder - bingo not in LineGames yet
+  "who-did-it": "where-am-i", // Placeholder
+  "would-you-rather": "where-am-i", // Placeholder
+  "picture-perfect": "where-am-i", // Placeholder
+  "song-lyric": "where-am-i", // Placeholder
+  "geography": "where-am-i", // Placeholder
+  "spy-word": "where-am-i", // Placeholder
+  "haaaa": "haaaa",
+  "line-mind": "linemind",
+};
+
 export default function LineGames() {
-  const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const gameParam = searchParams.get("game");
+  const mappedGameId = gameParam ? gameParamMap[gameParam] || null : null;
+  const [activeGame, setActiveGame] = useState<string | null>(mappedGameId || null);
   const [isGameDev, setIsGameDev] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
