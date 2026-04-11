@@ -4,6 +4,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { getGenericBookingUrl } from "@/lib/affiliate";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 

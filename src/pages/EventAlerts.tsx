@@ -369,7 +369,7 @@ export default function EventAlerts() {
 
           <button
             onClick={handleCreateAlert}
-            disabled={submitting || !selectedEvent || !date}
+            disabled={submitting || !selectedEvent || !date || !canAddAlert}
             className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "#F5C842" }}
           >
