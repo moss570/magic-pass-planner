@@ -41,6 +41,8 @@ import AirfareTracker from "./pages/AirfareTracker";
 import ReservationsInbox from "./pages/ReservationsInbox";
 import TripInvite from "./pages/TripInvite";
 import TripCompare from "./pages/TripCompare";
+import AffiliateNetworks from "./pages/admin/AffiliateNetworks";
+import ParkContent from "./pages/admin/ParkContent";
 
 const queryClient = new QueryClient();
 
@@ -87,6 +89,8 @@ const App = () => (
             <Route path="/reservations" element={<ProtectedRoute><ReservationsInbox /></ProtectedRoute>} />
             <Route path="/invite/:inviteToken" element={<TripInvite />} />
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
+            <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
+            <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
