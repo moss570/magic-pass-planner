@@ -86,6 +86,7 @@ const App = () => (
             <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
             <Route path="/reservations" element={<ProtectedRoute><ReservationsInbox /></ProtectedRoute>} />
             <Route path="/invite/:inviteToken" element={<TripInvite />} />
+            <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
