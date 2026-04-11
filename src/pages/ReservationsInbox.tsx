@@ -19,6 +19,7 @@ const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 export default function ReservationsInbox() {
   const { session } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const [token, setToken] = useState<string>("");
   const [pasteContent, setPasteContent] = useState("");
   const [parsing, setParsing] = useState(false);

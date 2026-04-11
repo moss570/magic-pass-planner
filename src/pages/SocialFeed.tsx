@@ -495,6 +495,7 @@ export default function SocialFeed() {
         })}
 
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 }
