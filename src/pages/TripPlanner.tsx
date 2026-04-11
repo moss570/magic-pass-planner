@@ -667,6 +667,10 @@ function TripPlannerWizard() {
 
   // If results are generated, show results view
   if (generated && plans.length > 0) {
+    const handleDayUpdated = (dayIndex: number, newPlan: DayPlan) => {
+      setPlans(prev => prev.map((p, i) => i === dayIndex ? newPlan : p));
+    };
+
     return (
       <DashboardLayout title="🗺️ Trip Planner" subtitle="Your personalized itinerary">
         <ResultsView
@@ -680,6 +684,11 @@ function TripPlannerWizard() {
           onExportPDF={() => { window.print(); toast({ title: "📄 Print dialog opened" }); }}
           onSyncDining={syncDiningAlerts}
           onRegenerate={generateItinerary} generating={generating}
+          onDayUpdated={handleDayUpdated}
+          getHeaders={getHeaders}
+          supabaseUrl={SUPABASE_URL}
+          walkingSpeedKmh={draft.walkingSpeedKmh}
+          tripId={savedTripId}
         />
       </DashboardLayout>
     );
