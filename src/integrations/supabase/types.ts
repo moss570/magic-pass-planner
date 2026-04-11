@@ -50,6 +50,63 @@ export type Database = {
         }
         Relationships: []
       }
+      attractions: {
+        Row: {
+          avg_duration_min: number
+          created_at: string
+          description: string | null
+          has_lightning_lane: boolean
+          height_req_in: number | null
+          id: string
+          image_url: string | null
+          land: string
+          lat: number | null
+          ll_type: string | null
+          lng: number | null
+          name: string
+          park_id: string
+          ride_type: string
+          thrill_level: number | null
+          updated_at: string
+        }
+        Insert: {
+          avg_duration_min?: number
+          created_at?: string
+          description?: string | null
+          has_lightning_lane?: boolean
+          height_req_in?: number | null
+          id?: string
+          image_url?: string | null
+          land: string
+          lat?: number | null
+          ll_type?: string | null
+          lng?: number | null
+          name: string
+          park_id: string
+          ride_type?: string
+          thrill_level?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avg_duration_min?: number
+          created_at?: string
+          description?: string | null
+          has_lightning_lane?: boolean
+          height_req_in?: number | null
+          id?: string
+          image_url?: string | null
+          land?: string
+          lat?: number | null
+          ll_type?: string | null
+          lng?: number | null
+          name?: string
+          park_id?: string
+          ride_type?: string
+          thrill_level?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       beacon_events: {
         Row: {
           badge: string | null
@@ -861,6 +918,36 @@ export type Database = {
         }
         Relationships: []
       }
+      land_crowd_windows: {
+        Row: {
+          created_at: string
+          crowd_level: number
+          day_of_week: number
+          hour: number
+          id: string
+          land: string
+          park_id: string
+        }
+        Insert: {
+          created_at?: string
+          crowd_level?: number
+          day_of_week: number
+          hour: number
+          id?: string
+          land: string
+          park_id: string
+        }
+        Update: {
+          created_at?: string
+          crowd_level?: number
+          day_of_week?: number
+          hour?: number
+          id?: string
+          land?: string
+          park_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -930,6 +1017,30 @@ export type Database = {
           notes?: string | null
           scrape_frequency?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      park_paths: {
+        Row: {
+          created_at: string
+          edges: Json
+          nodes: Json
+          park_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          edges?: Json
+          nodes?: Json
+          park_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          edges?: Json
+          nodes?: Json
+          park_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1160,6 +1271,42 @@ export type Database = {
           start_date?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      shows: {
+        Row: {
+          created_at: string
+          duration_min: number
+          id: string
+          land: string
+          location: string | null
+          name: string
+          park_id: string
+          schedule: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_min?: number
+          id?: string
+          land: string
+          location?: string | null
+          name: string
+          park_id: string
+          schedule?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_min?: number
+          id?: string
+          land?: string
+          location?: string | null
+          name?: string
+          park_id?: string
+          schedule?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
