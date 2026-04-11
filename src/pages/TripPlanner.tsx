@@ -219,6 +219,7 @@ function ResultsView({
   plans, estimatedTotal, budget, budgetBreakdown, ticketInfo, hotelRecs, diningRecs,
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
+  onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -242,7 +243,13 @@ function ResultsView({
   onSyncDining: () => void;
   onRegenerate: () => void;
   generating: boolean;
+  onDayUpdated: (dayIndex: number, newPlan: DayPlan) => void;
+  getHeaders: () => Record<string, string>;
+  supabaseUrl: string;
+  walkingSpeedKmh: number;
+  tripId?: string | null;
 }) {
+  const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
     <div className="space-y-4">
       {/* Trip Summary */}
