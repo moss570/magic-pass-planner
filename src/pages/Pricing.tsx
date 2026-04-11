@@ -12,12 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrbmVsaHJtZ3NwdXp0ZWhldHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzcyNzgsImV4cCI6MjA5MDgxMzI3OH0.vjT4Iun32HsCfoO7nVnfzLBnJy-Lye6N9ZryBbWuAjo";
 
-const invokeCheckout = async (body: { priceId: string; planName: string; userEmail: string }) => {
+const invokeCheckout = async (body: { priceId: string; planName: string; userEmail: string }, accessToken: string) => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+      "x-client-authorization": `Bearer ${accessToken}`,
       "apikey": SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),
@@ -191,7 +192,7 @@ const Pricing = () => {
     }
     setLoadingTier(loadingKey);
     try {
-      const data = await invokeCheckout({ priceId, planName, userEmail });
+      const data = await invokeCheckout({ priceId, planName, userEmail }, session.access_token);
       if (data?.url) window.location.href = data.url;
       else toast.error("No checkout URL returned. Please try again.");
     } catch (err: any) {
