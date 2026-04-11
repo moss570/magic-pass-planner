@@ -1752,6 +1752,7 @@ export type Database = {
           adults: number | null
           ages: string | null
           budget: number | null
+          category_caps: Json | null
           children: number | null
           created_at: string | null
           end_date: string | null
@@ -1773,6 +1774,7 @@ export type Database = {
           adults?: number | null
           ages?: string | null
           budget?: number | null
+          category_caps?: Json | null
           children?: number | null
           created_at?: string | null
           end_date?: string | null
@@ -1794,6 +1796,7 @@ export type Database = {
           adults?: number | null
           ages?: string | null
           budget?: number | null
+          category_caps?: Json | null
           children?: number | null
           created_at?: string | null
           end_date?: string | null
@@ -2447,6 +2450,7 @@ export type Database = {
           qr_token: string | null
           trusted_senders: Json | null
           username: string | null
+          walking_speed_kmh: number | null
         }
         Insert: {
           ap_expiration?: string | null
@@ -2475,6 +2479,7 @@ export type Database = {
           qr_token?: string | null
           trusted_senders?: Json | null
           username?: string | null
+          walking_speed_kmh?: number | null
         }
         Update: {
           ap_expiration?: string | null
@@ -2503,6 +2508,7 @@ export type Database = {
           qr_token?: string | null
           trusted_senders?: Json | null
           username?: string | null
+          walking_speed_kmh?: number | null
         }
         Relationships: []
       }
