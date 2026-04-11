@@ -14,6 +14,218 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
+      affiliate_clicks: {
+        Row: {
+          created_at: string | null
+          deeplink: string | null
+          id: string
+          network_id: string | null
+          trip_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deeplink?: string | null
+          id?: string
+          network_id?: string | null
+          trip_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deeplink?: string | null
+          id?: string
+          network_id?: string | null
+          trip_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_networks: {
+        Row: {
+          affiliate_id: string | null
+          api_key_enc: string | null
+          api_secret_enc: string | null
+          auth_type: string | null
+          base_url: string | null
+          category: string
+          commission_rate_display: string | null
+          cookie_window_days: number | null
+          created_at: string | null
+          created_by: string | null
+          deeplink_template: string | null
+          display_name: string
+          id: string
+          is_enabled: boolean | null
+          last_test_at: string | null
+          last_test_error: string | null
+          last_test_status: string | null
+          logo_url: string | null
+          notes: string | null
+          oauth_client_id: string | null
+          oauth_client_secret_enc: string | null
+          oauth_redirect_uri: string | null
+          payout_currency: string | null
+          priority: number | null
+          sandbox_api_key_enc: string | null
+          sandbox_api_secret_enc: string | null
+          sandbox_mode: boolean | null
+          slug: string
+          sub_id_pattern: string | null
+          tracking_pixel_url: string | null
+          updated_at: string | null
+          updated_by: string | null
+          webhook_secret_enc: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          affiliate_id?: string | null
+          api_key_enc?: string | null
+          api_secret_enc?: string | null
+          auth_type?: string | null
+          base_url?: string | null
+          category?: string
+          commission_rate_display?: string | null
+          cookie_window_days?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          deeplink_template?: string | null
+          display_name: string
+          id?: string
+          is_enabled?: boolean | null
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          logo_url?: string | null
+          notes?: string | null
+          oauth_client_id?: string | null
+          oauth_client_secret_enc?: string | null
+          oauth_redirect_uri?: string | null
+          payout_currency?: string | null
+          priority?: number | null
+          sandbox_api_key_enc?: string | null
+          sandbox_api_secret_enc?: string | null
+          sandbox_mode?: boolean | null
+          slug: string
+          sub_id_pattern?: string | null
+          tracking_pixel_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          webhook_secret_enc?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          affiliate_id?: string | null
+          api_key_enc?: string | null
+          api_secret_enc?: string | null
+          auth_type?: string | null
+          base_url?: string | null
+          category?: string
+          commission_rate_display?: string | null
+          cookie_window_days?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          deeplink_template?: string | null
+          display_name?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_test_at?: string | null
+          last_test_error?: string | null
+          last_test_status?: string | null
+          logo_url?: string | null
+          notes?: string | null
+          oauth_client_id?: string | null
+          oauth_client_secret_enc?: string | null
+          oauth_redirect_uri?: string | null
+          payout_currency?: string | null
+          priority?: number | null
+          sandbox_api_key_enc?: string | null
+          sandbox_api_secret_enc?: string | null
+          sandbox_mode?: boolean | null
+          slug?: string
+          sub_id_pattern?: string | null
+          tracking_pixel_url?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          webhook_secret_enc?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      affiliate_webhook_events: {
+        Row: {
+          created_at: string | null
+          event_type: string | null
+          id: string
+          network_slug: string | null
+          payload: Json | null
+          processed: boolean | null
+          signature_valid: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          network_slug?: string | null
+          payload?: Json | null
+          processed?: boolean | null
+          signature_valid?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          event_type?: string | null
+          id?: string
+          network_slug?: string | null
+          payload?: Json | null
+          processed?: boolean | null
+          signature_valid?: boolean | null
+        }
+        Relationships: []
+      }
       airfare_alerts: {
         Row: {
           adults: number
