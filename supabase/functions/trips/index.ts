@@ -111,6 +111,111 @@ serve(async (req) => {
       });
     }
 
+    // ── CREATE VERSION ────────────────────────────────────
+    if (action === "create-version" && req.method === "POST") {
+      const body = await req.json();
+      const tripId = body.trip_id;
+      if (!tripId) throw new Error("trip_id required");
+
+      // Check existing count
+      const { count } = await supabase.from("trip_versions").select("id", { count: "exact" }).eq("trip_id", tripId).eq("user_id", userId);
+      if ((count || 0) >= 3) {
+        return new Response(JSON.stringify({ error: "Max 3 versions per trip" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        });
+      }
+
+      // Get next version number
+      const { data: existing } = await supabase.from("trip_versions").select("version_number").eq("trip_id", tripId).eq("user_id", userId).order("version_number", { ascending: true });
+      const usedNums = new Set((existing || []).map((r: any) => r.version_number));
+      let nextNum = 1;
+      for (let i = 1; i <= 3; i++) { if (!usedNums.has(i)) { nextNum = i; break; } }
+
+      // Deactivate others if this is active
+      const isActive = body.is_active !== false;
+      if (isActive) {
+        await supabase.from("trip_versions").update({ is_active: false }).eq("trip_id", tripId).eq("user_id", userId);
+      }
+
+      const { data: version, error } = await supabase.from("trip_versions").insert({
+        user_id: userId,
+        trip_id: tripId,
+        version_number: nextNum,
+        name: body.name || `Version ${nextNum}`,
+        inputs: body.inputs || {},
+        plans: body.plans || [],
+        totals: body.totals || {},
+        warnings: body.warnings || [],
+        is_active: isActive,
+      }).select().single();
+
+      if (error) throw error;
+      return new Response(JSON.stringify({ version }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 201,
+      });
+    }
+
+    // ── LIST VERSIONS ─────────────────────────────────────
+    if (action === "list-versions") {
+      const tripId = url.searchParams.get("trip_id");
+      if (!tripId) throw new Error("trip_id required");
+      const { data, error } = await supabase.from("trip_versions").select("*")
+        .eq("trip_id", tripId).eq("user_id", userId).order("version_number", { ascending: true });
+      if (error) throw error;
+      return new Response(JSON.stringify({ versions: data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
+    // ── UPDATE VERSION ────────────────────────────────────
+    if (action === "update-version" && req.method === "POST") {
+      const body = await req.json();
+      if (!body.id) throw new Error("Version id required");
+      const patch: Record<string, any> = { updated_at: new Date().toISOString() };
+      if (body.name !== undefined) patch.name = body.name;
+      if (body.plans !== undefined) patch.plans = body.plans;
+      if (body.totals !== undefined) patch.totals = body.totals;
+      if (body.inputs !== undefined) patch.inputs = body.inputs;
+      if (body.warnings !== undefined) patch.warnings = body.warnings;
+      if (body.is_active === true) {
+        // Deactivate others first
+        const { data: ver } = await supabase.from("trip_versions").select("trip_id").eq("id", body.id).eq("user_id", userId).single();
+        if (ver) await supabase.from("trip_versions").update({ is_active: false }).eq("trip_id", ver.trip_id).eq("user_id", userId);
+        patch.is_active = true;
+      }
+      const { data, error } = await supabase.from("trip_versions").update(patch).eq("id", body.id).eq("user_id", userId).select().single();
+      if (error) throw error;
+      return new Response(JSON.stringify({ version: data }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
+    // ── DELETE VERSION ────────────────────────────────────
+    if (action === "delete-version" && req.method === "POST") {
+      const { id } = await req.json();
+      if (!id) throw new Error("Version id required");
+      // Don't allow deleting the last version
+      const { data: ver } = await supabase.from("trip_versions").select("trip_id, is_active").eq("id", id).eq("user_id", userId).single();
+      if (!ver) throw new Error("Version not found");
+      const { count } = await supabase.from("trip_versions").select("id", { count: "exact" }).eq("trip_id", ver.trip_id).eq("user_id", userId);
+      if ((count || 0) <= 1) {
+        return new Response(JSON.stringify({ error: "Cannot delete the last version" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        });
+      }
+      await supabase.from("trip_versions").delete().eq("id", id).eq("user_id", userId);
+      // If deleted version was active, activate the first remaining
+      if (ver.is_active) {
+        const { data: remaining } = await supabase.from("trip_versions").select("id").eq("trip_id", ver.trip_id).eq("user_id", userId).order("version_number", { ascending: true }).limit(1);
+        if (remaining?.[0]) {
+          await supabase.from("trip_versions").update({ is_active: true }).eq("id", remaining[0].id);
+        }
+      }
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     throw new Error("Unknown action");
 
   } catch (error) {
