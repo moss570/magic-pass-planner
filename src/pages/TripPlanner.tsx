@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
+import ItineraryCard from "@/components/trip-planner/ItineraryCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
@@ -218,6 +219,7 @@ function ResultsView({
   plans, estimatedTotal, budget, budgetBreakdown, ticketInfo, hotelRecs, diningRecs,
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
+  onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -241,7 +243,13 @@ function ResultsView({
   onSyncDining: () => void;
   onRegenerate: () => void;
   generating: boolean;
+  onDayUpdated: (dayIndex: number, newPlan: DayPlan) => void;
+  getHeaders: () => Record<string, string>;
+  supabaseUrl: string;
+  walkingSpeedKmh: number;
+  tripId?: string | null;
 }) {
+  const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
     <div className="space-y-4">
       {/* Trip Summary */}
@@ -341,7 +349,21 @@ function ResultsView({
       </div>
 
       {plans.map((plan, i) => (
-        <DayCard key={i} plan={plan} dayNum={i + 1} />
+        useEnhancedCards ? (
+          <ItineraryCard
+            key={i}
+            plan={plan}
+            dayNum={i + 1}
+            dayIndex={i}
+            tripId={tripId}
+            onDayUpdated={onDayUpdated}
+            getHeaders={getHeaders}
+            supabaseUrl={supabaseUrl}
+            walkingSpeedKmh={walkingSpeedKmh}
+          />
+        ) : (
+          <DayCard key={i} plan={plan} dayNum={i + 1} />
+        )
       ))}
 
       {tripCoverage && tripCoverage.totalAttractionsScheduled > 0 && (
@@ -645,6 +667,10 @@ function TripPlannerWizard() {
 
   // If results are generated, show results view
   if (generated && plans.length > 0) {
+    const handleDayUpdated = (dayIndex: number, newPlan: DayPlan) => {
+      setPlans(prev => prev.map((p, i) => i === dayIndex ? newPlan : p));
+    };
+
     return (
       <DashboardLayout title="🗺️ Trip Planner" subtitle="Your personalized itinerary">
         <ResultsView
@@ -658,6 +684,11 @@ function TripPlannerWizard() {
           onExportPDF={() => { window.print(); toast({ title: "📄 Print dialog opened" }); }}
           onSyncDining={syncDiningAlerts}
           onRegenerate={generateItinerary} generating={generating}
+          onDayUpdated={handleDayUpdated}
+          getHeaders={getHeaders}
+          supabaseUrl={SUPABASE_URL}
+          walkingSpeedKmh={draft.walkingSpeedKmh}
+          tripId={savedTripId}
         />
       </DashboardLayout>
     );
@@ -1036,6 +1067,11 @@ function TripPlannerLegacy() {
             onExportPDF={() => { window.print(); toast({ title: "📄 Print dialog opened" }); }}
             onSyncDining={syncDiningAlerts}
             onRegenerate={generateItinerary} generating={generating}
+            onDayUpdated={(dayIndex, newPlan) => setPlans(prev => prev.map((p, i) => i === dayIndex ? newPlan : p))}
+            getHeaders={getHeaders}
+            supabaseUrl={SUPABASE_URL}
+            walkingSpeedKmh={2.5}
+            tripId={savedTripId}
           />
         )}
 
