@@ -494,7 +494,6 @@ export default function MagicBeacon() {
                       <Radio className="w-5 h-5" /> Start My Beacon
                     </button>
                   </FeatureGate>
-                  </button>
                 </div>
               </div>
             )}
