@@ -124,8 +124,13 @@ export default function GroupCoordinator() {
 
   return (
     <DashboardLayout title="👨‍👩‍👧 Group Coordinator" subtitle={selectedTrip ? `${selectedTrip.name} — ${selectedTrip.start_date}` : "Plan together, stay in sync"}>
+      <FeatureGate hasAccess={access.groupCoordinator !== false} featureName="Group Coordinator" requiredPlan="90 Day Magic Pass Planner">
       <div className="space-y-5">
-
+        {isReadOnly && (
+          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
+            📋 You're viewing this trip as a guest (read-only). Upgrade to edit.
+          </div>
+        )}
         {/* No trips CTA */}
         {!loading && trips.length === 0 && (
           <div className="text-center py-16">
