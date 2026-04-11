@@ -14,6 +14,8 @@ import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
 import ShowTimes from "@/pages/ShowTimes";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 

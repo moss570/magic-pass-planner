@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import ForwardingAddressCard from "@/components/reservations/ForwardingAddressCard";
 import ParseResultModal from "@/components/reservations/ParseResultModal";
 import InboxFeed from "@/components/reservations/InboxFeed";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
