@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Castle, RefreshCw, Calendar, Users, Minus, Plus, Sparkles,
   ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle,
@@ -11,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import VersionSwitcher, { type TripVersion } from "@/components/trip-planner/VersionSwitcher";
 
 // Wizard components
 import Stepper from "@/components/trip-planner/Stepper";
@@ -485,6 +487,103 @@ function TripPlannerWizard() {
   const [tripCoverage, setTripCoverage] = useState<any>(null);
   const [nonParkSuggestions, setNonParkSuggestions] = useState<any[]>([]);
 
+  // Version state
+  const [versions, setVersions] = useState<TripVersion[]>([]);
+  const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const useVersions = isFeatureEnabled('itineraryVersions');
+
+  // Load versions when trip is saved
+  const loadVersions = useCallback(async (tripId: string) => {
+    if (!session || !useVersions) return;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=list-versions&trip_id=${tripId}`, { headers: getHeaders() });
+      const data = await resp.json();
+      setVersions(data.versions || []);
+      const active = (data.versions || []).find((v: TripVersion) => v.is_active);
+      if (active) setActiveVersionId(active.id);
+    } catch {}
+  }, [session, useVersions]);
+
+  // Save current results as a version
+  const saveAsVersion = useCallback(async (tripId: string, versionName?: string) => {
+    if (!session || !useVersions) return;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=create-version`, {
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify({
+          trip_id: tripId,
+          name: versionName,
+          inputs: {
+            selectedParks: draft.selectedParks, startDate: draft.startDate, endDate: draft.endDate,
+            adults: draft.adults, children: draft.children, ages: draft.ages,
+            ridePreference: draft.ridePreference, budget: draft.budget, llOption: draft.llOption,
+            parkHopper: draft.parkHopper, lodging: draft.lodging, mustDoAttractions: draft.mustDoAttractions,
+          },
+          plans,
+          totals: { estimatedTotal, budgetBreakdown },
+          warnings: [],
+        }),
+      });
+      const data = await resp.json();
+      if (data.error) { toast({ title: data.error, variant: "destructive" }); return; }
+      await loadVersions(tripId);
+    } catch {}
+  }, [session, useVersions, draft, plans, estimatedTotal, budgetBreakdown]);
+
+  const switchVersion = (v: TripVersion) => {
+    setActiveVersionId(v.id);
+    setPlans(v.plans || []);
+    setEstimatedTotal(v.totals?.estimatedTotal || null);
+    setBudgetBreakdown(v.totals?.budgetBreakdown || null);
+  };
+
+  const handleDuplicateVersion = async () => {
+    if (!savedTripId) return;
+    await saveAsVersion(savedTripId, `Version ${versions.length + 1}`);
+    toast({ title: "✨ Version duplicated! Edit inputs and regenerate." });
+  };
+
+  const handleRenameVersion = async (versionId: string, newName: string) => {
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/trips?action=update-version`, {
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify({ id: versionId, name: newName }),
+      });
+      setVersions(prev => prev.map(v => v.id === versionId ? { ...v, name: newName } : v));
+    } catch {}
+  };
+
+  const handleDeleteVersion = async (versionId: string) => {
+    if (!savedTripId) return;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/trips?action=delete-version`, {
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify({ id: versionId }),
+      });
+      const data = await resp.json();
+      if (data.error) { toast({ title: data.error, variant: "destructive" }); return; }
+      await loadVersions(savedTripId);
+      // Switch to first remaining if we deleted current
+      if (versionId === activeVersionId) {
+        const remaining = versions.filter(v => v.id !== versionId);
+        if (remaining[0]) switchVersion(remaining[0]);
+      }
+    } catch {}
+  };
+
+  const handleSetActiveVersion = async (versionId: string) => {
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/trips?action=update-version`, {
+        method: "POST", headers: getHeaders(),
+        body: JSON.stringify({ id: versionId, is_active: true }),
+      });
+      setVersions(prev => prev.map(v => ({ ...v, is_active: v.id === versionId })));
+      setActiveVersionId(versionId);
+      toast({ title: "✅ Active version updated" });
+    } catch {}
+  };
+
   // Check for existing draft on mount
   useEffect(() => {
     const existing = loadDraft(userId);
@@ -610,6 +709,11 @@ function TripPlannerWizard() {
             }
             toast({ title: `📧 Invites sent to ${draft.tripMembers.length} member(s)!` });
           }
+
+          // Auto-save as version 1
+          if (useVersions && newTripId) {
+            await saveAsVersion(newTripId, "Version 1");
+          }
         } catch {}
       }
     } catch (err) {
@@ -683,6 +787,21 @@ function TripPlannerWizard() {
 
     return (
       <DashboardLayout title="🗺️ Trip Planner" subtitle="Your personalized itinerary">
+        {useVersions && savedTripId && versions.length > 0 && (
+          <div className="mb-4">
+            <VersionSwitcher
+              versions={versions}
+              activeVersionId={activeVersionId}
+              onSwitch={switchVersion}
+              onDuplicate={handleDuplicateVersion}
+              onRename={handleRenameVersion}
+              onDelete={handleDeleteVersion}
+              onSetActive={handleSetActiveVersion}
+              onCompare={() => navigate(`/trip/${savedTripId}/compare`)}
+              disabled={generating}
+            />
+          </div>
+        )}
         <ResultsView
           plans={plans} estimatedTotal={estimatedTotal} budget={draft.budget}
           budgetBreakdown={budgetBreakdown} ticketInfo={ticketInfo} hotelRecs={hotelRecs}

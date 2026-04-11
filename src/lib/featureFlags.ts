@@ -28,6 +28,9 @@ export const featureFlags = {
 
   /** Travel Party Invites with 72-hour discount */
   travelPartyInvites: true,
+
+  /** Itinerary Versions (up to 3) + side-by-side compare */
+  itineraryVersions: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
