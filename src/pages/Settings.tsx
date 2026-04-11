@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Castle, Upload, Copy, Mail, MessageSquare, Twitter, Facebook, ClipboardCopy, Loader2, Trash2, Pencil, Eye } from "lucide-react";
+import WalkingSpeedCalibrator from "@/components/settings/WalkingSpeedCalibrator";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -28,6 +30,7 @@ const Settings = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [walkingSpeedKmh, setWalkingSpeedKmh] = useState<number | null>(null);
 
   const [apTier, setApTier] = useState("None");
   const [apExpiration, setApExpiration] = useState("");
@@ -67,6 +70,7 @@ const Settings = () => {
           setUsername((data as any).username || "");
           setMembershipCategory((data as any).membership_category || "Annual Passholder");
           setAvatarUrl((data as any).avatar_url || null);
+          setWalkingSpeedKmh((data as any).walking_speed_kmh || null);
         }
         setLoadingProfile(false);
       });
@@ -433,6 +437,13 @@ const Settings = () => {
           <Button className="text-xs">Save Notification Preferences</Button>
         </CardContent>
       </Card>
+
+      {/* Section 5b: Trip Preferences — Walking Speed */}
+      {isFeatureEnabled("budgetUpgrades") && user && (
+        <div className="mb-6">
+          <WalkingSpeedCalibrator userId={user.id} currentSpeed={walkingSpeedKmh} />
+        </div>
+      )}
 
       <TripProfilesSection userId={user?.id} navigate={navigate} />
 
