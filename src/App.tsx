@@ -38,6 +38,7 @@ import Feed from "./pages/Feed";
 import InboxPage from "./pages/Inbox";
 import HotelAlerts from "./pages/HotelAlerts";
 import AirfareTracker from "./pages/AirfareTracker";
+import ReservationsInbox from "./pages/ReservationsInbox";
 
 const queryClient = new QueryClient();
 
