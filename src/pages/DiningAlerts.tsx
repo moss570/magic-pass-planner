@@ -226,6 +226,14 @@ export default function DiningAlerts() {
   const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
   const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
 
+  const diningLimit = (() => {
+    try {
+      const { useSubscription: useSub } = require("@/hooks/useSubscription");
+      // Can't call hooks conditionally — handle below
+    } catch {}
+    return undefined;
+  })();
+
   return (
     <DashboardLayout
       title="🍽️ Dining Reservation Alerts"
