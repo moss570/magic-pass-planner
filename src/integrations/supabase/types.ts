@@ -14,6 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
+      airfare_alerts: {
+        Row: {
+          adults: number
+          airline: string | null
+          booking_link: string | null
+          cabin_class: string
+          check_count: number | null
+          children: number
+          confirmation_number: string | null
+          created_at: string
+          current_price: number | null
+          depart_date: string
+          destination: string
+          flight_numbers: string[] | null
+          id: string
+          last_checked_at: string | null
+          notify_email: boolean | null
+          notify_sms: boolean | null
+          origin: string
+          price_history: Json | null
+          return_date: string
+          status: string
+          stops_max: number | null
+          target_price: number
+          trip_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adults?: number
+          airline?: string | null
+          booking_link?: string | null
+          cabin_class?: string
+          check_count?: number | null
+          children?: number
+          confirmation_number?: string | null
+          created_at?: string
+          current_price?: number | null
+          depart_date: string
+          destination?: string
+          flight_numbers?: string[] | null
+          id?: string
+          last_checked_at?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          origin: string
+          price_history?: Json | null
+          return_date: string
+          status?: string
+          stops_max?: number | null
+          target_price: number
+          trip_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adults?: number
+          airline?: string | null
+          booking_link?: string | null
+          cabin_class?: string
+          check_count?: number | null
+          children?: number
+          confirmation_number?: string | null
+          created_at?: string
+          current_price?: number | null
+          depart_date?: string
+          destination?: string
+          flight_numbers?: string[] | null
+          id?: string
+          last_checked_at?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          origin?: string
+          price_history?: Json | null
+          return_date?: string
+          status?: string
+          stops_max?: number | null
+          target_price?: number
+          trip_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "airfare_alerts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_notifications: {
         Row: {
           body: string
@@ -918,6 +1010,96 @@ export type Database = {
         }
         Relationships: []
       }
+      hotel_alerts: {
+        Row: {
+          adults: number
+          booking_link: string | null
+          check_count: number | null
+          check_in: string
+          check_out: string
+          children: number
+          confirmation_number: string | null
+          created_at: string
+          current_price: number | null
+          hotel_id: string | null
+          hotel_name: string
+          id: string
+          last_checked_at: string | null
+          last_checked_status: string | null
+          notify_email: boolean | null
+          notify_sms: boolean | null
+          price_history: Json | null
+          status: string
+          target_price: number
+          trip_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adults?: number
+          booking_link?: string | null
+          check_count?: number | null
+          check_in: string
+          check_out: string
+          children?: number
+          confirmation_number?: string | null
+          created_at?: string
+          current_price?: number | null
+          hotel_id?: string | null
+          hotel_name: string
+          id?: string
+          last_checked_at?: string | null
+          last_checked_status?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          price_history?: Json | null
+          status?: string
+          target_price: number
+          trip_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adults?: number
+          booking_link?: string | null
+          check_count?: number | null
+          check_in?: string
+          check_out?: string
+          children?: number
+          confirmation_number?: string | null
+          created_at?: string
+          current_price?: number | null
+          hotel_id?: string | null
+          hotel_name?: string
+          id?: string
+          last_checked_at?: string | null
+          last_checked_status?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          price_history?: Json | null
+          status?: string
+          target_price?: number
+          trip_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotel_alerts_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "off_property_hotels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotel_alerts_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       land_crowd_windows: {
         Row: {
           created_at: string
@@ -1065,6 +1247,63 @@ export type Database = {
           notes?: string | null
           scrape_frequency?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      off_property_hotels: {
+        Row: {
+          amenities: string[] | null
+          booking_url_template: string | null
+          brand: string | null
+          created_at: string
+          distance_to_ak_mi: number | null
+          distance_to_epcot_mi: number | null
+          distance_to_hs_mi: number | null
+          distance_to_mk_mi: number | null
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          star_rating: number | null
+          typical_nightly_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          amenities?: string[] | null
+          booking_url_template?: string | null
+          brand?: string | null
+          created_at?: string
+          distance_to_ak_mi?: number | null
+          distance_to_epcot_mi?: number | null
+          distance_to_hs_mi?: number | null
+          distance_to_mk_mi?: number | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          star_rating?: number | null
+          typical_nightly_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amenities?: string[] | null
+          booking_url_template?: string | null
+          brand?: string | null
+          created_at?: string
+          distance_to_ak_mi?: number | null
+          distance_to_epcot_mi?: number | null
+          distance_to_hs_mi?: number | null
+          distance_to_mk_mi?: number | null
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          star_rating?: number | null
+          typical_nightly_rate?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1229,6 +1468,33 @@ export type Database = {
           post_id?: string
           reaction_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      price_check_runs: {
+        Row: {
+          alerts_checked: number | null
+          alerts_updated: number | null
+          errors: Json | null
+          function_name: string
+          id: string
+          run_at: string
+        }
+        Insert: {
+          alerts_checked?: number | null
+          alerts_updated?: number | null
+          errors?: Json | null
+          function_name: string
+          id?: string
+          run_at?: string
+        }
+        Update: {
+          alerts_checked?: number | null
+          alerts_updated?: number | null
+          errors?: Json | null
+          function_name?: string
+          id?: string
+          run_at?: string
         }
         Relationships: []
       }
