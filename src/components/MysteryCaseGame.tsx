@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Pause, Play, Search, Lock, Unlock, Clock } from "lucide-react";
@@ -156,6 +157,7 @@ export default function MysteryCaseGame({ onClose }: { onClose: () => void }) {
         setCurrentClue(c => c + 1);
       } else {
         setGameOver(true);
+        saveHighScore("mystery-case", score + (correct ? clue.points : 0), "normal", true);
       }
       setClues(newClues);
       setSelectedAnswer(null);

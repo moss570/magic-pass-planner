@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy } from "lucide-react";
@@ -52,6 +53,7 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
         setQIdx(i => i + 1);
       } else {
         setShowResult(true);
+        saveHighScore("would-you-rather", s + pts, "normal", true);
       }
     }, 2000);
   };

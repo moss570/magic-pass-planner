@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Search } from "lucide-react";
@@ -58,6 +59,7 @@ export default function WhoDidItGame({ onClose }: { onClose: () => void }) {
     if (guess.tool === answer.tool) pts += 100;
     if (round <= 3 && pts === 300) pts += 50; // Early solve bonus
     setScore(pts);
+    saveHighScore("who-did-it", pts, "normal", true);
     setPhase("result");
   };
 

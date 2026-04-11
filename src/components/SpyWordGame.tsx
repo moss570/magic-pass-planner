@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Eye, EyeOff } from "lucide-react";
@@ -26,7 +27,7 @@ export default function SpyWordGame({ onClose }: { onClose: () => void }) {
     } else if (wordSet.spyWords.includes(idx)) {
       setScore(s => s + 100);
       setSpyFound(s => {
-        if (s + 1 >= wordSet.spyWords.length) setGameOver(true);
+        if (s + 1 >= wordSet.spyWords.length) { setGameOver(true); saveHighScore("spy-word", score + 100, "normal", true); }
         return s + 1;
       });
     }
@@ -58,13 +59,13 @@ export default function SpyWordGame({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        <div className="grid grid-cols-5 gap-2 mb-4">
+        <div className="grid grid-cols-5 gap-1.5 md:gap-2 mb-4">
           {wordSet.words.map((word, idx) => {
             const isSpy = wordSet.spyWords.includes(idx);
             const isAssassin = idx === wordSet.assassin;
             return (
               <motion.button key={idx} whileTap={{ scale: 0.9 }} onClick={() => revealWord(idx)}
-                className={`p-2 rounded-lg text-xs font-bold h-16 flex items-center justify-center transition-all border
+                className={`p-1.5 md:p-2 rounded-lg text-[10px] md:text-xs font-bold h-12 md:h-16 flex items-center justify-center transition-all border
                   ${revealed[idx] ? (isAssassin ? "bg-red-600 border-red-500 text-white" : isSpy ? "bg-cyan-500 border-cyan-400 text-black" : "bg-white/20 border-white/10 text-white/40") :
                     showSpy && isSpy ? "bg-cyan-500/20 border-cyan-500/40 text-white" :
                     showSpy && isAssassin ? "bg-red-500/20 border-red-500/40 text-white" :

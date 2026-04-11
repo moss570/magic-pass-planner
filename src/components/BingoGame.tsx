@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Trophy, Volume2 } from "lucide-react";
@@ -56,7 +57,8 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
     if (gameOver) return;
     const timer = setInterval(() => {
       setCallIdx(prev => {
-        if (prev >= 75) { setGameOver(true); return prev; }
+        if (prev >= 75) { setGameOver(true);
+        saveHighScore("bingo", score + (round < 3 ? [100,150,200,100][round] : 0), "normal", true); return prev; }
         setCalledNumbers(cn => [...cn, callOrder[prev]]);
         return prev + 1;
       });
@@ -164,7 +166,7 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
                   <motion.button key={`${col}-${row}`}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => toggleMark(col, row)}
-                    className={`aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all
+                    className={`aspect-square rounded-lg flex items-center justify-center text-xs md:text-sm font-bold transition-all
                       ${isMarked ? "bg-green-500 text-black shadow-lg shadow-green-500/30" :
                         isCalled ? "bg-white/20 text-white border border-green-500/50" :
                         "bg-white/5 text-white/40 border border-white/10"}`}>

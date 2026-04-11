@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Globe } from "lucide-react";
@@ -42,7 +43,7 @@ export default function GeographyGame({ onClose }: { onClose: () => void }) {
       setPicked(null);
       setTimeLeft(20);
       if (qIdx < QUESTIONS.length - 1) setQIdx(i => i + 1);
-      else setGameOver(true);
+      else { setGameOver(true); saveHighScore("geography", score + (answer === q.answer ? 75 : 0), "normal", true); }
     }, 1500);
   };
 

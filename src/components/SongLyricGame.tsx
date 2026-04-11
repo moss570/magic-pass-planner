@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Music } from "lucide-react";
@@ -41,7 +42,7 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
       setPicked(null);
       setCorrect(null);
       if (qIdx < SONGS.length - 1) setQIdx(i => i + 1);
-      else setGameOver(true);
+      else { setGameOver(true); saveHighScore("song-lyric", score + (answer === q.answer ? 25 : 0), "normal", true); }
     }, 1500);
   };
 

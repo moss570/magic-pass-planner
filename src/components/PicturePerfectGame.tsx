@@ -1,3 +1,4 @@
+import { saveHighScore } from "@/lib/gameScores";
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Eraser } from "lucide-react";
@@ -64,6 +65,7 @@ export default function PicturePerfectGame({ onClose }: { onClose: () => void })
     if (guess.trim().toLowerCase() === prompt.toLowerCase()) {
       const pts = timeLeft > 40 ? 100 : timeLeft > 20 ? 50 : 25;
       setScore(pts);
+      saveHighScore("picture-perfect", pts, "normal", true);
       setGuessed(true);
     } else {
       setGuess("");
@@ -106,8 +108,8 @@ export default function PicturePerfectGame({ onClose }: { onClose: () => void })
         </div>
 
         <div className="flex justify-center mb-4">
-          <canvas ref={canvasRef} width={300} height={300}
-            className="bg-black/50 rounded-xl border border-white/20 touch-none cursor-crosshair"
+          <canvas ref={canvasRef} width={280} height={280}
+            className="bg-black/50 rounded-xl border border-white/20 touch-none cursor-crosshair max-w-full"
             onMouseDown={startDraw} onMouseMove={draw} onMouseUp={stopDraw} onMouseLeave={stopDraw}
             onTouchStart={startDraw} onTouchMove={draw} onTouchEnd={stopDraw} />
         </div>
