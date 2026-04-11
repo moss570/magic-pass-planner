@@ -81,6 +81,7 @@ const App = () => (
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
             <Route path="/hotel-alerts" element={<ProtectedRoute><HotelAlerts /></ProtectedRoute>} />
             <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
+            <Route path="/reservations" element={<ProtectedRoute><ReservationsInbox /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

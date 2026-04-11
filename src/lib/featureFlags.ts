@@ -22,6 +22,9 @@ export const featureFlags = {
 
   /** Airfare Tracker page */
   airfareTracker: true,
+
+  /** Reservations Inbox with email forwarding */
+  reservationsInbox: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
