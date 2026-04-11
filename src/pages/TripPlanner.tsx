@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import VersionSwitcher, { type TripVersion } from "@/components/trip-planner/VersionSwitcher";
 
 // Wizard components
 import Stepper from "@/components/trip-planner/Stepper";
