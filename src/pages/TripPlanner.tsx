@@ -787,6 +787,21 @@ function TripPlannerWizard() {
 
     return (
       <DashboardLayout title="🗺️ Trip Planner" subtitle="Your personalized itinerary">
+        {useVersions && savedTripId && versions.length > 0 && (
+          <div className="mb-4">
+            <VersionSwitcher
+              versions={versions}
+              activeVersionId={activeVersionId}
+              onSwitch={switchVersion}
+              onDuplicate={handleDuplicateVersion}
+              onRename={handleRenameVersion}
+              onDelete={handleDeleteVersion}
+              onSetActive={handleSetActiveVersion}
+              onCompare={() => navigate(`/trip/${savedTripId}/compare`)}
+              disabled={generating}
+            />
+          </div>
+        )}
         <ResultsView
           plans={plans} estimatedTotal={estimatedTotal} budget={draft.budget}
           budgetBreakdown={budgetBreakdown} ticketInfo={ticketInfo} hotelRecs={hotelRecs}
