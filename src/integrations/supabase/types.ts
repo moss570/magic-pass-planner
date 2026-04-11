@@ -318,6 +318,214 @@ export type Database = {
           },
         ]
       }
+      ap_hotel_alerts: {
+        Row: {
+          adults: number
+          brand_id: string
+          check_count: number | null
+          check_in: string
+          check_out: string
+          children: number
+          created_at: string
+          current_best_discount: number | null
+          current_best_rate: number | null
+          hotel_id: string | null
+          hotel_name: string
+          id: string
+          last_checked_at: string | null
+          notify_email: boolean | null
+          notify_sms: boolean | null
+          price_history: Json | null
+          status: string
+          target_discount_percent: number | null
+          target_max_rate: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adults?: number
+          brand_id: string
+          check_count?: number | null
+          check_in: string
+          check_out: string
+          children?: number
+          created_at?: string
+          current_best_discount?: number | null
+          current_best_rate?: number | null
+          hotel_id?: string | null
+          hotel_name: string
+          id?: string
+          last_checked_at?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          price_history?: Json | null
+          status?: string
+          target_discount_percent?: number | null
+          target_max_rate?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adults?: number
+          brand_id?: string
+          check_count?: number | null
+          check_in?: string
+          check_out?: string
+          children?: number
+          created_at?: string
+          current_best_discount?: number | null
+          current_best_rate?: number | null
+          hotel_id?: string | null
+          hotel_name?: string
+          id?: string
+          last_checked_at?: string | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          price_history?: Json | null
+          status?: string
+          target_discount_percent?: number | null
+          target_max_rate?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_hotel_alerts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ap_merch_alerts: {
+        Row: {
+          brand_id: string
+          categories: string[] | null
+          check_count: number | null
+          created_at: string
+          drop_id: string | null
+          id: string
+          keywords: string[] | null
+          last_checked_at: string | null
+          last_match_ids: string[] | null
+          notify_email: boolean | null
+          notify_sms: boolean | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand_id: string
+          categories?: string[] | null
+          check_count?: number | null
+          created_at?: string
+          drop_id?: string | null
+          id?: string
+          keywords?: string[] | null
+          last_checked_at?: string | null
+          last_match_ids?: string[] | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand_id?: string
+          categories?: string[] | null
+          check_count?: number | null
+          created_at?: string
+          drop_id?: string | null
+          id?: string
+          keywords?: string[] | null
+          last_checked_at?: string | null
+          last_match_ids?: string[] | null
+          notify_email?: boolean | null
+          notify_sms?: boolean | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_merch_alerts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ap_merch_alerts_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "ap_merch_drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ap_merch_drops: {
+        Row: {
+          brand_id: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_limited: boolean | null
+          location: string | null
+          name: string
+          park_id: string | null
+          price_msrp: number | null
+          release_date: string | null
+          retired_at: string | null
+          source: string | null
+          source_url: string | null
+          tags: string[] | null
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_limited?: boolean | null
+          location?: string | null
+          name: string
+          park_id?: string | null
+          price_msrp?: number | null
+          release_date?: string | null
+          retired_at?: string | null
+          source?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_limited?: boolean | null
+          location?: string | null
+          name?: string
+          park_id?: string | null
+          price_msrp?: number | null
+          release_date?: string | null
+          retired_at?: string | null
+          source?: string | null
+          source_url?: string | null
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ap_merch_drops_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_notifications: {
         Row: {
           body: string
@@ -539,6 +747,45 @@ export type Database = {
           weather_high_f?: number | null
           weather_low_f?: number | null
           weather_summary?: string | null
+        }
+        Relationships: []
+      }
+      credit_cards: {
+        Row: {
+          base_reward_rate: number
+          created_at: string
+          dining_reward_rate: number | null
+          disney_reward_rate: number | null
+          hotel_reward_rate: number | null
+          id: string
+          issuer: string
+          name: string
+          notes: string | null
+          reward_type: string
+        }
+        Insert: {
+          base_reward_rate?: number
+          created_at?: string
+          dining_reward_rate?: number | null
+          disney_reward_rate?: number | null
+          hotel_reward_rate?: number | null
+          id: string
+          issuer: string
+          name: string
+          notes?: string | null
+          reward_type?: string
+        }
+        Update: {
+          base_reward_rate?: number
+          created_at?: string
+          dining_reward_rate?: number | null
+          disney_reward_rate?: number | null
+          hotel_reward_rate?: number | null
+          id?: string
+          issuer?: string
+          name?: string
+          notes?: string | null
+          reward_type?: string
         }
         Relationships: []
       }
@@ -1661,6 +1908,33 @@ export type Database = {
         }
         Relationships: []
       }
+      park_brands: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          parks: string[]
+          slug: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id: string
+          name: string
+          parks?: string[]
+          slug: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          parks?: string[]
+          slug?: string
+        }
+        Relationships: []
+      }
       park_crowd_forecasts: {
         Row: {
           crowd_level: number
@@ -1687,6 +1961,137 @@ export type Database = {
           source?: string | null
         }
         Relationships: []
+      }
+      park_discounts: {
+        Row: {
+          brand_id: string
+          category: string
+          created_at: string
+          description: string | null
+          discount_flat_amount: number | null
+          discount_percent: number | null
+          eligible_card_ids: string[] | null
+          eligible_pass_tiers: string[] | null
+          end_date: string | null
+          hotel_id: string | null
+          id: string
+          image_url: string | null
+          importance: number | null
+          is_stackable_with: string[] | null
+          last_verified_at: string | null
+          location: string | null
+          park_id: string | null
+          restaurant_id: string | null
+          source: string | null
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          discount_flat_amount?: number | null
+          discount_percent?: number | null
+          eligible_card_ids?: string[] | null
+          eligible_pass_tiers?: string[] | null
+          end_date?: string | null
+          hotel_id?: string | null
+          id?: string
+          image_url?: string | null
+          importance?: number | null
+          is_stackable_with?: string[] | null
+          last_verified_at?: string | null
+          location?: string | null
+          park_id?: string | null
+          restaurant_id?: string | null
+          source?: string | null
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          discount_flat_amount?: number | null
+          discount_percent?: number | null
+          eligible_card_ids?: string[] | null
+          eligible_pass_tiers?: string[] | null
+          end_date?: string | null
+          hotel_id?: string | null
+          id?: string
+          image_url?: string | null
+          importance?: number | null
+          is_stackable_with?: string[] | null
+          last_verified_at?: string | null
+          location?: string | null
+          park_id?: string | null
+          restaurant_id?: string | null
+          source?: string | null
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "park_discounts_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "park_discounts_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      park_passes: {
+        Row: {
+          blockout_summary: string | null
+          brand_id: string
+          created_at: string
+          discount_percent_dining: number | null
+          discount_percent_merch: number | null
+          display_name: string
+          id: string
+          tier: string
+        }
+        Insert: {
+          blockout_summary?: string | null
+          brand_id: string
+          created_at?: string
+          discount_percent_dining?: number | null
+          discount_percent_merch?: number | null
+          display_name: string
+          id: string
+          tier: string
+        }
+        Update: {
+          blockout_summary?: string | null
+          brand_id?: string
+          created_at?: string
+          discount_percent_dining?: number | null
+          discount_percent_merch?: number | null
+          display_name?: string
+          id?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "park_passes_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       park_paths: {
         Row: {
@@ -1945,6 +2350,68 @@ export type Database = {
         }
         Relationships: []
       }
+      promotions: {
+        Row: {
+          brand_id: string
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          eligible_card_ids: string[] | null
+          eligible_hotel_ids: string[] | null
+          eligible_pass_tiers: string[] | null
+          eligible_restaurant_ids: string[] | null
+          end_date: string | null
+          id: string
+          is_active: boolean
+          source_url: string | null
+          start_date: string | null
+          title: string
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          eligible_card_ids?: string[] | null
+          eligible_hotel_ids?: string[] | null
+          eligible_pass_tiers?: string[] | null
+          eligible_restaurant_ids?: string[] | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          source_url?: string | null
+          start_date?: string | null
+          title: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          eligible_card_ids?: string[] | null
+          eligible_hotel_ids?: string[] | null
+          eligible_pass_tiers?: string[] | null
+          eligible_restaurant_ids?: string[] | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean
+          source_url?: string | null
+          start_date?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotions_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations_inbox: {
         Row: {
           attachments: Json | null
@@ -2008,6 +2475,8 @@ export type Database = {
         Row: {
           accepts_walk_ins: boolean | null
           area: string | null
+          avg_ticket_per_person: number | null
+          brand_id: string | null
           created_at: string | null
           cuisine: string | null
           dining_plan: boolean | null
@@ -2015,18 +2484,25 @@ export type Database = {
           disney_url: string | null
           id: string
           is_active: boolean | null
+          lat: number | null
+          lng: number | null
           location: string
           location_type: string
           meal_periods: string[] | null
           name: string
+          park_id: string | null
           phone: string | null
           price_range: string | null
           requires_reservation: boolean | null
+          resort_id: string | null
+          service_type: string | null
           updated_at: string | null
         }
         Insert: {
           accepts_walk_ins?: boolean | null
           area?: string | null
+          avg_ticket_per_person?: number | null
+          brand_id?: string | null
           created_at?: string | null
           cuisine?: string | null
           dining_plan?: boolean | null
@@ -2034,18 +2510,25 @@ export type Database = {
           disney_url?: string | null
           id?: string
           is_active?: boolean | null
+          lat?: number | null
+          lng?: number | null
           location: string
           location_type: string
           meal_periods?: string[] | null
           name: string
+          park_id?: string | null
           phone?: string | null
           price_range?: string | null
           requires_reservation?: boolean | null
+          resort_id?: string | null
+          service_type?: string | null
           updated_at?: string | null
         }
         Update: {
           accepts_walk_ins?: boolean | null
           area?: string | null
+          avg_ticket_per_person?: number | null
+          brand_id?: string | null
           created_at?: string | null
           cuisine?: string | null
           dining_plan?: boolean | null
@@ -2053,16 +2536,29 @@ export type Database = {
           disney_url?: string | null
           id?: string
           is_active?: boolean | null
+          lat?: number | null
+          lng?: number | null
           location?: string
           location_type?: string
           meal_periods?: string[] | null
           name?: string
+          park_id?: string | null
           phone?: string | null
           price_range?: string | null
           requires_reservation?: boolean | null
+          resort_id?: string | null
+          service_type?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "park_brands"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       restrooms: {
         Row: {
@@ -2733,6 +3229,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credit_cards: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_credit_cards_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_memberships: {
+        Row: {
+          created_at: string
+          details: Json | null
+          expiration_date: string | null
+          id: string
+          is_active: boolean
+          membership_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean
+          membership_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean
+          membership_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_messages: {
         Row: {
           admin_reply: string | null
@@ -2774,6 +3338,44 @@ export type Database = {
           user_name?: string | null
         }
         Relationships: []
+      }
+      user_park_passes: {
+        Row: {
+          created_at: string
+          expiration_date: string | null
+          id: string
+          is_active: boolean
+          pass_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean
+          pass_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expiration_date?: string | null
+          id?: string
+          is_active?: boolean
+          pass_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_park_passes_pass_id_fkey"
+            columns: ["pass_id"]
+            isOneToOne: false
+            referencedRelation: "park_passes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users_profile: {
         Row: {
