@@ -948,6 +948,54 @@ export type Database = {
         }
         Relationships: []
       }
+      merchandise: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_limited: boolean
+          land: string
+          location: string
+          name: string
+          park_id: string
+          tags: string[] | null
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_limited?: boolean
+          land: string
+          location: string
+          name: string
+          park_id: string
+          tags?: string[] | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_limited?: boolean
+          land?: string
+          location?: string
+          name?: string
+          park_id?: string
+          tags?: string[] | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -1124,6 +1172,42 @@ export type Database = {
           },
         ]
       }
+      photopass_locations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_magic_shot: boolean
+          land: string
+          lat: number | null
+          lng: number | null
+          park_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_magic_shot?: boolean
+          land: string
+          lat?: number | null
+          lng?: number | null
+          park_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_magic_shot?: boolean
+          land?: string
+          lat?: number | null
+          lng?: number | null
+          park_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_reactions: {
         Row: {
           created_at: string | null
@@ -1205,6 +1289,42 @@ export type Database = {
           price_range?: string | null
           requires_reservation?: boolean | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      restrooms: {
+        Row: {
+          created_at: string
+          family_restroom: boolean
+          id: string
+          land: string
+          lat: number | null
+          lng: number | null
+          nursing_room: boolean
+          park_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          family_restroom?: boolean
+          id?: string
+          land: string
+          lat?: number | null
+          lng?: number | null
+          nursing_room?: boolean
+          park_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          family_restroom?: boolean
+          id?: string
+          land?: string
+          lat?: number | null
+          lng?: number | null
+          nursing_room?: boolean
+          park_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1306,6 +1426,45 @@ export type Database = {
           name?: string
           park_id?: string
           schedule?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      snacks: {
+        Row: {
+          created_at: string
+          dietary_flags: string[] | null
+          id: string
+          image_url: string | null
+          land: string
+          location: string
+          name: string
+          park_id: string
+          price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dietary_flags?: string[] | null
+          id?: string
+          image_url?: string | null
+          land: string
+          location: string
+          name: string
+          park_id: string
+          price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dietary_flags?: string[] | null
+          id?: string
+          image_url?: string | null
+          land?: string
+          location?: string
+          name?: string
+          park_id?: string
+          price?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -1412,6 +1571,51 @@ export type Database = {
           post_type?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      special_events: {
+        Row: {
+          availability_note: string | null
+          booking_url: string | null
+          category: string
+          created_at: string
+          description: string | null
+          duration_min: number
+          id: string
+          image_url: string | null
+          name: string
+          park_id: string
+          price_per_person: number | null
+          updated_at: string
+        }
+        Insert: {
+          availability_note?: string | null
+          booking_url?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          park_id: string
+          price_per_person?: number | null
+          updated_at?: string
+        }
+        Update: {
+          availability_note?: string | null
+          booking_url?: string | null
+          category?: string
+          created_at?: string
+          description?: string | null
+          duration_min?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          park_id?: string
+          price_per_person?: number | null
+          updated_at?: string
         }
         Relationships: []
       }
