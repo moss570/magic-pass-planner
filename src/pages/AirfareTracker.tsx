@@ -129,7 +129,7 @@ export default function AirfareTracker() {
   const filtered = alerts.filter(a => TABS[activeTab].status.includes(a.status as AlertStatus));
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Airfare Tracker">
       <div className="max-w-2xl mx-auto space-y-4 px-4 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -36,6 +36,8 @@ import EventAlerts from "./pages/EventAlerts";
 import LineGames from "./pages/LineGames";
 import Feed from "./pages/Feed";
 import InboxPage from "./pages/Inbox";
+import HotelAlerts from "./pages/HotelAlerts";
+import AirfareTracker from "./pages/AirfareTracker";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +79,8 @@ const App = () => (
             <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
+            <Route path="/hotel-alerts" element={<ProtectedRoute><HotelAlerts /></ProtectedRoute>} />
+            <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
