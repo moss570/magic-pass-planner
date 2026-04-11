@@ -43,6 +43,12 @@ export const featureFlags = {
 
   /** Best Days to Go v2 — real rolling 10-day forecast */
   bestDaysToGoV2: true,
+
+  /** AP Command Center: real discounts, alerts, stacking calculator */
+  apCommandCenterV2: true,
+
+  /** Settings: Credit Cards & Brand Passes sections */
+  settingsV2CreditCardsAndPasses: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
