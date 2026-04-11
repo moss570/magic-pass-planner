@@ -20,13 +20,6 @@ const discounts = [
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "AP Exclusive MagicBand+ discount", detail: "$34.99 (reg $44.99) · AP holders only", btn: "Shop Now →" },
 ];
 
-const bestDays = [
-  { day: "Tuesday, May 13", crowd: 2, color: "text-green-400", dot: "bg-green-400", note: "Best day in the next 30 days" },
-  { day: "Wednesday, May 14", crowd: 3, color: "text-green-400", dot: "bg-green-400", note: "Excellent — low crowds, no blockouts" },
-  { day: "Thursday, May 15", crowd: 3, color: "text-green-400", dot: "bg-green-400", note: "Strong choice, EPCOT Food & Wine in progress" },
-  { day: "Monday, May 19", crowd: 5, color: "text-yellow-400", dot: "bg-yellow-400", note: "Good — pre-holiday week, moderate crowds" },
-  { day: "Friday, May 16", crowd: 6, color: "text-yellow-400", dot: "bg-yellow-400", note: "Acceptable — weekend travelers arriving" },
-];
 
 // Calendar helpers
 const blockedDates = [24, 25, 26, 27];
