@@ -4,46 +4,57 @@
 
 @layer base {
   :root {
-    --background: 222 72% 7%;
+    /* ─── Refreshed Magic Pass Plus Palette ─── */
+    /* Background: Deep navy with slight blue warmth */
+    --background: 225 50% 6%;
     --foreground: 210 50% 98%;
 
-    --card: 217 47% 11%;
+    /* Cards: Slightly elevated surface */
+    --card: 220 40% 10%;
     --card-foreground: 210 50% 98%;
 
-    --popover: 217 47% 11%;
+    --popover: 220 40% 10%;
     --popover-foreground: 210 50% 98%;
 
-    --primary: 44 90% 61%;
-    --primary-foreground: 224 25% 8%;
+    /* Primary: Vibrant gold (kept, slightly warmer) */
+    --primary: 42 92% 56%;
+    --primary-foreground: 225 40% 7%;
 
-    --secondary: 270 60% 65%;
+    /* Secondary: Fresh teal-green accent (was purple) */
+    --secondary: 168 70% 50%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 222 47% 15%;
-    --muted-foreground: 218 11% 65%;
+    /* Muted: Soft slate */
+    --muted: 222 30% 14%;
+    --muted-foreground: 218 15% 60%;
 
-    --accent: 263 84% 58%;
+    /* Accent: Electric purple (kept, slightly brighter) */
+    --accent: 265 85% 60%;
     --accent-foreground: 210 50% 98%;
 
-    --destructive: 348 91% 61%;
+    /* Destructive: Coral red */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 50% 98%;
 
-    --success: 160 60% 45%;
+    /* Success: Emerald green */
+    --success: 160 65% 45%;
 
-    --border: 44 90% 61% / 0.2;
-    --input: 217 47% 20%;
-    --ring: 44 90% 61%;
+    /* Borders: Subtle gold tint */
+    --border: 42 92% 56% / 0.15;
+    --input: 220 35% 18%;
+    --ring: 42 92% 56%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 222 72% 7%;
+    /* Sidebar: Matches new background */
+    --sidebar-background: 225 50% 6%;
     --sidebar-foreground: 210 50% 98%;
-    --sidebar-primary: 44 90% 61%;
-    --sidebar-primary-foreground: 222 72% 7%;
-    --sidebar-accent: 263 84% 58%;
+    --sidebar-primary: 42 92% 56%;
+    --sidebar-primary-foreground: 225 50% 6%;
+    --sidebar-accent: 168 70% 50%;
     --sidebar-accent-foreground: 210 50% 98%;
-    --sidebar-border: 44 90% 61% / 0.2;
-    --sidebar-ring: 44 90% 61%;
+    --sidebar-border: 42 92% 56% / 0.15;
+    --sidebar-ring: 42 92% 56%;
   }
 }
 
