@@ -192,14 +192,8 @@ export default function ReservationsInbox() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout title="Reservations Inbox" subtitle="Forward or paste confirmations to auto-attach to your trip">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Reservations Inbox</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Forward or paste confirmations to auto-attach to your trip.
-          </p>
-        </div>
 
         {token && userId && (
           <ForwardingAddressCard
