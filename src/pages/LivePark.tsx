@@ -480,6 +480,18 @@ function LineGames() {
   );
 }
 
+// Parse LL return time into minutes from now
+function parseLLReturnMinutes(llState: string | null): number | null {
+  if (!llState || llState === "null" || llState === "Available") return null;
+  try {
+    const returnTime = new Date(llState);
+    if (isNaN(returnTime.getTime())) return null;
+    return Math.max(0, Math.round((returnTime.getTime() - Date.now()) / 60000));
+  } catch {
+    return null;
+  }
+}
+
 export default function LivePark() {
   const { user } = useAuth();
   const { toast } = useToast();
