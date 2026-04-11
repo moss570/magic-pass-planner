@@ -202,9 +202,3 @@ const APCommandCenter = () => {
 };
 
 export default APCommandCenter;
-      </div>
-    </DashboardLayout>
-  );
-};
-
-export default APCommandCenter;
