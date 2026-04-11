@@ -497,6 +497,7 @@ function parseLLReturnMinutes(llState: string | null): number | null {
 export default function LivePark() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const [selectedPark, setSelectedPark] = useState("magic-kingdom");
   const [parkData, setParkData] = useState<ParkData | null>(null);
   const [schedule, setSchedule] = useState<ScheduleData | null>(null);
