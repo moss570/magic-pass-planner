@@ -1,5 +1,5 @@
 import { useState, useState as _useState, useEffect } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail, Star, Heart, Vote, MapPin, Sun } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,11 +19,16 @@ const sidebarNav = [
   { icon: Mail, label: "Reservations", path: "/reservations" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
   { icon: Camera, label: "Photo Fun", path: "/photo-fun" },
+  { icon: Sun, label: "Photo Opps", path: "/photo-opps" },
   { icon: Gamepad2, label: "Games", path: "/games" },
   { icon: Ticket, label: "AP Command Center", path: "/ap-command-center" },
   { icon: Users, label: "Group Coordinator", path: "/group-coordinator" },
+  { icon: Vote, label: "Group Polls", path: "/group-polls" },
   { icon: Radio, label: "Magic Beacon", path: "/magic-beacon" },
-
+  { icon: Star, label: "Attraction Priorities", path: "/attraction-priorities" },
+  { icon: Heart, label: "Character Meets", path: "/character-meets" },
+  { icon: Sparkles, label: "Shows & Fireworks", path: "/shows-fireworks" },
+  { icon: MapPin, label: "Orlando Guide", path: "/orlando-guide" },
   { icon: UserPlus, label: "Friends", path: "/friends" },
   { icon: Wallet, label: "Budget Manager", path: "/budget-manager" },
   { icon: Settings, label: "Settings", path: "/settings" },

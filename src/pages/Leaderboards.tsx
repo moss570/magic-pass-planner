@@ -40,7 +40,7 @@ export default function Leaderboards() {
 
   const fetchScores = async () => {
     setLoading(true);
-    let query = supabase.from("game_high_scores")
+    let query = (supabase.from as any)("game_high_scores")
       .select("*, user:users_profile(username, first_name)")
       .order("final_score", { ascending: false })
       .limit(100);

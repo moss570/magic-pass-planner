@@ -45,6 +45,12 @@ import TripInvite from "./pages/TripInvite";
 import TripCompare from "./pages/TripCompare";
 import AffiliateNetworks from "./pages/admin/AffiliateNetworks";
 import ParkContent from "./pages/admin/ParkContent";
+import AttractionPriorities from "./pages/AttractionPriorities";
+import CharacterMeets from "./pages/CharacterMeets";
+import ShowFireworksPriorities from "./pages/ShowFireworksPriorities";
+import GroupPolls from "./pages/GroupPolls";
+import PhotoOpps from "./pages/PhotoOpps";
+import OrlandoInsidersGuide from "./pages/OrlandoInsidersGuide";
 
 const queryClient = new QueryClient();
 
@@ -86,7 +92,6 @@ const App = () => (
             <Route path="/games" element={<ProtectedRoute><GamesDiscovery /></ProtectedRoute>} />
             <Route path="/leaderboards" element={<ProtectedRoute><Leaderboards /></ProtectedRoute>} />
             <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
-            <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
             <Route path="/hotel-alerts" element={<ProtectedRoute><HotelAlerts /></ProtectedRoute>} />
             <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
@@ -95,6 +100,12 @@ const App = () => (
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
+            <Route path="/attraction-priorities" element={<ProtectedRoute><AttractionPriorities /></ProtectedRoute>} />
+            <Route path="/character-meets" element={<ProtectedRoute><CharacterMeets /></ProtectedRoute>} />
+            <Route path="/shows-fireworks" element={<ProtectedRoute><ShowFireworksPriorities /></ProtectedRoute>} />
+            <Route path="/group-polls" element={<ProtectedRoute><GroupPolls /></ProtectedRoute>} />
+            <Route path="/photo-opps" element={<ProtectedRoute><PhotoOpps /></ProtectedRoute>} />
+            <Route path="/orlando-guide" element={<ProtectedRoute><OrlandoInsidersGuide /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

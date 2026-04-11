@@ -49,6 +49,9 @@ export const featureFlags = {
 
   /** Settings: Credit Cards & Brand Passes sections */
   settingsV2CreditCardsAndPasses: true,
+
+  /** Subscription gating layer — plan-aware feature access */
+  subscriptionGating: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
