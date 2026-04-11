@@ -196,6 +196,7 @@ export default function ReservationsInbox() {
 
   return (
     <DashboardLayout title="Reservations Inbox" subtitle="Forward or paste confirmations to auto-attach to your trip">
+      <FeatureGate hasAccess={!!access.reservationFolder} featureName="Reservation Folder" requiredPlan="90 Day Magic Pass Planner">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {token && userId && (
