@@ -10,6 +10,9 @@ export const featureFlags = {
 
   /** Show Game Developer Mode entry point */
   gameDevMode: true,
+
+  /** Use the new multi-step Trip Planner wizard */
+  tripPlannerWizardV2: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
