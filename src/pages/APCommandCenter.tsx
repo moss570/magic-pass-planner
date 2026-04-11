@@ -18,7 +18,6 @@ const blockedDates = [24, 25, 26, 27];
 const today = 3;
 
 const APCommandCenter = () => {
-  const [discountFilter, setDiscountFilter] = useState("All");
   const [liveOffers, setLiveOffers] = useState<any[]>([]);
   const [offersLoading, setOffersLoading] = useState(true);
 
@@ -33,22 +32,6 @@ const APCommandCenter = () => {
         setOffersLoading(false);
       });
   }, []);
-  const [hotelAlert, setHotelAlert] = useState(true);
-  const [merchAlert, setMerchAlert] = useState(true);
-  const [billAmount, setBillAmount] = useState("120");
-  const [hasAP, setHasAP] = useState(true);
-  const [hasVisa, setHasVisa] = useState(true);
-  const [hasRedCard, setHasRedCard] = useState(true);
-
-  const bill = parseFloat(billAmount) || 120;
-  const apSavings = hasAP ? bill * 0.1 : 0;
-  const visaSavings = hasVisa ? bill * 0.1 : 0;
-  const bestDining = Math.max(apSavings, visaSavings);
-  const giftCardSavings = hasRedCard ? bill * 0.015 : 0;
-  const totalDiscount = bestDining + giftCardSavings;
-  const youPay = (bill - totalDiscount).toFixed(2);
-
-  const filteredDiscounts = discountFilter === "All" ? discounts : discounts.filter((d) => d.cat === discountFilter);
 
   const calendarDays = Array.from({ length: 31 }, (_, i) => i + 1);
 
