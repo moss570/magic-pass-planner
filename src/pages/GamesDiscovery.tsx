@@ -13,7 +13,7 @@ const games = [
     players: "2-10",
     time: "15 min",
     color: "from-red-500 to-orange-500",
-    path: "/trivia",
+    path: "/ride-line-quest?game=trivia",
   },
   {
     id: "bingo",
@@ -23,7 +23,7 @@ const games = [
     players: "2-10",
     time: "20 min",
     color: "from-green-500 to-teal-500",
-    path: "/bingo",
+    path: "/ride-line-quest?game=bingo",
   },
   {
     id: "who-did-it",
@@ -33,7 +33,7 @@ const games = [
     players: "2-10",
     time: "15 min",
     color: "from-purple-500 to-pink-500",
-    path: "/who-did-it",
+    path: "/ride-line-quest?game=who-did-it",
   },
   {
     id: "would-you-rather",
@@ -43,7 +43,7 @@ const games = [
     players: "2-10",
     time: "10 min",
     color: "from-blue-500 to-cyan-500",
-    path: "/would-you-rather",
+    path: "/ride-line-quest?game=would-you-rather",
   },
   {
     id: "picture-perfect",
@@ -53,7 +53,7 @@ const games = [
     players: "2-10",
     time: "15 min",
     color: "from-pink-500 to-rose-500",
-    path: "/picture-perfect",
+    path: "/ride-line-quest?game=picture-perfect",
   },
   {
     id: "song-lyric",
@@ -63,7 +63,7 @@ const games = [
     players: "2-10",
     time: "12 min",
     color: "from-yellow-500 to-orange-500",
-    path: "/song-lyric",
+    path: "/ride-line-quest?game=song-lyric",
   },
   {
     id: "geography",
@@ -73,7 +73,7 @@ const games = [
     players: "1-10",
     time: "10 min",
     color: "from-green-600 to-blue-600",
-    path: "/geography",
+    path: "/ride-line-quest?game=geography",
   },
   {
     id: "spy-word",
@@ -83,7 +83,7 @@ const games = [
     players: "4-10",
     time: "15 min",
     color: "from-indigo-500 to-purple-500",
-    path: "/spy-word",
+    path: "/ride-line-quest?game=spy-word",
   },
   {
     id: "haaaa",
@@ -93,7 +93,7 @@ const games = [
     players: "2-10",
     time: "12 min",
     color: "from-teal-500 to-green-500",
-    path: "/haaaa",
+    path: "/ride-line-quest?game=haaaa",
   },
   {
     id: "line-mind",
@@ -103,7 +103,7 @@ const games = [
     players: "1-10",
     time: "10 min",
     color: "from-violet-500 to-fuchsia-500",
-    path: "/ride-line-quest",
+    path: "/ride-line-quest?game=line-mind",
   },
 ];
 
