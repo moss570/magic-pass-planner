@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.travel-party-accept]
 verify_jwt = false
+
+[functions.best-days-to-go]
+verify_jwt = false

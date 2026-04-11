@@ -5,7 +5,9 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+import BestDaysWidget from "@/components/ap/BestDaysWidget";
+
 
 const discountFilters = ["All", "Dining", "Merchandise", "Hotels", "Experiences"];
 
@@ -18,13 +20,6 @@ const discounts = [
   { cat: "Merchandise", badge: "🛍️ Merch", badgeColor: "bg-pink-500/15 text-pink-400", title: "AP Exclusive MagicBand+ discount", detail: "$34.99 (reg $44.99) · AP holders only", btn: "Shop Now →" },
 ];
 
-const bestDays = [
-  { day: "Tuesday, May 13", crowd: 2, color: "text-green-400", dot: "bg-green-400", note: "Best day in the next 30 days" },
-  { day: "Wednesday, May 14", crowd: 3, color: "text-green-400", dot: "bg-green-400", note: "Excellent — low crowds, no blockouts" },
-  { day: "Thursday, May 15", crowd: 3, color: "text-green-400", dot: "bg-green-400", note: "Strong choice, EPCOT Food & Wine in progress" },
-  { day: "Monday, May 19", crowd: 5, color: "text-yellow-400", dot: "bg-yellow-400", note: "Good — pre-holiday week, moderate crowds" },
-  { day: "Friday, May 16", crowd: 6, color: "text-yellow-400", dot: "bg-yellow-400", note: "Acceptable — weekend travelers arriving" },
-];
 
 // Calendar helpers
 const blockedDates = [24, 25, 26, 27];
@@ -142,30 +137,14 @@ const APCommandCenter = () => {
           </div>
 
           {/* Best Days */}
-          <div className="rounded-xl bg-card gold-border p-4 md:p-6">
-            <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧠 Best Days to Go</h2>
-            <p className="text-xs text-muted-foreground mb-4">AI-ranked open days based on crowds + your pass tier</p>
-
-            <div className="space-y-3 mb-5">
-              {bestDays.map((d, i) => (
-                <div key={i} className="flex items-start gap-3 p-2.5 rounded-lg bg-muted/20 border border-primary/5">
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs font-bold text-primary w-4">{i + 1}.</span>
-                    <span className={`w-2.5 h-2.5 rounded-full ${d.dot}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{d.day}</p>
-                    <p className={`text-xs ${d.color}`}>Crowd: {d.crowd}/10</p>
-                    <p className="text-[11px] text-muted-foreground">{d.note}</p>
-                  </div>
-                </div>
-              ))}
+          {isFeatureEnabled("bestDaysToGoV2") ? (
+            <BestDaysWidget userPassTier={null} />
+          ) : (
+            <div className="rounded-xl bg-card gold-border p-4 md:p-6">
+              <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧠 Best Days to Go</h2>
+              <p className="text-xs text-muted-foreground">Coming soon — real 10-day forecast</p>
             </div>
-
-            <button className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
-              📅 Add Best Days to My Calendar
-            </button>
-          </div>
+          )}
         </div>
 
         {/* LIVE DISNEY OFFERS */}

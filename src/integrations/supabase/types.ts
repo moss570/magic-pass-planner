@@ -494,6 +494,54 @@ export type Database = {
           },
         ]
       }
+      best_days_predictions: {
+        Row: {
+          computed_at: string
+          crowd_level: number
+          grade: string
+          id: string
+          park_id: string
+          pass_tier_blocked: boolean | null
+          precip_chance: number | null
+          prediction_date: string
+          reasons: Json | null
+          score: number
+          weather_high_f: number | null
+          weather_low_f: number | null
+          weather_summary: string | null
+        }
+        Insert: {
+          computed_at?: string
+          crowd_level?: number
+          grade?: string
+          id?: string
+          park_id: string
+          pass_tier_blocked?: boolean | null
+          precip_chance?: number | null
+          prediction_date: string
+          reasons?: Json | null
+          score?: number
+          weather_high_f?: number | null
+          weather_low_f?: number | null
+          weather_summary?: string | null
+        }
+        Update: {
+          computed_at?: string
+          crowd_level?: number
+          grade?: string
+          id?: string
+          park_id?: string
+          pass_tier_blocked?: boolean | null
+          precip_chance?: number | null
+          prediction_date?: string
+          reasons?: Json | null
+          score?: number
+          weather_high_f?: number | null
+          weather_low_f?: number | null
+          weather_summary?: string | null
+        }
+        Relationships: []
+      }
       dining_alerts: {
         Row: {
           alert_date: string
@@ -1613,6 +1661,33 @@ export type Database = {
         }
         Relationships: []
       }
+      park_crowd_forecasts: {
+        Row: {
+          crowd_level: number
+          fetched_at: string | null
+          forecast_date: string
+          id: string
+          park_id: string
+          source: string | null
+        }
+        Insert: {
+          crowd_level?: number
+          fetched_at?: string | null
+          forecast_date: string
+          id?: string
+          park_id: string
+          source?: string | null
+        }
+        Update: {
+          crowd_level?: number
+          fetched_at?: string | null
+          forecast_date?: string
+          id?: string
+          park_id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       park_paths: {
         Row: {
           created_at: string
@@ -1634,6 +1709,72 @@ export type Database = {
           nodes?: Json
           park_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      park_weather_forecasts: {
+        Row: {
+          fetched_at: string | null
+          forecast_date: string
+          high_f: number | null
+          id: string
+          low_f: number | null
+          park_id: string
+          precip_chance: number | null
+          source: string | null
+          summary: string | null
+        }
+        Insert: {
+          fetched_at?: string | null
+          forecast_date: string
+          high_f?: number | null
+          id?: string
+          low_f?: number | null
+          park_id: string
+          precip_chance?: number | null
+          source?: string | null
+          summary?: string | null
+        }
+        Update: {
+          fetched_at?: string | null
+          forecast_date?: string
+          high_f?: number | null
+          id?: string
+          low_f?: number | null
+          park_id?: string
+          precip_chance?: number | null
+          source?: string | null
+          summary?: string | null
+        }
+        Relationships: []
+      }
+      pass_tier_blockouts: {
+        Row: {
+          blockout_date: string
+          id: string
+          is_blocked: boolean
+          park_id: string
+          pass_tier: string
+          source: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          blockout_date: string
+          id?: string
+          is_blocked?: boolean
+          park_id: string
+          pass_tier: string
+          source?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          blockout_date?: string
+          id?: string
+          is_blocked?: boolean
+          park_id?: string
+          pass_tier?: string
+          source?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
