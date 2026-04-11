@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";

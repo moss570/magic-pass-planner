@@ -392,7 +392,7 @@ export default function DiningAlerts() {
 
           <button
             onClick={handleCreateAlert}
-            disabled={submitting || !selectedRestaurant || !date}
+            disabled={submitting || !selectedRestaurant || !date || !canAddAlert}
             className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "#F5C842" }}
           >
