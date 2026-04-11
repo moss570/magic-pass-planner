@@ -2267,6 +2267,59 @@ export type Database = {
           },
         ]
       }
+      trip_versions: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          is_active: boolean
+          name: string
+          plans: Json
+          totals: Json
+          trip_id: string
+          updated_at: string
+          user_id: string
+          version_number: number
+          warnings: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          is_active?: boolean
+          name?: string
+          plans?: Json
+          totals?: Json
+          trip_id: string
+          updated_at?: string
+          user_id: string
+          version_number: number
+          warnings?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          is_active?: boolean
+          name?: string
+          plans?: Json
+          totals?: Json
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+          version_number?: number
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_versions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trivia_questions: {
         Row: {
           category: string
