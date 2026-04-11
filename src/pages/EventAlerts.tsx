@@ -214,12 +214,18 @@ export default function EventAlerts() {
   const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
   const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
 
+  const { access } = useSubscription();
+  const eventLimit = access.eventAlerts;
+  const { canAddAlert } = useAlertLimitGuard(eventLimit, activeAlerts.length);
+
   return (
     <DashboardLayout
       title="🎪 Enchanting Extras Alerts"
       subtitle="We watch 24/7 and alert you the instant your event opens up"
     >
       <div className="space-y-6">
+
+        <AlertLimitBanner limit={eventLimit} currentCount={activeAlerts.length} alertTypeName="Event Alerts" />
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
         <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
