@@ -1025,6 +1025,133 @@ export default function LivePark() {
           </div>
         )}
 
+        {/* ── LL GAP FINDER TAB ─────────────────────────────── */}
+        {activeTab === "ll-gaps" && (
+          <div className="space-y-4">
+            <div className="rounded-xl p-5 border border-primary/30" style={{ background: "var(--card)" }}>
+              <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">⚡ Lightning Lane Gap Finder</h3>
+              <p className="text-xs text-muted-foreground mb-4">Rides with Lightning Lane availability, sorted by shortest return time. Watch for ⬇️ DROP badges when return times fall 15+ minutes.</p>
+
+              {/* Refresh bar */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-muted-foreground">Updated {lastRefresh.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", second: "2-digit" })} · Auto-refreshes every 60s</p>
+                <button onClick={fetchParkData} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+                  <RefreshCw className="w-3 h-3" /> Refresh
+                </button>
+              </div>
+
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground">Loading Lightning Lane data...</p>
+                </div>
+              ) : (() => {
+                // Track LL history for drop detection
+                const llRides = (parkData?.rides || []).filter(r => r.llState && r.llState !== "null" && r.status === "OPERATING");
+
+                // Update history ref
+                if (parkData) {
+                  const snapshot: Record<string, number> = {};
+                  llRides.forEach(r => {
+                    // Parse return time from llState (e.g. "2024-04-11T14:30:00" or "Available")
+                    const returnMin = parseLLReturnMinutes(r.llState);
+                    if (returnMin !== null) snapshot[r.id] = returnMin;
+                  });
+
+                  const currentHistory = llHistoryRef.current;
+                  const now = new Date().toISOString();
+                  Object.entries(snapshot).forEach(([id, mins]) => {
+                    if (!currentHistory[id]) currentHistory[id] = [];
+                    const last = currentHistory[id][currentHistory[id].length - 1];
+                    if (!last || last.wait !== mins) {
+                      currentHistory[id].push({ time: now, wait: mins });
+                      if (currentHistory[id].length > 5) currentHistory[id].shift();
+                    }
+                  });
+                }
+
+                // Sort by return time (available first, then shortest)
+                const sorted = [...llRides].sort((a, b) => {
+                  const aMin = parseLLReturnMinutes(a.llState);
+                  const bMin = parseLLReturnMinutes(b.llState);
+                  if (aMin === null && bMin === null) return 0;
+                  if (aMin === null) return -1; // "Available" first
+                  if (bMin === null) return 1;
+                  return aMin - bMin;
+                });
+
+                if (sorted.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <p className="text-3xl mb-2">🎢</p>
+                      <p className="text-sm text-muted-foreground">No Lightning Lane data available for this park right now.</p>
+                      <p className="text-xs text-muted-foreground mt-1">Try a different park or check back when the park is open.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {sorted.map(ride => {
+                      const returnMin = parseLLReturnMinutes(ride.llState);
+                      const isAvailable = returnMin === null && ride.llState;
+                      const history = llHistoryRef.current[ride.id] || [];
+                      const prevWait = history.length >= 2 ? history[history.length - 2].wait : null;
+                      const dropped = prevWait !== null && returnMin !== null && (prevWait - returnMin) >= 15;
+
+                      // Color badge
+                      let badgeClass = "bg-muted/20 text-muted-foreground";
+                      let badgeText = returnMin !== null ? `${returnMin} min` : "—";
+                      if (isAvailable) {
+                        badgeClass = "bg-green-500/20 text-green-400";
+                        badgeText = "Available Now";
+                      } else if (returnMin !== null) {
+                        if (returnMin <= 30) badgeClass = "bg-green-500/20 text-green-400";
+                        else if (returnMin <= 60) badgeClass = "bg-yellow-500/20 text-yellow-400";
+                        else if (returnMin <= 90) badgeClass = "bg-orange-500/20 text-orange-400";
+                        else badgeClass = "bg-red-500/20 text-red-400";
+                      }
+
+                      return (
+                        <div key={ride.id} className="rounded-xl p-4 border border-white/10" style={{ background: "var(--card)" }}>
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-foreground leading-tight">{ride.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{ride.area}</p>
+                            </div>
+                            {dropped && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-bold shrink-0 animate-pulse">⬇️ DROP</span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-3 mb-2">
+                            <div>
+                              <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${badgeClass}`}>⚡ {badgeText}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>Standby: <span className={`font-semibold ${waitColor(ride.standbyWait)}`}>{ride.standbyWait ?? "—"} min</span></span>
+                            {returnMin !== null && ride.standbyWait !== null && ride.standbyWait > returnMin && (
+                              <span className="text-green-400 font-semibold">Save {ride.standbyWait - returnMin} min</span>
+                            )}
+                          </div>
+
+                          {inPark && (
+                            <div className="mt-2">
+                              <CompassButton destination={ride.name} context={`${ride.area} · ${PARKS.find(p => p.slug === selectedPark)?.name}`} size="inline" />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
         {/* ── FIREWORKS TAB ───────────────────────────────────── */}
         {(activeTab as string) === "fireworks" && (
           <div className="space-y-4">
