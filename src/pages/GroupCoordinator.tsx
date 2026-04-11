@@ -377,6 +377,7 @@ export default function GroupCoordinator() {
           </>
         )}
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 }
