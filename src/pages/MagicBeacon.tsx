@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import CompassModal from "@/components/CompassModal";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const PARKS = ["Magic Kingdom", "EPCOT", "Hollywood Studios", "Animal Kingdom", "Typhoon Lagoon", "Blizzard Beach"];
 
@@ -73,6 +75,7 @@ const VIBE_OPTIONS = [
 export default function MagicBeacon() {
   const { session } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const [activeTab, setActiveTab] = useState<"beacons" | "events" | "my-beacon">("beacons");
   const [beacons, setBeacons] = useState<any[]>([]);
   const [rsvps, setRsvps] = useState<Set<string>>(new Set());
@@ -484,11 +487,13 @@ export default function MagicBeacon() {
                     <p className="text-xs text-muted-foreground">🔒 <strong className="text-foreground">Privacy:</strong> Other Magic Pass members only see your park, meeting spot, pass tier, vibe, and group size. Your name, email, and personal info are never shared. You can stop your beacon at any time.</p>
                   </div>
 
-                  <button onClick={startBeacon} disabled={!selectedSpot || !beaconTitle.trim() || !beaconActivity || (beaconActivity === "Custom" && !customActivity.trim())}
-                    className="w-full py-4 rounded-2xl font-black text-base text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                    style={{ background: "#F5C842" }}>
-                    <Radio className="w-5 h-5" /> Start My Beacon
-                  </button>
+                  <FeatureGate hasAccess={!!access.magicBeaconCreation} featureName="Magic Beacon Creation" requiredPlan="Magic Pass Planner" inline>
+                    <button onClick={startBeacon} disabled={!selectedSpot || !beaconTitle.trim() || !beaconActivity || (beaconActivity === "Custom" && !customActivity.trim())}
+                      className="w-full py-4 rounded-2xl font-black text-base text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
+                      style={{ background: "#F5C842" }}>
+                      <Radio className="w-5 h-5" /> Start My Beacon
+                    </button>
+                  </FeatureGate>
                 </div>
               </div>
             )}

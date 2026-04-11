@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import CompassButton from "@/components/CompassButton";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
@@ -16,6 +18,8 @@ const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 export default function GroupCoordinator() {
   const { session } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
+  const isReadOnly = access.groupCoordinator === 'read_only';
   const [trips, setTrips] = useState<any[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
@@ -120,8 +124,13 @@ export default function GroupCoordinator() {
 
   return (
     <DashboardLayout title="👨‍👩‍👧 Group Coordinator" subtitle={selectedTrip ? `${selectedTrip.name} — ${selectedTrip.start_date}` : "Plan together, stay in sync"}>
+      <FeatureGate hasAccess={access.groupCoordinator !== false} featureName="Group Coordinator" requiredPlan="90 Day Magic Pass Planner">
       <div className="space-y-5">
-
+        {isReadOnly && (
+          <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
+            📋 You're viewing this trip as a guest (read-only). Upgrade to edit.
+          </div>
+        )}
         {/* No trips CTA */}
         {!loading && trips.length === 0 && (
           <div className="text-center py-16">
@@ -368,6 +377,7 @@ export default function GroupCoordinator() {
           </>
         )}
       </div>
+      </FeatureGate>
     </DashboardLayout>
   );
 }

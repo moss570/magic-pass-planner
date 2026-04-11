@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import CompassButton from "@/components/CompassButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
@@ -212,12 +214,18 @@ export default function EventAlerts() {
   const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
   const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
 
+  const { access } = useSubscription();
+  const eventLimit = access.eventAlerts;
+  const { canAddAlert } = useAlertLimitGuard(eventLimit, activeAlerts.length);
+
   return (
     <DashboardLayout
       title="🎪 Enchanting Extras Alerts"
       subtitle="We watch 24/7 and alert you the instant your event opens up"
     >
       <div className="space-y-6">
+
+        <AlertLimitBanner limit={eventLimit} currentCount={activeAlerts.length} alertTypeName="Event Alerts" />
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
         <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
@@ -361,7 +369,7 @@ export default function EventAlerts() {
 
           <button
             onClick={handleCreateAlert}
-            disabled={submitting || !selectedEvent || !date}
+            disabled={submitting || !selectedEvent || !date || !canAddAlert}
             className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ background: "#F5C842" }}
           >

@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { getGenericBookingUrl } from "@/lib/affiliate";
+import { useSubscription } from "@/hooks/useSubscription";
+import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
@@ -122,20 +124,26 @@ export default function HotelAlerts() {
     fetchAlerts();
   };
 
+  const { access } = useSubscription();
+  const hotelLimit = access.hotelAlerts;
+  const watchingCount = alerts.filter(a => a.status === "watching").length;
+  const { canAddAlert } = useAlertLimitGuard(hotelLimit, watchingCount);
+
   const filtered = alerts.filter(a => TABS[activeTab].status.includes(a.status as AlertStatus));
 
   return (
     <DashboardLayout title="Hotel Alerts">
       <div className="max-w-2xl mx-auto space-y-4 px-4 py-6">
+        <AlertLimitBanner limit={hotelLimit} currentCount={watchingCount} alertTypeName="Hotel Alerts" />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Hotel className="w-5 h-5 text-primary" />
             <h1 className="text-lg font-bold text-foreground">Hotel Alerts</h1>
             <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
-              {alerts.filter(a => a.status === "watching").length} watching
+              {watchingCount} watching
             </span>
           </div>
-          <button onClick={() => setShowCreate(true)} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors">
+          <button onClick={() => setShowCreate(true)} disabled={!canAddAlert} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <Plus className="w-3.5 h-3.5" /> New Alert
           </button>
         </div>

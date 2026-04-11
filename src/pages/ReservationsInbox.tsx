@@ -11,12 +11,15 @@ import { supabase } from "@/integrations/supabase/client";
 import ForwardingAddressCard from "@/components/reservations/ForwardingAddressCard";
 import ParseResultModal from "@/components/reservations/ParseResultModal";
 import InboxFeed from "@/components/reservations/InboxFeed";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
 export default function ReservationsInbox() {
   const { session } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const [token, setToken] = useState<string>("");
   const [pasteContent, setPasteContent] = useState("");
   const [parsing, setParsing] = useState(false);
@@ -193,6 +196,7 @@ export default function ReservationsInbox() {
 
   return (
     <DashboardLayout title="Reservations Inbox" subtitle="Forward or paste confirmations to auto-attach to your trip">
+      <FeatureGate hasAccess={!!access.reservationFolder} featureName="Reservation Folder" requiredPlan="90 Day Magic Pass Planner">
       <div className="max-w-2xl mx-auto space-y-6">
 
         {token && userId && (
@@ -277,6 +281,7 @@ export default function ReservationsInbox() {
           <InboxFeed items={items} onReparse={handleReparse} reparsing={reparsing} />
         </div>
       </div>
+      </FeatureGate>
 
       <ParseResultModal
         open={modalOpen}

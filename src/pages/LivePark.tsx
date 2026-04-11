@@ -14,6 +14,8 @@ import WhereAmI from "@/components/WhereAmI";
 import PhotoFun from "@/pages/PhotoFun";
 import ShowTimes from "@/pages/ShowTimes";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import { FeatureGate } from "@/components/FeatureGate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
@@ -495,6 +497,7 @@ function parseLLReturnMinutes(llState: string | null): number | null {
 export default function LivePark() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const [selectedPark, setSelectedPark] = useState("magic-kingdom");
   const [parkData, setParkData] = useState<ParkData | null>(null);
   const [schedule, setSchedule] = useState<ScheduleData | null>(null);
@@ -1039,6 +1042,7 @@ export default function LivePark() {
 
         {/* ── LL GAP FINDER TAB ─────────────────────────────── */}
         {activeTab === "ll-gaps" && (
+          <FeatureGate hasAccess={!!access.lightningLaneGapFinder} featureName="Lightning Lane Gap Finder" requiredPlan="90 Day Magic Pass Planner">
           <div className="space-y-4">
             <div className="rounded-xl p-5 border border-primary/30" style={{ background: "var(--card)" }}>
               <h3 className="text-sm font-bold text-foreground mb-1 flex items-center gap-2">⚡ Lightning Lane Gap Finder</h3>
@@ -1162,6 +1166,7 @@ export default function LivePark() {
               })()}
             </div>
           </div>
+          </FeatureGate>
         )}
 
         {/* ── FIREWORKS TAB ───────────────────────────────────── */}
