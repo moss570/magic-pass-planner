@@ -205,7 +205,7 @@ export default function AirfareTracker() {
 
                   <div className="flex gap-2 mt-3">
                     {alert.status === "found" && (
-                      <a href={alert.booking_link || buildBookingUrl("flights", getGenericBookingUrl("flights"), {})}
+                      <a href={alert.booking_link || getGenericBookingUrl("flights")}
                         target="_blank" rel="noopener noreferrer"
                         className="flex-1 text-center py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-500 transition-colors">
                         Book Now →
