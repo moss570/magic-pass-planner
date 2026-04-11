@@ -70,6 +70,10 @@ serve(async (req) => {
     if (!priceId) throw new Error("priceId is required");
     logStep("Checkout request", { priceId, planName, discountCode: discountCode || "none" });
 
+    // Determine if this is a one-time purchase (no interval) based on plan name
+    const oneTimePlans = ['ninety_day_planner', 'ninety_day_friend', '90 Day Magic Pass Planner', '90 Day Magic Pass Friend'];
+    const isOneTime = oneTimePlans.includes(planName || '');
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
     // Find or reference existing Stripe customer
@@ -165,17 +169,24 @@ serve(async (req) => {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{ price: priceId, quantity: 1 }],
-      mode: "subscription",
-      subscription_data: {
+      mode: isOneTime ? "payment" : "subscription",
+      success_url: `${origin}/dashboard?checkout=success`,
+      cancel_url: `${origin}/pricing`,
+      metadata: {
+        user_id: user.id,
+        plan_name: planName || "",
+      },
+    };
+
+    if (!isOneTime) {
+      sessionParams.subscription_data = {
         trial_period_days: 7,
         metadata: {
           user_id: user.id,
           plan_name: planName || "",
         },
-      },
-      success_url: `${origin}/dashboard?checkout=success`,
-      cancel_url: `${origin}/pricing`,
-    };
+      };
+    }
 
     if (stripeCouponId) {
       sessionParams.discounts = [{ coupon: stripeCouponId }];
