@@ -592,6 +592,36 @@ function TripPlannerWizard() {
     }
   }, [userId]);
 
+  // Handle prefill from Best Days to Go or other sources
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prefillDates = params.get("prefillDates");
+    const prefillPark = params.get("prefillPark");
+    if (prefillDates) {
+      const dates = prefillDates.split(",").filter(Boolean).sort();
+      if (dates.length > 0) {
+        const patch: Partial<TripDraft> = {
+          startDate: dates[0],
+          endDate: dates[dates.length - 1],
+        };
+        if (prefillPark) {
+          const parkNames: Record<string, string> = {
+            "magic-kingdom": "Magic Kingdom",
+            "epcot": "EPCOT",
+            "hollywood-studios": "Hollywood Studios",
+            "animal-kingdom": "Animal Kingdom",
+          };
+          const name = parkNames[prefillPark] || prefillPark;
+          patch.selectedParks = [name];
+        }
+        setDraft(prev => ({ ...prev, ...patch }));
+        setShowResumeBanner(false);
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, []);
+
   const resumeDraft = () => {
     const existing = loadDraft(userId);
     if (existing) {
