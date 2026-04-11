@@ -25,6 +25,9 @@ export const featureFlags = {
 
   /** Reservations Inbox with email forwarding */
   reservationsInbox: true,
+
+  /** Travel Party Invites with 72-hour discount */
+  travelPartyInvites: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;

@@ -39,6 +39,7 @@ import InboxPage from "./pages/Inbox";
 import HotelAlerts from "./pages/HotelAlerts";
 import AirfareTracker from "./pages/AirfareTracker";
 import ReservationsInbox from "./pages/ReservationsInbox";
+import TripInvite from "./pages/TripInvite";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/hotel-alerts" element={<ProtectedRoute><HotelAlerts /></ProtectedRoute>} />
             <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
             <Route path="/reservations" element={<ProtectedRoute><ReservationsInbox /></ProtectedRoute>} />
+            <Route path="/invite/:inviteToken" element={<TripInvite />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
