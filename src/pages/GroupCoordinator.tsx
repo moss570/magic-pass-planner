@@ -18,6 +18,8 @@ const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 export default function GroupCoordinator() {
   const { session } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
+  const isReadOnly = access.groupCoordinator === 'read_only';
   const [trips, setTrips] = useState<any[]>([]);
   const [selectedTrip, setSelectedTrip] = useState<any>(null);
   const [members, setMembers] = useState<any[]>([]);
