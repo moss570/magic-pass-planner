@@ -6,6 +6,13 @@ import WhereAmI from "@/components/WhereAmI";
 import DisneyTrivia from "@/components/DisneyTrivia";
 import LineMind from "@/components/LineMind";
 import HaaaaGame from "@/components/HaaaaGame";
+import BingoGame from "@/components/BingoGame";
+import WhoDidItGame from "@/components/WhoDidItGame";
+import WouldYouRatherGame from "@/components/WouldYouRatherGame";
+import SongLyricGame from "@/components/SongLyricGame";
+import GeographyGame from "@/components/GeographyGame";
+import SpyWordGame from "@/components/SpyWordGame";
+import PicturePerfectGame from "@/components/PicturePerfectGame";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -76,13 +83,13 @@ const GAMES: GameCard[] = [
 // Map GamesDiscovery query params to LineGames game IDs
 const gameParamMap: { [key: string]: string } = {
   "trivia": "trivia",
-  "bingo": "where-am-i", // Placeholder - bingo not in LineGames yet
-  "who-did-it": "where-am-i", // Placeholder
-  "would-you-rather": "where-am-i", // Placeholder
-  "picture-perfect": "where-am-i", // Placeholder
-  "song-lyric": "where-am-i", // Placeholder
-  "geography": "where-am-i", // Placeholder
-  "spy-word": "where-am-i", // Placeholder
+  "bingo": "bingo",
+  "who-did-it": "who-did-it",
+  "would-you-rather": "would-you-rather",
+  "picture-perfect": "picture-perfect",
+  "song-lyric": "song-lyric",
+  "geography": "geography",
+  "spy-word": "spy-word",
   "haaaa": "haaaa",
   "line-mind": "linemind",
 };
@@ -117,6 +124,34 @@ export default function LineGames() {
 
   if (activeGame === "haaaa") {
     return <HaaaaGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "bingo") {
+    return <BingoGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "who-did-it") {
+    return <WhoDidItGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "would-you-rather") {
+    return <WouldYouRatherGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "song-lyric") {
+    return <SongLyricGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "geography") {
+    return <GeographyGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "spy-word") {
+    return <SpyWordGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "picture-perfect") {
+    return <PicturePerfectGame onClose={() => setActiveGame(null)} />;
   }
 
   return (
