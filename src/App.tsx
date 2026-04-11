@@ -40,6 +40,7 @@ import HotelAlerts from "./pages/HotelAlerts";
 import AirfareTracker from "./pages/AirfareTracker";
 import ReservationsInbox from "./pages/ReservationsInbox";
 import TripInvite from "./pages/TripInvite";
+import TripCompare from "./pages/TripCompare";
 
 const queryClient = new QueryClient();
 
