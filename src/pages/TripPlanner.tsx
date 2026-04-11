@@ -709,6 +709,11 @@ function TripPlannerWizard() {
             }
             toast({ title: `📧 Invites sent to ${draft.tripMembers.length} member(s)!` });
           }
+
+          // Auto-save as version 1
+          if (useVersions && newTripId) {
+            await saveAsVersion(newTripId, "Version 1");
+          }
         } catch {}
       }
     } catch (err) {
