@@ -28,16 +28,7 @@ interface GameCard {
 }
 
 const GAMES: GameCard[] = [
-  {
-    id: "where-am-i",
-    emoji: "📸",
-    title: "Where Am I?",
-    subtitle: "Guess the Disney location",
-    description: "A close-up photo appears — you have 25 seconds to guess the Disney location from 4 choices. Build streaks for bonus points!",
-    color: "#3B82F6",
-    available: true,
-    tag: "Photo Quiz",
-  },
+
   {
     id: "trivia",
     emoji: "🧠",

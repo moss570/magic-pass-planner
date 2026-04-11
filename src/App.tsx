@@ -35,6 +35,7 @@ import SocialFeed from "./pages/SocialFeed";
 import EventAlerts from "./pages/EventAlerts";
 import LineGames from "./pages/LineGames";
 import GamesDiscovery from "./pages/GamesDiscovery";
+import Leaderboards from "./pages/Leaderboards";
 import Feed from "./pages/Feed";
 import InboxPage from "./pages/Inbox";
 import HotelAlerts from "./pages/HotelAlerts";
@@ -83,6 +84,7 @@ const App = () => (
             <Route path="/feed" element={<ProtectedRoute><SocialFeed /></ProtectedRoute>} />
             <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
             <Route path="/games" element={<ProtectedRoute><GamesDiscovery /></ProtectedRoute>} />
+            <Route path="/leaderboards" element={<ProtectedRoute><Leaderboards /></ProtectedRoute>} />
             <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
