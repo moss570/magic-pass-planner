@@ -105,6 +105,16 @@ const games = [
     color: "from-violet-500 to-fuchsia-500",
     path: "/ride-line-quest?game=line-mind",
   },
+  {
+    id: "mystery-case",
+    name: "Mystery Case",
+    emoji: "🔍",
+    description: "Solve an all-day mystery",
+    players: "1",
+    time: "All day",
+    color: "from-amber-600 to-yellow-600",
+    path: "/ride-line-quest?game=mystery-case",
+  },
 ];
 
 const GamesDiscovery = () => {

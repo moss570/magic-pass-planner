@@ -13,6 +13,7 @@ import SongLyricGame from "@/components/SongLyricGame";
 import GeographyGame from "@/components/GeographyGame";
 import SpyWordGame from "@/components/SpyWordGame";
 import PicturePerfectGame from "@/components/PicturePerfectGame";
+import MysteryCaseGame from "@/components/MysteryCaseGame";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -83,6 +84,7 @@ const gameParamMap: { [key: string]: string } = {
   "spy-word": "spy-word",
   "haaaa": "haaaa",
   "line-mind": "linemind",
+  "mystery-case": "mystery-case",
 };
 
 export default function LineGames() {
@@ -143,6 +145,10 @@ export default function LineGames() {
 
   if (activeGame === "picture-perfect") {
     return <PicturePerfectGame onClose={() => setActiveGame(null)} />;
+  }
+
+  if (activeGame === "mystery-case") {
+    return <MysteryCaseGame onClose={() => setActiveGame(null)} />;
   }
 
   return (
