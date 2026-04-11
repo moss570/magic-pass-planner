@@ -34,6 +34,7 @@ import PhotoFun from "./pages/PhotoFun";
 import SocialFeed from "./pages/SocialFeed";
 import EventAlerts from "./pages/EventAlerts";
 import LineGames from "./pages/LineGames";
+import GamesDiscovery from "./pages/GamesDiscovery";
 import Feed from "./pages/Feed";
 import InboxPage from "./pages/Inbox";
 import HotelAlerts from "./pages/HotelAlerts";
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/photo-fun" element={<ProtectedRoute><PhotoFun /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><SocialFeed /></ProtectedRoute>} />
             <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
+            <Route path="/games" element={<ProtectedRoute><GamesDiscovery /></ProtectedRoute>} />
             <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
