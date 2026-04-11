@@ -415,6 +415,50 @@ export type Database = {
           },
         ]
       }
+      discount_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          invite_id: string | null
+          percent_off: number
+          stripe_coupon_id: string | null
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invite_id?: string | null
+          percent_off?: number
+          stripe_coupon_id?: string | null
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invite_id?: string | null
+          percent_off?: number
+          stripe_coupon_id?: string | null
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discount_codes_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "travel_party_invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disney_offers: {
         Row: {
           category: string
@@ -2035,6 +2079,77 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      travel_party_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          created_at: string
+          discount_code: string
+          discount_percent: number
+          expires_at: string
+          first_name: string
+          id: string
+          invite_token: string
+          invitee_email: string
+          invitee_phone: string | null
+          inviter_user_id: string
+          last_name: string
+          sent_email_at: string | null
+          sent_sms_at: string | null
+          status: string
+          trip_id: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          created_at?: string
+          discount_code: string
+          discount_percent?: number
+          expires_at?: string
+          first_name: string
+          id?: string
+          invite_token: string
+          invitee_email: string
+          invitee_phone?: string | null
+          inviter_user_id: string
+          last_name: string
+          sent_email_at?: string | null
+          sent_sms_at?: string | null
+          status?: string
+          trip_id: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          created_at?: string
+          discount_code?: string
+          discount_percent?: number
+          expires_at?: string
+          first_name?: string
+          id?: string
+          invite_token?: string
+          invitee_email?: string
+          invitee_phone?: string | null
+          inviter_user_id?: string
+          last_name?: string
+          sent_email_at?: string | null
+          sent_sms_at?: string | null
+          status?: string
+          trip_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_party_invites_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trip_expenses: {
         Row: {
