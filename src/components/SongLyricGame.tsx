@@ -46,7 +46,10 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
 
   if (gameOver) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a0033] via-[#330066] to-[#1a0033] p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" />
+      </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-yellow-500/30 max-w-md w-full">
           <Music className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
@@ -59,11 +62,15 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a0033] via-[#330066] to-[#1a0033] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" />
+        <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-orange-400" />
+      </div>
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-6">
           <button onClick={onClose} className="text-white/70 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
-          <h1 className="text-xl font-bold text-white">🎵 Song Lyric</h1>
+          <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-400 to-red-400">🎵 Song Lyric</h1>
           <p className="text-sm text-white/60">{qIdx+1}/{SONGS.length}</p>
         </div>
 

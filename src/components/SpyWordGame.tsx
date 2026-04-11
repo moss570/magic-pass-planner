@@ -33,11 +33,15 @@ export default function SpyWordGame({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d1117] via-[#161b22] to-[#0d1117] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-cyan-500" />
+        <div className="absolute bottom-20 right-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-blue-400" />
+      </div>
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-4">
           <button onClick={onClose} className="text-white/70 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
-          <h1 className="text-xl font-bold text-white">🕵️ Spy Word</h1>
+          <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400">🕵️ Spy Word</h1>
           <button onClick={() => setShowSpy(!showSpy)} className="text-cyan-400">
             {showSpy ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>

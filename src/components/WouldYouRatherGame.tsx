@@ -58,7 +58,10 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
 
   if (showResult) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0d1117] via-[#161b22] to-[#0d1117] p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-blue-500" />
+      </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-blue-500/30 max-w-md w-full">
           <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
@@ -72,11 +75,15 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0d1117] via-[#161b22] to-[#0d1117] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-blue-500" />
+        <div className="absolute bottom-1/4 right-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-indigo-400" />
+      </div>
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-6">
           <button onClick={onClose} className="text-white/70 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
-          <h1 className="text-xl font-bold text-white">🤔 Would You Rather</h1>
+          <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-indigo-400 to-purple-400">🤔 Would You Rather</h1>
           <p className="text-sm text-white/60">{qIdx+1}/{QUESTIONS.length}</p>
         </div>
 

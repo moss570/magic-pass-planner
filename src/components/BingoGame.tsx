@@ -103,7 +103,12 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
   const lastCol = lastCalled ? COLS[ranges.findIndex(([min, max]) => lastCalled >= min && lastCalled <= max)] : "";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-emerald-500" />
+        <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-teal-400" />
+      </div>
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -111,18 +116,18 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
             <ArrowLeft className="w-5 h-5" /> Back
           </button>
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-white">🎲 BINGO</h1>
+            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-400 to-cyan-400">🎲 BINGO</h1>
             <p className="text-xs text-white/60">Round {round + 1}/4: {PATTERNS[round]?.name || "Complete!"}</p>
           </div>
           <div className="text-right">
             <p className="text-xs text-white/60">Score</p>
-            <p className="text-xl font-bold text-yellow-400">{score}</p>
+            <p className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-orange-400">{score}</p>
           </div>
         </div>
 
         {/* Called Number */}
         <motion.div key={lastCalled} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-          className="text-center mb-4 p-4 rounded-xl bg-gradient-to-r from-green-500/20 to-teal-500/20 border border-green-500/30">
+          className="text-center mb-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-sm">
           <p className="text-xs text-white/60 mb-1">Now Calling</p>
           <p className="text-4xl font-black text-white">{lastCol}{lastCalled || "—"}</p>
           <p className="text-xs text-white/40 mt-1">{calledNumbers.length} of 75 called</p>

@@ -165,7 +165,7 @@ export default function MysteryCaseGame({ onClose }: { onClose: () => void }) {
 
   if (paused) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0a0a1a] p-4 flex items-center justify-center">
+      <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden"><div className="fixed inset-0 pointer-events-none"><div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /></div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="text-center p-8 rounded-2xl bg-black/50 border border-yellow-500/20 max-w-md w-full">
           <Pause className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
@@ -203,13 +203,13 @@ export default function MysteryCaseGame({ onClose }: { onClose: () => void }) {
   const clue = clues[currentClue];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0a0a1a] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden"><div className="fixed inset-0 pointer-events-none"><div className="absolute top-20 right-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /><div className="absolute bottom-20 left-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-yellow-400" /></div>
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <button onClick={onClose} className="text-white/60 hover:text-white"><ArrowLeft className="w-5 h-5" /></button>
           <div className="text-center">
-            <h1 className="text-lg font-bold text-white">🔍 {caseData.caseName}</h1>
+            <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400">🔍 {caseData.caseName}</h1>
             <p className="text-xs text-white/40">Clue {currentClue + 1}/{clues.length}</p>
           </div>
           <button onClick={() => setPaused(true)} className="p-2 rounded-lg bg-white/10 hover:bg-white/20">

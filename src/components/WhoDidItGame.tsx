@@ -61,13 +61,17 @@ export default function WhoDidItGame({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#2c2c54] via-[#1a1a3e] to-[#0D0F1E] p-4">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-20 right-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-purple-500" />
+        <div className="absolute bottom-10 left-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-fuchsia-400" />
+      </div>
       <div className="max-w-lg mx-auto">
         <div className="flex items-center justify-between mb-4">
           <button onClick={onClose} className="flex items-center gap-2 text-white/70 hover:text-white">
             <ArrowLeft className="w-5 h-5" /> Back
           </button>
-          <h1 className="text-2xl font-bold text-white">🕵️ Who Did It?</h1>
+          <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-violet-400 to-fuchsia-400">🕵️ Who Did It?</h1>
           <p className="text-sm text-white/60">Clue {round}/8</p>
         </div>
 
