@@ -318,6 +318,16 @@ function ResultsView({
                           <span key={a} className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{a}</span>
                         ))}
                       </div>
+                      {!resortStay && isFeatureEnabled('hotelAlerts') && (
+                        <div className="flex gap-2 mt-2">
+                          <a href={`/hotel-alerts`} className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary font-semibold hover:bg-primary/10 transition-colors">
+                            🔔 Create Hotel Alert
+                          </a>
+                          <a href={hotel.bookingUrl || "#"} target="_blank" rel="noopener noreferrer" className="text-xs px-3 py-1.5 rounded-lg border border-border text-muted-foreground font-medium hover:text-foreground transition-colors">
+                            Book / More Info →
+                          </a>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
