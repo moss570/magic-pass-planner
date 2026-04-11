@@ -196,12 +196,12 @@ const APCommandCenter = () => {
             <p className="text-xs text-muted-foreground">Coming soon — real stacking engine</p>
           </div>
         )}
-            </div>
-            {hasAP && hasVisa && (
-              <p className="text-xs text-primary mt-2 font-semibold">Disney Visa and AP discounts typically cannot be combined — use whichever is higher for your bill.</p>
-            )}
-          </div>
-        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default APCommandCenter;
       </div>
     </DashboardLayout>
   );
