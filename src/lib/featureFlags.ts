@@ -40,6 +40,9 @@ export const featureFlags = {
 
   /** Admin: Park Content CMS tab */
   parkContentCms: true,
+
+  /** Best Days to Go v2 — real rolling 10-day forecast */
+  bestDaysToGoV2: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
