@@ -1100,6 +1100,56 @@ export type Database = {
           },
         ]
       }
+      inbound_email_events: {
+        Row: {
+          id: string
+          message_id: string | null
+          processed_at: string | null
+          raw_from: string | null
+          raw_to: string | null
+          reject_reason: string | null
+          reservation_id: string | null
+          s3_key: string | null
+          status: string
+          subject: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          message_id?: string | null
+          processed_at?: string | null
+          raw_from?: string | null
+          raw_to?: string | null
+          reject_reason?: string | null
+          reservation_id?: string | null
+          s3_key?: string | null
+          status?: string
+          subject?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          message_id?: string | null
+          processed_at?: string | null
+          raw_from?: string | null
+          raw_to?: string | null
+          reject_reason?: string | null
+          reservation_id?: string | null
+          s3_key?: string | null
+          status?: string
+          subject?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_email_events_reservation_id_fkey"
+            columns: ["reservation_id"]
+            isOneToOne: false
+            referencedRelation: "reservations_inbox"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       land_crowd_windows: {
         Row: {
           created_at: string
@@ -1497,6 +1547,65 @@ export type Database = {
           run_at?: string
         }
         Relationships: []
+      }
+      reservations_inbox: {
+        Row: {
+          attachments: Json | null
+          confirmation_number: string | null
+          created_at: string
+          id: string
+          parsed: Json | null
+          raw_content: string | null
+          reviewed_by_user_at: string | null
+          sender_email: string | null
+          source: string
+          status: string
+          trip_id: string | null
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          confirmation_number?: string | null
+          created_at?: string
+          id?: string
+          parsed?: Json | null
+          raw_content?: string | null
+          reviewed_by_user_at?: string | null
+          sender_email?: string | null
+          source?: string
+          status?: string
+          trip_id?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          confirmation_number?: string | null
+          created_at?: string
+          id?: string
+          parsed?: Json | null
+          raw_content?: string | null
+          reviewed_by_user_at?: string | null
+          sender_email?: string | null
+          source?: string
+          status?: string
+          trip_id?: string | null
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_inbox_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       restaurants: {
         Row: {
@@ -2153,6 +2262,8 @@ export type Database = {
           email: string | null
           feature_tips_seen: string[] | null
           first_name: string | null
+          forwarding_token: string | null
+          forwarding_token_rotated_at: string | null
           has_seen_welcome: boolean | null
           home_park: string | null
           home_zip: string | null
@@ -2166,6 +2277,7 @@ export type Database = {
           onboarding_step: number | null
           phone: string | null
           qr_token: string | null
+          trusted_senders: Json | null
           username: string | null
         }
         Insert: {
@@ -2178,6 +2290,8 @@ export type Database = {
           email?: string | null
           feature_tips_seen?: string[] | null
           first_name?: string | null
+          forwarding_token?: string | null
+          forwarding_token_rotated_at?: string | null
           has_seen_welcome?: boolean | null
           home_park?: string | null
           home_zip?: string | null
@@ -2191,6 +2305,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
+          trusted_senders?: Json | null
           username?: string | null
         }
         Update: {
@@ -2203,6 +2318,8 @@ export type Database = {
           email?: string | null
           feature_tips_seen?: string[] | null
           first_name?: string | null
+          forwarding_token?: string | null
+          forwarding_token_rotated_at?: string | null
           has_seen_welcome?: boolean | null
           home_park?: string | null
           home_zip?: string | null
@@ -2216,6 +2333,7 @@ export type Database = {
           onboarding_step?: number | null
           phone?: string | null
           qr_token?: string | null
+          trusted_senders?: Json | null
           username?: string | null
         }
         Relationships: []
@@ -2320,6 +2438,7 @@ export type Database = {
       }
     }
     Functions: {
+      generate_forwarding_token: { Args: never; Returns: string }
       is_game_developer: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {

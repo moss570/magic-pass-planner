@@ -1,5 +1,5 @@
 import { useState, useState as _useState, useEffect } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,7 @@ const sidebarNav = [
   { icon: Gift, label: "Gift Card Tracker", path: "/gift-card-tracker" },
   { icon: Hotel, label: "Hotel Alerts", path: "/hotel-alerts" },
   { icon: Plane, label: "Airfare Tracker", path: "/airfare" },
+  { icon: Mail, label: "Reservations", path: "/reservations" },
   { icon: Zap, label: "Live Park Mode", path: "/live-park" },
   { icon: Camera, label: "Photo Fun", path: "/photo-fun" },
   { icon: Gamepad2, label: "Line Games", path: "/ride-line-quest" },
