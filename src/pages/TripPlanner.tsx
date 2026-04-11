@@ -727,7 +727,7 @@ function TripPlannerWizard() {
         {/* Step content */}
         <div className="rounded-xl border border-border p-5 bg-card">
           {step === 0 && <StepBasics draft={draft} onChange={updateDraft} onContinue={() => goToStep(1)} />}
-          {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} />}
+          {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} tripId={savedTripId} />}
           {step === 2 && <StepParksDates draft={draft} onChange={updateDraft} onContinue={() => goToStep(3)} onBack={() => goToStep(1)} />}
           {step === 3 && <StepMustDos draft={draft} onChange={updateDraft} onContinue={() => goToStep(4)} onBack={() => goToStep(2)} />}
           {step === 4 && <StepTransportLodging draft={draft} onChange={updateDraft} onContinue={() => goToStep(5)} onBack={() => goToStep(3)} />}

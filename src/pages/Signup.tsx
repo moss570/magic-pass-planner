@@ -1,22 +1,52 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Footer from "@/components/Footer";
-import { Castle, Loader2 } from "lucide-react";
+import { Castle, Loader2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { buildPostAuthRedirect, clearStoredPostAuthRedirect, preparePostAuthRedirect } from "@/lib/authRedirect";
 
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get("invite");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Store invite token for post-signup acceptance
+  useEffect(() => {
+    if (inviteToken) {
+      localStorage.setItem("mpp:pending-invite", inviteToken);
+    }
+  }, [inviteToken]);
+
+  const acceptInviteAfterSignup = async (accessToken: string) => {
+    const pendingInvite = localStorage.getItem("mpp:pending-invite");
+    if (!pendingInvite) return;
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/travel-party-accept`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+          "x-client-authorization": `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ inviteToken: pendingInvite }),
+      });
+      localStorage.removeItem("mpp:pending-invite");
+    } catch {
+      // Non-critical — user can accept later
+    }
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +73,7 @@ const Signup = () => {
     }
 
     if (data.session) {
+      await acceptInviteAfterSignup(data.session.access_token);
       navigate(postAuthRedirect);
     } else {
       setSuccess("Check your email to confirm your account.");
@@ -78,6 +109,15 @@ const Signup = () => {
           <p className="text-sm text-muted-foreground text-center mb-8">
             Start your 7-day free trial today
           </p>
+
+          {inviteToken && (
+            <div className="mb-4 rounded-lg bg-primary/10 border border-primary/30 px-4 py-3 flex items-center gap-2">
+              <Gift className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-sm text-primary font-medium">
+                You've been invited! Your discount will be applied automatically.
+              </p>
+            </div>
+          )}
 
           {error && (
             <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">

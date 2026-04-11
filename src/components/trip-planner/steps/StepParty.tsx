@@ -1,29 +1,22 @@
 import { useState } from "react";
 import type { TripDraft, TripMember } from "@/lib/tripDraft";
+import AddMemberForm from "@/components/trip-planner/AddMemberForm";
 
 interface Props {
   draft: TripDraft;
   onChange: (patch: Partial<TripDraft>) => void;
   onContinue: () => void;
   onBack: () => void;
+  tripId?: string | null;
 }
 
-export default function StepParty({ draft, onChange, onContinue, onBack }: Props) {
-  const [showAdd, setShowAdd] = useState(false);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSplitting, setIsSplitting] = useState(true);
-
-  const addMember = () => {
-    if (!firstName || !lastName || !email) return;
-    const member: TripMember = { firstName, lastName, email, isAdult: true, isSplitting };
-    onChange({ tripMembers: [...draft.tripMembers, member] });
-    setFirstName(""); setLastName(""); setEmail(""); setIsSplitting(true); setShowAdd(false);
-  };
-
+export default function StepParty({ draft, onChange, onContinue, onBack, tripId }: Props) {
   const removeMember = (idx: number) => {
     onChange({ tripMembers: draft.tripMembers.filter((_, i) => i !== idx) });
+  };
+
+  const handleMemberAdded = (member: { firstName: string; lastName: string; email: string; isAdult: boolean; isSplitting: boolean }) => {
+    onChange({ tripMembers: [...draft.tripMembers, member] });
   };
 
   const canContinue = draft.adults >= 1;
@@ -78,7 +71,7 @@ export default function StepParty({ draft, onChange, onContinue, onBack }: Props
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Travel Party Members</label>
-          <button onClick={() => setShowAdd(s => !s)} className="text-xs text-primary hover:underline">+ Add Person</button>
+          <AddMemberForm tripId={tripId || null} onMemberAdded={handleMemberAdded} />
         </div>
         <p className="text-xs text-muted-foreground mb-2">Travel party members must be adults with their own account. Add children in the party size count above.</p>
         {draft.tripMembers.length > 0 && (
@@ -87,31 +80,13 @@ export default function StepParty({ draft, onChange, onContinue, onBack }: Props
               <div key={i} className="flex items-center justify-between px-3 py-2 rounded-lg bg-background/30 border border-border">
                 <div>
                   <span className="text-xs font-medium text-foreground">{m.firstName} {m.lastName}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{m.email}{m.isSplitting ? " · splitting" : ""}</span>
+                  <span className="text-xs text-muted-foreground ml-2">{m.email}</span>
+                  <span className="text-xs ml-2 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Invite sent</span>
+                  {m.isSplitting && <span className="text-xs text-muted-foreground ml-1">· splitting</span>}
                 </div>
                 <button onClick={() => removeMember(i)} className="text-muted-foreground hover:text-destructive text-xs">✕</button>
               </div>
             ))}
-          </div>
-        )}
-        {showAdd && (
-          <div className="rounded-xl border border-border p-4 space-y-3 bg-muted">
-            <div className="grid grid-cols-2 gap-2">
-              <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="First name *"
-                className="px-3 py-2 rounded-lg bg-background border border-border text-xs text-foreground focus:outline-none focus:border-primary/40" />
-              <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder="Last name *"
-                className="px-3 py-2 rounded-lg bg-background border border-border text-xs text-foreground focus:outline-none focus:border-primary/40" />
-            </div>
-            <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email (required)" type="email"
-              className="w-full px-3 py-2 rounded-lg bg-background border border-border text-xs text-foreground focus:outline-none focus:border-primary/40" />
-            <button onClick={() => setIsSplitting(s => !s)}
-              className={`w-full py-1.5 rounded-lg text-xs font-semibold border transition-all ${isSplitting ? "bg-green-500/20 text-green-400 border-green-500/30" : "border-border text-muted-foreground"}`}>
-              {isSplitting ? "✅ Splitting expenses" : "❌ Not splitting expenses"}
-            </button>
-            <button onClick={addMember} disabled={!firstName || !lastName || !email}
-              className="w-full py-2 rounded-lg text-xs font-bold text-primary-foreground bg-primary disabled:opacity-50">
-              Add to Trip
-            </button>
           </div>
         )}
       </div>

@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.inbound-email-handler]
 verify_jwt = false
+
+[functions.travel-party-invite]
+verify_jwt = false
+
+[functions.travel-party-accept]
+verify_jwt = false
