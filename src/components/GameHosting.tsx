@@ -32,7 +32,7 @@ export default function GameHosting({ gameType, gameName, onStart, onClose }: Ga
   useEffect(() => {
     if (!user) return;
     const createHost = async () => {
-      const { data } = await supabase.from("game_hosts").insert({
+      const { data } = await (supabase.from as any)("game_hosts").insert({
         user_id: user.id,
         game_type: gameType,
         game_title: gameName,
@@ -42,7 +42,7 @@ export default function GameHosting({ gameType, gameName, onStart, onClose }: Ga
         max_players: 10,
         current_players: 1,
       }).select("id").single();
-      if (data) setHostId(data.id);
+      if (data) setHostId((data as any).id);
     };
     createHost();
   }, [user, gameType, gameName, joinCode, nickname]);
@@ -132,22 +132,22 @@ export function JoinGame({ joinCode, onJoined, onClose }: { joinCode: string; on
     if (!nickname.trim()) { setError("Enter a nickname"); return; }
     setJoining(true);
 
-    const { data: host } = await supabase.from("game_hosts")
+    const { data: host } = await (supabase.from as any)("game_hosts")
       .select("id, game_type, game_title, current_players, max_players")
       .eq("join_code", joinCode.toUpperCase())
       .single();
 
     if (!host) { setError("Game not found. Check code."); setJoining(false); return; }
-    if (host.current_players >= host.max_players) { setError("Game is full!"); setJoining(false); return; }
+    if ((host as any).current_players >= (host as any).max_players) { setError("Game is full!"); setJoining(false); return; }
 
-    await supabase.from("game_players").insert({
-      game_host_id: host.id,
+    await (supabase.from as any)("game_players").insert({
+      game_host_id: (host as any).id,
       user_id: user?.id || null,
       player_nickname: nickname.trim(),
       is_host: false,
     });
 
-    await supabase.from("game_hosts").update({ current_players: host.current_players + 1 }).eq("id", host.id);
+    await (supabase.from as any)("game_hosts").update({ current_players: (host as any).current_players + 1 }).eq("id", (host as any).id);
 
     onJoined();
   };

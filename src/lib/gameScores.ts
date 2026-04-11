@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
+const gameScoresTable = () => (supabase.from as any)("game_high_scores");
+
 export async function saveHighScore(
   gameType: string,
   finalScore: number,
@@ -9,8 +11,7 @@ export async function saveHighScore(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || finalScore <= 0) return;
 
-  // Save score
-  await supabase.from("game_high_scores").insert({
+  await gameScoresTable().insert({
     user_id: user.id,
     game_type: gameType,
     final_score: finalScore,
@@ -19,8 +20,7 @@ export async function saveHighScore(
     is_personal_best: false,
   });
 
-  // Check if personal best
-  const { data: best } = await supabase.from("game_high_scores")
+  const { data: best } = await gameScoresTable()
     .select("final_score")
     .eq("user_id", user.id)
     .eq("game_type", gameType)
@@ -29,16 +29,14 @@ export async function saveHighScore(
     .single();
 
   if (best && best.final_score <= finalScore) {
-    // Mark as personal best
-    await supabase.from("game_high_scores")
+    await gameScoresTable()
       .update({ is_personal_best: true })
       .eq("user_id", user.id)
       .eq("game_type", gameType)
       .eq("final_score", finalScore);
   }
 
-  // Check if top 20 globally — auto-post to Social Feed
-  const { data: topScores } = await supabase.from("game_high_scores")
+  const { data: topScores } = await gameScoresTable()
     .select("final_score")
     .eq("game_type", gameType)
     .order("final_score", { ascending: false })
@@ -47,7 +45,6 @@ export async function saveHighScore(
   if (topScores && topScores.length > 0) {
     const threshold = topScores[topScores.length - 1]?.final_score || 0;
     if (finalScore >= threshold) {
-      // Get username
       const { data: profile } = await supabase.from("users_profile")
         .select("username, first_name")
         .eq("id", user.id)
@@ -55,7 +52,7 @@ export async function saveHighScore(
 
       const displayName = profile?.username || profile?.first_name || "A Magic Pass player";
 
-      await supabase.from("social_feed").insert({
+      await (supabase.from as any)("social_feed").insert({
         author: "Clark Kent",
         author_role: "Magic Pass Games",
         author_emoji: "🏆",
