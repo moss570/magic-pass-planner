@@ -49,6 +49,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 export default function SocialFeed() {
   const { session, user } = useAuth();
   const { toast } = useToast();
+  const { access } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [posts, setPosts] = useState<any[]>([]);
@@ -226,6 +227,7 @@ export default function SocialFeed() {
 
   return (
     <DashboardLayout title="📢 Magic Pass Social" subtitle="Share tips, photos, deals and Disney moments with the community">
+      <FeatureGate hasAccess={!!access.socialFeed} featureName="Social Feed" requiredPlan="90 Day Magic Pass Planner">
       <div className="max-w-2xl mx-auto space-y-4">
 
         {/* Filter tabs */}
