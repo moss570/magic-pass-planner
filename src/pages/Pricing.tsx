@@ -192,7 +192,7 @@ const Pricing = () => {
     }
     setLoadingTier(loadingKey);
     try {
-      const data = await invokeCheckout({ priceId, planName, userEmail });
+      const data = await invokeCheckout({ priceId, planName, userEmail }, session.access_token);
       if (data?.url) window.location.href = data.url;
       else toast.error("No checkout URL returned. Please try again.");
     } catch (err: any) {
