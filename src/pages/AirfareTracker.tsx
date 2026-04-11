@@ -3,7 +3,7 @@ import { Plane, Plus, CheckCircle2, Clock, TrendingDown, TrendingUp, X } from "l
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { buildBookingUrl, getGenericBookingUrl } from "@/lib/affiliate";
+import { getGenericBookingUrl } from "@/lib/affiliate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 

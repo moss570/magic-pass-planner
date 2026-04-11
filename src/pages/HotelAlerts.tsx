@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { buildBookingUrl, getGenericBookingUrl } from "@/lib/affiliate";
+import { getGenericBookingUrl } from "@/lib/affiliate";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
