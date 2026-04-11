@@ -16,6 +16,12 @@ export const featureFlags = {
 
   /** Enhanced itinerary cards with passing points, stopping here, add block, nudges */
   itineraryCardEnhancements: true,
+
+  /** Hotel Alerts page and hotel recommendation CTA */
+  hotelAlerts: true,
+
+  /** Airfare Tracker page */
+  airfareTracker: true,
 } as const;
 
 export type FeatureFlag = keyof typeof featureFlags;
