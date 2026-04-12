@@ -1,43 +1,47 @@
 
 
-## Fix My Trips: Summary Dialog, Edit Flow, and Version Access
+## Fix Trip Compare Blank Screen
 
-### What's Being Fixed
+### Root Cause
+The `TripCompare` page fetches versions via a raw `fetch()` call to the `trips` edge function, manually passing `session?.access_token` in headers. This approach is fragile — if the session isn't ready when the effect fires, or if the edge function has deployment issues, the page stays stuck on the loading spinner (appearing as a blank screen). Edge function logs show zero `list-versions` requests, confirming calls never reach the function.
 
-1. **View Summary shows raw JSON error** — the itinerary is dumped as raw JSON text
-2. **Edit button resets to mode selection** — clicking Edit on a saved trip takes user back to "Vacation or Day Trip?" instead of loading the saved trip
-3. **No way to see or compare trip versions** — version count and compare link are missing
+### Fix
+Replace the edge function fetch with a direct Supabase client query — the same pattern used successfully in `MyTrips.tsx`. The `trip_versions` table already has RLS policies allowing users to read their own versions, so no edge function is needed.
 
----
+### Changes to `src/pages/TripCompare.tsx`
 
-### Changes
+1. **Remove** the raw `fetch()` calls to the edge function and the `SUPABASE_URL`/`SUPABASE_ANON` constants
+2. **Import** `supabase` from `@/integrations/supabase/client`
+3. **Replace the versions fetch** with:
+   ```ts
+   const { data } = await supabase
+     .from("trip_versions")
+     .select("*")
+     .eq("trip_id", tripId)
+     .eq("user_id", user.id)
+     .order("version_number", { ascending: true });
+   setVersions(data || []);
+   ```
+4. **Replace the "choose version" handler** with a direct Supabase update:
+   ```ts
+   // Deactivate all versions for this trip
+   await supabase.from("trip_versions")
+     .update({ is_active: false })
+     .eq("trip_id", tripId).eq("user_id", user.id);
+   // Activate selected version
+   await supabase.from("trip_versions")
+     .update({ is_active: true })
+     .eq("id", versionId).eq("user_id", user.id);
+   ```
+5. **Switch** from `useAuth().session` to `useAuth().user` since we only need the user ID
+6. **Update** the "Back" button to navigate to `/my-trips` instead of `/trip-planner`
 
-#### 1. Fix Summary Dialog — Human-Readable Itinerary (`src/pages/MyTrips.tsx`)
-
-- Add an `ItinerarySummary` component that parses the itinerary JSON (array of DayPlan objects with `date`, `park`, `parkEmoji`, `items[]`)
-- Render each day as a header (date + park) with activity rows (time + name + badge)
-- Graceful fallback: if structure doesn't match, show "Itinerary saved" instead of raw JSON
-- Replace the `<pre>` block with the new component
-
-#### 2. Fix Edit Flow — Load Saved Trip into Wizard (`src/pages/TripPlanner.tsx`)
-
-- Import `useLocation` from react-router-dom
-- In `TripPlannerWizard`, read `location.state?.tripId`
-- On mount, if `tripId` is present:
-  - Fetch the trip from `saved_trips` via Supabase client
-  - Populate draft: `tripName` (from `name`), `startDate`, `endDate`, `budget`, `adults`, `children`, `ages`, `selectedParks` (from `parks`), `llOption` (from `ll_option`), `ridePreference` (from `ride_preference`), `specialNotes` (from `special_notes`)
-  - Infer mode: if `start_date === end_date` → `day-trip`, else `vacation`
-  - Set `modeSelected = true` to skip mode picker
-  - Set `savedTripId` so saves update rather than create
-  - Skip the resume banner
-
-#### 3. Add Version Count + Compare Button (`src/pages/MyTrips.tsx`)
-
-- After loading trips, query `trip_versions` table grouped by `trip_id` to get version counts
-- Show a small badge on each trip card (e.g., "2 versions")
-- Add a "Compare" button linking to `/trip-compare` with `state: { tripId }` when version count >= 2
+### Why This Works
+- The Supabase JS client handles auth tokens automatically — no manual header management
+- RLS on `trip_versions` already restricts access to `user_id = auth.uid()`
+- Eliminates the edge function as a point of failure
+- Matches the pattern used successfully throughout the app (MyTrips, DashboardLayout, etc.)
 
 ### Files Changed
-- `src/pages/MyTrips.tsx` — formatted itinerary, version badges, compare button
-- `src/pages/TripPlanner.tsx` — read `location.state.tripId`, fetch and hydrate draft, skip mode selection
+- `src/pages/TripCompare.tsx` — replace edge function calls with direct Supabase queries
 
