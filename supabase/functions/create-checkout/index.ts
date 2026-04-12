@@ -180,7 +180,6 @@ serve(async (req) => {
 
     if (!isOneTime) {
       sessionParams.subscription_data = {
-        trial_period_days: 7,
         metadata: {
           user_id: user.id,
           plan_name: planName || "",
