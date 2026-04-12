@@ -246,6 +246,57 @@ export default function ItineraryCard({
     setDismissedNudges(prev => [...prev, nudgeId]);
   };
 
+  const handleRemoveItem = async (itemIndex: number) => {
+    const updatedItems = plan.items.filter((_, i) => i !== itemIndex);
+    const updatedPlan = { ...plan, items: updatedItems };
+    onDayUpdated(dayIndex, updatedPlan);
+
+    const lockedBlocks = updatedItems
+      .map((item, i) => item.locked ? { itemIndex: i, startTime: item.time, durationMinutes: item.durationMinutes || 30, label: item.activity } : null)
+      .filter(Boolean);
+
+    const result = await recalculate(lockedBlocks as any[]);
+    if (result?.day) {
+      onDayUpdated(dayIndex, result.day);
+      toast({ title: "✅ Item removed and schedule updated" });
+    }
+  };
+
+  const getAlternatives = (item: ItineraryItem): string[] => {
+    const typeAlts: Record<string, string[]> = {
+      ride: ["Space Mountain", "Big Thunder Mountain", "Splash Mountain", "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "Seven Dwarfs Mine Train", "Buzz Lightyear", "Tomorrowland Speedway"],
+      dining: ["Columbia Harbour House", "Cosmic Ray's", "Pecos Bill", "The Plaza Restaurant", "Skipper Canteen", "Liberty Tree Tavern", "Be Our Guest", "Casey's Corner"],
+      show: ["Carousel of Progress", "Country Bear Jamboree", "Enchanted Tiki Room", "Mickey's PhilharMagic", "Monsters Inc. Laugh Floor"],
+      snack: ["Aloha Isle", "Storybook Treats", "Sleepy Hollow", "Main Street Bakery"],
+    };
+    const alts = typeAlts[item.type] || typeAlts['ride'] || [];
+    return alts.filter(a => a !== item.activity).slice(0, 4);
+  };
+
+  const handleReplaceItem = async (itemIndex: number, newActivity: string) => {
+    const updatedItems = [...plan.items];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      activity: newActivity,
+      tip: `Swapped to ${newActivity}`,
+    };
+    const updatedPlan = { ...plan, items: updatedItems };
+    onDayUpdated(dayIndex, updatedPlan);
+
+    const lockedBlocks = [{
+      itemIndex,
+      startTime: updatedItems[itemIndex].time,
+      durationMinutes: updatedItems[itemIndex].durationMinutes || 30,
+      label: newActivity,
+    }];
+
+    const result = await recalculate(lockedBlocks);
+    if (result?.day) {
+      onDayUpdated(dayIndex, result.day);
+      toast({ title: "✅ Item replaced and schedule updated" });
+    }
+  };
+
   return (
     <>
       <div className="rounded-xl border border-border overflow-hidden bg-card">
