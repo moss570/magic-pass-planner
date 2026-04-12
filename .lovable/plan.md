@@ -1,45 +1,62 @@
 
 
-## Add "Pause" Functionality to All Alert Types
+## Settings Page Audit and Updates
 
-### Problem
-The FAQ promises users can pause alerts, but no pause button or status exists anywhere in the alert system.
+### Issues Found
 
-### What needs to happen
+1. **My Subscription section** — outdated tier names ("Magic Pass", "AP Command Center+"), non-functional buttons (Upgrade, Manage Billing, Cancel Subscription are all dead buttons with no onClick handlers), feature comparison table uses old 2-tier model instead of current 6-tier model.
 
-1. **Add `paused` status** to all alert types (Dining, Event, Hotel, Airfare) — update the status union type in each alert page and the edge functions that process them.
+2. **SMS "Upgrade to enable"** — hardcoded to show when SMS is off, regardless of plan. Not tied to any tier check. Should be removed since SMS is available to all tiers (it just requires a phone number).
 
-2. **Add Pause/Resume button** to each alert card on:
-   - `src/pages/DiningAlerts.tsx`
-   - `src/pages/EventAlerts.tsx`
-   - `src/pages/HotelAlerts.tsx`
-   - `src/pages/AirfareTracker.tsx`
+3. **Walking Speed Calibrator** — gated behind `isFeatureEnabled("budgetUpgrades")` feature flag. Need to verify if that flag is enabled.
 
-3. **Edge function updates** — each alert's polling/check edge function must skip alerts with `status = 'paused'`:
-   - `supabase/functions/dining-availability-check/index.ts`
-   - `supabase/functions/event-availability-check/index.ts`
-   - `supabase/functions/hotel-price-check/index.ts`
-   - `supabase/functions/airfare-price-check/index.ts`
+4. **Refer a Friend** — entirely static/mockup. Referral link is hardcoded ("brandon-moss-x7k2"), sharing buttons have no onClick handlers, stats are hardcoded to 0. No referral backend exists. Free months via Stripe would require modifying the subscription's `billing_cycle_anchor` or adding trial days via the Stripe API.
 
-4. **Exclude paused from active count** — update `useAlertLimitGuard` and the counting logic in each page so `paused` alerts don't count toward the limit (matching what the FAQ promises).
+5. **Disney Account section** — needs to be removed entirely per your request.
 
-5. **Database migration** — if alert status is stored as an enum, add `paused` to it. If stored as text, no migration needed.
+6. **Data & Privacy** — "Request Export" and "Delete Account" buttons have no onClick handlers. Privacy Policy and Terms of Service links are `<button>` elements with no routing.
 
-6. **UI behavior**: Pause button (⏸) on watching/found alerts. Resume button (▶) on paused alerts. Paused cards get a muted/dimmed visual treatment.
+7. **Cancel Subscription** — button has no handler. Needs a downgrade prompt before full cancellation.
 
-### Files to create/edit
-- **Edit**: `src/pages/DiningAlerts.tsx` — add pause/resume button, add `paused` to status type, exclude from active count
-- **Edit**: `src/pages/EventAlerts.tsx` — same
-- **Edit**: `src/pages/HotelAlerts.tsx` — same
-- **Edit**: `src/pages/AirfareTracker.tsx` — same
-- **Edit**: `supabase/functions/dining-availability-check/index.ts` — skip paused
-- **Edit**: `supabase/functions/event-availability-check/index.ts` — skip paused
-- **Edit**: `supabase/functions/hotel-price-check/index.ts` — skip paused
-- **Edit**: `supabase/functions/airfare-price-check/index.ts` — skip paused
-- **Migration** (if needed): Add `paused` to any status enum columns
+### Plan
+
+#### 1. Rebuild "My Subscription" section
+- Show the user's actual plan name from `useSubscription()` (already available)
+- Replace the 2-column feature table with a contextual upgrade prompt showing the next tier up and its key benefits
+- **Upgrade button**: Link to `/pricing` page (where checkout already works)
+- **Manage Billing button**: Call the existing `customer-portal` edge function (if it exists) or Stripe Customer Portal via a new edge function
+- **Cancel Subscription button**: Open a confirmation dialog that first offers a downgrade (shows cheaper plan options), and only on second confirmation calls Stripe to cancel
+
+#### 2. Remove SMS "Upgrade to enable" badge
+- Remove the conditional badge on the SMS toggle — SMS availability is not tier-gated
+
+#### 3. Check Walking Speed feature flag
+- Verify `budgetUpgrades` flag state; if disabled, enable it or remove the gate
+
+#### 4. Refer a Friend — mark as "Coming Soon" or remove
+- Since there's no referral backend, no referral tracking table, and no Stripe integration for free months, this section should either be hidden or show a "Coming Soon" state. Building the full referral system (unique codes, tracking table, Stripe subscription modification) is a separate project.
+
+#### 5. Remove Disney Account section
+- Delete the `DisneyConnectSection` component and the card that renders it
+
+#### 6. Wire up Data & Privacy
+- **Request Export**: Trigger a toast confirming the request has been submitted (or generate a JSON export of the user's profile data)
+- **Delete Account**: Open a confirmation dialog, then call `supabase.auth.admin.deleteUser()` via an edge function, sign out, and redirect to the home page. Explain the difference from Cancel Subscription (cancel keeps the account but stops billing; delete removes all data permanently).
+- **Privacy Policy / Terms links**: Change from `<button>` to `<Link to="/privacy-policy">` and `<Link to="/terms">`
+
+#### 7. Cancel vs Delete distinction
+- Cancel Subscription: Stops billing at period end, keeps account and data
+- Delete Account: Permanently removes all user data and auth record
+
+### Files to edit
+- **`src/pages/Settings.tsx`** — all changes above (rebuild subscription section, remove Disney Account, wire up buttons, fix links, add cancel/downgrade dialog)
+- **`src/lib/featureFlags.ts`** — verify/enable `budgetUpgrades` flag
+- Possibly **create edge function** `customer-portal` if it doesn't exist, for Manage Billing
+- Possibly **create edge function** for account deletion
 
 ### Technical notes
-- Pause/resume is a simple PATCH to the existing alert edge function, setting `status = 'paused'` or `status = 'watching'`
-- Active count filters: `alerts.filter(a => a.status === 'watching').length` (already excludes paused)
-- Paused alerts appear in a "Paused" tab or grouped under the existing tabs with a visual indicator
+- Stripe cancellation: use `stripe.subscriptions.update(subId, { cancel_at_period_end: true })` via edge function
+- Stripe downgrade: redirect to `/pricing` where checkout handles plan changes
+- Account deletion edge function: uses service role to delete from `users_profile`, `saved_trips`, alerts tables, then `supabase.auth.admin.deleteUser()`
+- Referral system deferred — no backend exists and building one (unique codes, tracking, Stripe billing date modification) is out of scope for this update
 
