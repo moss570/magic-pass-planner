@@ -18,6 +18,7 @@ export interface ParkDayAssignment {
   date: string;
   parkId: string | null; // null = non-park day
   parkIds: string[]; // up to 3 parks per day
+  eveningOnly: string[]; // parks marked as evening-only (dinner/fireworks)
 }
 
 export interface TripDraft {
