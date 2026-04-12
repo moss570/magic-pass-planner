@@ -25,6 +25,8 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import SupportFaq from "./pages/SupportFaq";
+import AffiliateProgram from "./pages/AffiliateProgram";
 import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
@@ -81,6 +83,8 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/support" element={<SupportFaq />} />
+            <Route path="/affiliate" element={<AffiliateProgram />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/game-developer" element={<ProtectedRoute><GameDeveloper /></ProtectedRoute>} />
             <Route path="/photo-contest" element={<ProtectedRoute><PhotoContest /></ProtectedRoute>} />

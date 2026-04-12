@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function PrivacyPolicy() {
+export default function SupportFaq() {
   const navigate = useNavigate();
 
   return (
@@ -23,16 +23,20 @@ export default function PrivacyPolicy() {
           Back
         </motion.button>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-white/80 space-y-6">
-          <h1 className="text-4xl font-black text-white mb-8">Privacy Policy</h1>
-          <p className="text-sm text-white/50"><strong>Effective Date: April 20, 2026</strong></p>
-          <section>
-            <h2 className="text-2xl font-bold text-white mb-4">1. Introduction</h2>
-            <p>Welcome to Magic Pass Plus. We are committed to protecting your personal information and your right to privacy.</p>
-          </section>
-          <section className="bg-white/5 p-6 rounded-xl border border-white/10">
-            <p className="text-sm text-white/60">For complete details, visit support@magicpassplus.com</p>
-          </section>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+          <h1 className="text-4xl font-black text-white mb-4">Support & FAQ</h1>
+          <p className="text-white/60 mb-8">Find answers to common questions about Magic Pass Plus</p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-8 space-y-4">
+            <h3 className="text-lg font-bold text-white">Common Questions</h3>
+            <ul className="space-y-2 text-white/70">
+              <li>✓ How do I set up dining alerts?</li>
+              <li>✓ What subscription plan is best for me?</li>
+              <li>✓ How do I cancel my subscription?</li>
+              <li>✓ Is my payment information secure?</li>
+              <li>✓ How do I contact support?</li>
+            </ul>
+            <a href="mailto:support@magicpassplus.com" className="block mt-6 px-4 py-2 bg-yellow-500 text-black font-bold rounded-lg text-center">Email Support</a>
+          </div>
         </motion.div>
       </div>
     </div>
