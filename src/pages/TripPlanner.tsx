@@ -8,6 +8,7 @@ import {
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import ItineraryCard from "@/components/trip-planner/ItineraryCard";
+import HotelSuggestions from "@/components/trip-planner/HotelSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
@@ -223,6 +224,7 @@ function ResultsView({
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
   onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
+  lodging, startDate, endDate, adults, children,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -251,6 +253,11 @@ function ResultsView({
   supabaseUrl: string;
   walkingSpeedKmh: number;
   tripId?: string | null;
+  lodging?: string;
+  startDate?: string;
+  endDate?: string;
+  adults?: number;
+  children?: number;
 }) {
   const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
