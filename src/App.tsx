@@ -47,6 +47,7 @@ import TripInvite from "./pages/TripInvite";
 import TripCompare from "./pages/TripCompare";
 import AffiliateNetworks from "./pages/admin/AffiliateNetworks";
 import ParkContent from "./pages/admin/ParkContent";
+import TierAccess from "./pages/admin/TierAccess";
 import AttractionPriorities from "./pages/AttractionPriorities";
 import CharacterMeets from "./pages/CharacterMeets";
 import ShowFireworksPriorities from "./pages/ShowFireworksPriorities";
