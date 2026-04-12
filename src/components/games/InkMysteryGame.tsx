@@ -9,8 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, BookOpen, Volume2 } from "lucide-react";
 import { Story } from "inkjs";
 
-// Import the raw Ink story as text (we'll compile it at runtime)
-import storyContent from "@/stories/carousel-caper.ink?raw";
+// Load compiled Ink JSON story
 
 const LOCATION_BACKGROUNDS: Record<string, { emoji: string; color: string }> = {
   main_plaza: { emoji: "🏰", color: "#F59E0B" },
@@ -42,20 +41,23 @@ export default function InkMysteryGame({ onClose }: Props) {
   const [history, setHistory] = useState<string[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
 
-  // Initialize story
+  // Initialize story from compiled JSON
   useEffect(() => {
-    try {
-      // inkjs can parse raw .ink files directly in newer versions
-      // But we need the compiled JSON format — let's use the raw text as JSON
-      const s = new Story(storyContent);
-      setStory(s);
-      setLoading(false);
-      continueStory(s);
-    } catch (err: any) {
-      console.error("Ink story load error:", err);
-      setError(`Failed to load story: ${err.message}. The Ink story needs to be compiled to JSON first.`);
-      setLoading(false);
-    }
+    const loadStory = async () => {
+      try {
+        const response = await fetch("/stories/carousel-caper.ink.json");
+        const storyJson = await response.text();
+        const s = new Story(storyJson);
+        setStory(s);
+        setLoading(false);
+        continueStory(s);
+      } catch (err: any) {
+        console.error("Ink story load error:", err);
+        setError(`Failed to load story: ${err.message}`);
+        setLoading(false);
+      }
+    };
+    loadStory();
   }, []);
 
   // Auto-scroll to bottom

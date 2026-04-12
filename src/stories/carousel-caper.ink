@@ -54,7 +54,7 @@ That's where you come in.
 # LOCATION: park_map
 
 📍 <b>ADVENTURE WORLD — INVESTIGATION HUB</b>
-Clues found: {clues_found} | Suspects questioned: {suspects_questioned}
+Clues found: {clues_found}. Suspects questioned: {suspects_questioned}.
 {twist_revealed: 🔴 TWIST REVEALED — New evidence available!}
 
 Where would you like to go?
@@ -85,7 +85,7 @@ The carousel stands eerily silent. Morning light catches the empty brass pole wh
     ~ clues_found++
 }
 
-{has_glitter && not has_bolt:
+{has_glitter and not has_bolt:
     You examine the mounting mechanism...
     
     🔬 <b>EVIDENCE FOUND:</b> The security bolt was unscrewed with precision tools — every thread intact. This was <i>not</i> a smash-and-grab. Whoever did this knew exactly what they were doing.
@@ -93,7 +93,7 @@ The carousel stands eerily silent. Morning light catches the empty brass pole wh
     ~ clues_found++
 }
 
-{has_bolt && not has_labcoat_witness:
+{has_bolt and not has_labcoat_witness:
     A nervous maintenance worker approaches you.
     
     <i>"Excuse me, detective? I wasn't here last night, but Old Earl on the night shift... he mentioned seeing someone in a <b>white lab coat</b> near the carousel around 11 PM. Said they were carrying what looked like tools."</i>
@@ -103,7 +103,7 @@ The carousel stands eerily silent. Morning light catches the empty brass pole wh
     ~ clues_found++
 }
 
-{has_glitter && has_bolt && has_labcoat_witness:
+{has_glitter and has_bolt and has_labcoat_witness:
     You've thoroughly examined the crime scene. The glitter trail leads toward the tunnels...
 }
 
@@ -124,7 +124,7 @@ Dark, damp corridors stretch beneath Adventure World. Pipes hum overhead. Your f
     ~ clues_found++
 }
 
-{has_labcoat_witness && not has_two_people:
+{has_labcoat_witness and not has_two_people:
     A night-shift tunnel worker shuffles toward you.
     
     <i>"Detective? Yeah, I was down here around midnight. Saw <b>two people</b> movin' through the south corridor. Couldn't see faces — too dark down here. But definitely two of 'em. One was pushin' something on wheels."</i>
@@ -145,26 +145,30 @@ Dark, damp corridors stretch beneath Adventure World. Pipes hum overhead. Your f
 
 Widget Wendy Wu's office is immaculate. Color-coded folders, a label maker, and a neat row of miniature carousel horses on her desk. Everything screams <i>control freak</i>.
 
-{not has_wendy_searches:
+{ not has_wendy_searches:
     Her company tablet sits on the desk, screen still unlocked...
-    
-    + [Search her tablet] 
-        You swipe through her recent activity...
-        
-        💭 <b>MOTIVE FOUND:</b> Recent browser searches include <i>"international antique shipping rates,"</i> <i>"golden horse value estimate,"</i> and <i>"private art collector contacts."</i>
-        ~ has_wendy_searches = true
-        ~ clues_found++
-        
-        Why would the Head of Merchandise be researching <i>private</i> art collectors?
-        -> wendys_office_more
-        
-    + [Leave it — look around the office instead]
-        You respect her privacy... for now. A good detective might come back.
-        -> wendys_office_more
-- (wendys_office_more)
+    -> wendy_tablet_choice
+- else:
+    -> wendy_office_clues
 }
 
-{has_wendy_searches && not has_wendy_lights:
+= wendy_tablet_choice
++ [Search her tablet]
+    You swipe through her recent activity...
+    
+    💭 <b>MOTIVE FOUND:</b> Recent browser searches include <i>"international antique shipping rates,"</i> <i>"golden horse value estimate,"</i> and <i>"private art collector contacts."</i>
+    ~ has_wendy_searches = true
+    ~ clues_found++
+    
+    Why would the Head of Merchandise be researching <i>private</i> art collectors?
+    -> wendy_office_clues
+    
++ [Leave it — look around the office instead]
+    You respect her privacy... for now. A good detective might come back.
+    -> wendy_office_clues
+
+= wendy_office_clues
+{ has_wendy_searches and not has_wendy_lights:
     You pull up the hallway security footage on the desk monitor...
     
     🔬 <b>EVIDENCE FOUND:</b> Wendy's office lights went dark at 10:03 PM. Her keycard wasn't used to re-enter until 6:47 AM. She claims she was working until 2 AM.
@@ -174,7 +178,7 @@ Widget Wendy Wu's office is immaculate. Color-coded folders, a label maker, and 
     <b>Her alibi just cracked wide open.</b>
 }
 
-{twist_revealed && not has_wendy_receipt:
+{ twist_revealed and not has_wendy_receipt:
     Now that you know about the replica, you search her desk more carefully...
     
     In a locked drawer (the lock is cheap — one paperclip does the trick):
@@ -186,7 +190,7 @@ Widget Wendy Wu's office is immaculate. Color-coded folders, a label maker, and 
     She ordered the replica <i>before</i> the theft. This was planned for weeks.
 }
 
-{twist_revealed && has_wendy_receipt && not has_wendy_shipping:
+{ twist_revealed and has_wendy_receipt and not has_wendy_shipping:
     Behind a stack of binders, you find a FedEx envelope...
     
     🔬 <b>CRITICAL EVIDENCE:</b> International shipping receipt. Contents: <i>"Decorative art piece, 200 lbs."</i> Destination: private address in Monaco. Shipped <b>2 WEEKS AGO</b>. Signed by: <b>W. Wu</b>.
@@ -215,7 +219,7 @@ Professor Peculiar Pete's workshop is controlled chaos — half-finished inventi
     Where does a park engineer go for 6 hours in the middle of the night?
 }
 
-{twist_revealed && not has_pete_blueprints:
+{twist_revealed and not has_pete_blueprints:
     Among his messy blueprints, one drawing stands out — it's cleaner, more precise than the others...
     
     🔬 <b>CRITICAL EVIDENCE:</b> Detailed engineering blueprints for a <i>"Precision Carousel Figure Extraction System"</i> — a custom tool designed specifically to remove a carousel horse from its mounting pole without damage.
@@ -225,7 +229,7 @@ Professor Peculiar Pete's workshop is controlled chaos — half-finished inventi
     His "invention" wasn't the Whirligig 3000. It was a <b>theft tool</b>.
 }
 
-{twist_revealed && has_pete_blueprints && not has_pete_payment:
+{twist_revealed and has_pete_blueprints and not has_pete_payment:
     You check Pete's financial records on his workshop computer (password: "whirligig3000")...
     
     💭 <b>MOTIVE FOUND:</b> Bank statement shows a <b>$50,000 deposit</b> from <i>Wendy Wu's personal account</i> last month. Memo line: "Research funding."
@@ -282,7 +286,7 @@ Banks of monitors show feeds from across the park. Most are working normally. On
     ~ clues_found++
 }
 
-{has_wendy_lights && has_pete_log && not has_teddy_snacks:
+{has_wendy_lights and has_pete_log and not has_teddy_snacks:
     Wait... you cross-reference the camera disable timestamp with the suspect timelines. Something doesn't add up.
     
     The disable happened at 9:58 PM — <i>before</i> Wendy left her office and before Pete left his workshop. Neither of them could have done it.
@@ -307,7 +311,7 @@ Banks of monitors show feeds from across the park. Most are working normally. On
 
 The loading dock handles all deliveries and shipments for Adventure World. Stacks of crates, a clipboard on the wall, and tire marks on the concrete.
 
-{not has_dock_manifest && not has_wendy_shipping:
+{not has_dock_manifest and not has_wendy_shipping:
     You check the recent manifests...
     
     Nothing unusual in the last few days. Standard supply deliveries, merchandise shipments.
@@ -315,7 +319,7 @@ The loading dock handles all deliveries and shipments for Adventure World. Stack
     📌 Might be worth coming back if you find a reason to look further back in the records.
 }
 
-{has_wendy_shipping && not has_dock_manifest:
+{has_wendy_shipping and not has_dock_manifest:
     Knowing about the overseas shipment, you dig through manifests from 2 weeks ago...
     
     🔬 <b>CRITICAL EVIDENCE:</b> Dock manifest, dated 14 days ago: <i>"Outbound shipment. 1x crated item, 200 lbs. Private courier pickup. Signed by: <b>W. Wu, Head of Merchandise</b>."</i>
@@ -446,7 +450,7 @@ Professor Pete bounces in his chair, wild hair even wilder than usual.
     }
     -> choose_suspect
 
-+ {twist_revealed && has_pete_blueprints} [🔥 CONFRONT: Explain these blueprints for a "Carousel Figure Extraction System."]
++ {twist_revealed and has_pete_blueprints} [🔥 CONFRONT: Explain these blueprints for a "Carousel Figure Extraction System."]
     ~ pete_confronted = true
     
     Pete's face goes white.
@@ -535,12 +539,12 @@ Teddy mops his forehead with a monogrammed handkerchief. His bow tie is slightly
 {has_dock_manifest: 🔬 Dock: Wendy signed for 200-lb outbound shipment}
 
 ━━━━━━━━━━━━━━━━━━━━━
-{clues_found} clues collected | {suspects_questioned} interrogations conducted
+{clues_found} clues collected. {suspects_questioned} interrogations conducted.
 {wendy_confronted: ⚡ Wendy confronted with evidence}
 {pete_confronted: ⚡ Pete confronted with evidence}
 {twist_revealed: 🔴 PLOT TWIST REVEALED}
 
-{clues_found >= 10 && not twist_revealed:
+{clues_found >= 10 and not twist_revealed:
     🔔 <b>BREAKTHROUGH!</b> You have enough evidence to trigger a major discovery...
     + [🔴 Follow up on the evidence...] -> plot_twist
     + [Keep investigating first] -> hub
@@ -580,9 +584,9 @@ Everything you thought you knew just changed. Go back and search the locations a
 
 You've gathered your evidence. You've questioned the suspects. Now it's time to make your case.
 
-Clues found: {clues_found} | Suspects questioned: {suspects_questioned}
-{wendy_confronted: ✅ Confronted Wendy}
-{pete_confronted: ✅ Confronted Pete}
+Clues found: {clues_found}. Suspects questioned: {suspects_questioned}.
+{wendy_confronted: ✅ Confronted Wendy.}
+{pete_confronted: ✅ Confronted Pete.}
 
 Who is the <b>primary culprit</b> — the mastermind?
 
@@ -607,12 +611,24 @@ Who is the <b>primary culprit</b> — the mastermind?
 
 Did the mastermind have an <b>accomplice</b>?
 
-+ [Yes — Dizzy Dave] ~ accomplice = "dave" -> reveal
-+ [Yes — Widget Wendy] ~ accomplice = "wendy" -> reveal
-+ [Yes — Professor Pete] ~ accomplice = "pete" -> reveal
-+ [Yes — Jolly Janet] ~ accomplice = "janet" -> reveal
-+ [Yes — Teddy Pemberton] ~ accomplice = "teddy" -> reveal
-+ [No — they acted alone] ~ accomplice = "none" -> reveal
++ [Yes — Dizzy Dave]
+    ~ accomplice = "dave"
+    -> reveal
++ [Yes — Widget Wendy]
+    ~ accomplice = "wendy"
+    -> reveal
++ [Yes — Professor Pete]
+    ~ accomplice = "pete"
+    -> reveal
++ [Yes — Jolly Janet]
+    ~ accomplice = "janet"
+    -> reveal
++ [Yes — Teddy Pemberton]
+    ~ accomplice = "teddy"
+    -> reveal
++ [No — they acted alone]
+    ~ accomplice = "none"
+    -> reveal
 
 === reveal ===
 # LOCATION: reveal
@@ -624,19 +640,15 @@ Did the mastermind have an <b>accomplice</b>?
 
 {accused == "wendy":
     ✅ <b>CORRECT!</b> Widget Wendy Wu is the mastermind behind the Carousel Caper!
-    
-    {accomplice == "pete":
+    { accomplice == "pete":
         ✅ <b>AND CORRECT AGAIN!</b> Professor Peculiar Pete was her accomplice!
-        
         🏆 <b>PERFECT DEDUCTION!</b> You cracked the case completely!
     - else:
-        ❌ But you missed her accomplice — <b>Professor Peculiar Pete</b> provided the engineering expertise.
-        
+        ❌ But you missed her accomplice — <b>Professor Peculiar Pete</b>.
         🥈 Close! You identified the mastermind but missed the partner.
     }
 - else:
     ❌ The real mastermind was <b>Widget Wendy Wu</b>, with help from <b>Professor Peculiar Pete</b>.
-    
     🤔 The evidence was there, but the dots weren't quite connected.
 }
 
@@ -663,7 +675,9 @@ As park security escorted Wendy and Pete away, Dizzy Dave could be heard sobbing
 The Golden Horse was recovered from a shipping container at Miami Port three days later and returned to its rightful place on the Grand Carousel.
 
 <b>Case Status: CLOSED</b>
-<b>Detective Rating: {accused == "wendy" && accomplice == "pete": ⭐⭐⭐⭐⭐ MASTER DETECTIVE}{accused == "wendy" && accomplice != "pete": ⭐⭐⭐⭐ SENIOR INVESTIGATOR}{accused != "wendy": ⭐⭐⭐ JUNIOR DETECTIVE}</b>
+<b>Detective Rating: {accused == "wendy" and accomplice == "pete": ⭐⭐⭐⭐⭐ MASTER DETECTIVE}
+{accused == "wendy" and accomplice != "pete": ⭐⭐⭐⭐ SENIOR INVESTIGATOR}
+{accused != "wendy": ⭐⭐⭐ JUNIOR DETECTIVE}</b>
 <b>Evidence Collected: {clues_found}/16</b>
 
 -> END
