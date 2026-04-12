@@ -268,8 +268,8 @@ OUTPUT AS VALID JSON:
       }),
     });
 
-    const result = await response.json();
-    const content = result.choices[0].message.content;
+    const result: any = await response.json();
+    const content: string = result.choices[0].message.content;
 
     // Parse JSON from GPT-4 response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
