@@ -1,40 +1,46 @@
 
 
-## Update "Add Person" Link to Large Invite Button
+## Trip Planner Step 3: Default Empty, Validation Flag, Evening-Only Toggle, and Scheduler Hints
 
-### Change
-In `src/components/trip-planner/AddMemberForm.tsx`, replace the small text link ("Add Person") with a full-width styled button that says **"Invite Friend to Plan This Trip"** with a description below it.
+### Changes
 
-### Details
+#### 1. Default day assignments to empty (no pre-selection)
+Currently when assignments are created for new days, the first selected park is auto-assigned. Change this so new days default to `parkIds: []` — no selection. Show a warning banner **"Select at least one activity"** that disappears once any day has a selection.
 
-**File: `src/components/trip-planner/AddMemberForm.tsx`** (lines ~75-82)
+#### 2. Add "Evening Only" toggle per park per day
+For each selected park chip on a given day, add a small toggle (🌙 icon or "PM" badge) indicating "Dinner / Fireworks only." This stores metadata in the draft so the scheduler knows to route that park visit to late afternoon/evening.
 
-Replace the current collapsed state:
-```tsx
-<button onClick={() => setShowForm(true)}
-  className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-  <UserPlus className="w-3.5 h-3.5" /> Add Person
-</button>
+**Data model change** in `tripDraft.ts`:
+```typescript
+export interface ParkDayAssignment {
+  date: string;
+  parkId: string | null;
+  parkIds: string[];
+  eveningOnly: string[]; // park names marked as evening-only for this day
+}
 ```
 
-With a full-width button block:
-```tsx
-<button onClick={() => setShowForm(true)}
-  className="w-full py-3 px-4 rounded-xl border border-primary/30 bg-primary/10 
-             hover:bg-primary/20 transition-colors text-left space-y-1">
-  <div className="flex items-center gap-2 text-sm font-bold text-primary">
-    <UserPlus className="w-4 h-4" /> Invite Friend to Plan This Trip
-  </div>
-  <p className="text-xs text-muted-foreground leading-snug">
-    Your friend will be able to receive alerts, follow budget, participate in 
-    polls and other features depending on which subscription tier they have.
-  </p>
-</button>
-```
+#### 3. Update `canContinue` validation
+Change from `selectedParks.length > 0 && tripDays.length > 0` to also require that every trip day has at least one park or is explicitly marked Non-Park.
 
-Also update `StepParty.tsx` to remove the inline layout that places AddMemberForm next to the label — instead place it below the members list as a standalone block.
+#### 4. Transit-aware scheduler hints (data only)
+The `eveningOnly` array will be passed through the draft into the saved trip and used by the `ai-trip-planner` edge function. On park hopper days with an evening-only park, the scheduler should:
+- Schedule that park last in the day
+- Account for transit time from the transit matrix
+- Route users toward park exit/transportation hub before departure time
+
+This is a **data-model and UI change only** — the scheduler logic in the edge function will consume these hints in a follow-up task.
 
 ### Files to edit
-- `src/components/trip-planner/AddMemberForm.tsx` — new button design for collapsed state
-- `src/components/trip-planner/steps/StepParty.tsx` — move AddMemberForm below members list instead of inline with label
+
+- **`src/lib/tripDraft.ts`** — Add `eveningOnly: string[]` to `ParkDayAssignment`, default to `[]` in `getDefaultDraft`
+- **`src/components/trip-planner/steps/StepParksDates.tsx`** — 
+  - Default new days to empty `parkIds: []` (remove auto-assignment of first park)
+  - Add validation banner "Select at least one activity" when any day has no selection and isn't Non-Park
+  - Add evening-only toggle button (🌙) next to each selected park chip
+  - Update `canContinue` to require all days have at least one park or Non-Park
+  - Add `toggleEveningOnly(date, park)` handler
+
+### UI detail
+Each day card will show park chips as before. When a park is selected, a small 🌙 moon icon appears next to it — clicking it toggles that park as "evening only" (highlighted in amber). A tooltip or label says "Just for Dinner / Fireworks." The Non-Park button works as before, clearing all selections for that day.
 
