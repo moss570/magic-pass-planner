@@ -7,6 +7,21 @@ const PARKS = [
   "🌊 Typhoon Lagoon", "❄️ Blizzard Beach"
 ];
 
+const NON_PARK_ID = "non-park";
+
+const NON_PARK_ACTIVITIES = [
+  "🎡 ICON Park & I-Drive",
+  "🚀 Kennedy Space Center",
+  "🌊 Disney Springs Shopping",
+  "🐊 Gatorland",
+  "🎳 Main Event / TopGolf",
+  "🍽️ Local Dining Tour",
+  "🏖️ Cocoa Beach Day Trip",
+  "🛍️ Orlando Premium Outlets",
+  "🎮 Andretti Indoor Karting",
+  "🌴 Pool & Resort Day",
+];
+
 interface Props {
   draft: TripDraft;
   onChange: (patch: Partial<TripDraft>) => void;
