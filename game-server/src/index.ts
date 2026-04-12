@@ -24,7 +24,7 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", games: ["match3", "poker", "spit", "mystery"], uptime: process.uptime() });
 });
 
-// Colyseus monitor (admin panel)
+// Colyseus monitor
 app.use("/monitor", monitor());
 
 // Serve static game assets
@@ -37,14 +37,13 @@ const gameServer = new Server({
 });
 
 // Register game rooms
-gameServer.define("match3", Match3Room).filterBy(["difficulty"]);
-gameServer.define("poker", PokerRoom).filterBy(["difficulty"]);
+gameServer.define("match3", Match3Room);
+gameServer.define("poker", PokerRoom);
 gameServer.define("spit", SpitRoom);
-gameServer.define("mystery", MysteryRoom).filterBy(["duration"]);
+gameServer.define("mystery", MysteryRoom);
 
 httpServer.listen(port, () => {
   console.log(`🎮 Magic Pass Games Server running on port ${port}`);
   console.log(`📊 Monitor: http://localhost:${port}/monitor`);
   console.log(`🏓 Health: http://localhost:${port}/health`);
 });
-// Force redeploy 1775996344
