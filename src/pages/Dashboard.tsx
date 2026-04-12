@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
   const [realAlerts, setRealAlerts] = useState<any[]>([]);
   const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
+  const [activeVersion, setActiveVersion] = useState<{ name: string; version_number: number } | null>(null);
   const [tripExpenses, setTripExpenses] = useState<{ total: number; budget: number } | null>(null);
   const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
   const [subscription, setSubscription] = useState<any>(null);
@@ -60,7 +61,20 @@ const Dashboard = () => {
       .not("itinerary", "is", null)
       .order("updated_at", { ascending: false })
       .limit(1)
-      .then(({ data }) => setMostRecentTrip(data?.[0] || null));
+      .then(async ({ data }) => {
+        const trip = data?.[0] || null;
+        setMostRecentTrip(trip);
+        if (trip) {
+          const { data: versions } = await supabase
+            .from("trip_versions")
+            .select("name, version_number")
+            .eq("trip_id", trip.id)
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .limit(1);
+          if (versions?.[0]) setActiveVersion(versions[0]);
+        }
+      });
 
     // Active dining + extra alerts count
     supabase.from("dining_alerts")
@@ -238,8 +252,14 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   📅 Your Trip Itinerary
+                  {mostRecentTrip?.name && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      — {mostRecentTrip.name}
+                      {activeVersion ? ` (${activeVersion.name || `v${activeVersion.version_number}`})` : ""}
+                    </span>
+                  )}
                 </h3>
-                <Link to="/trip-planner" className="text-xs text-primary hover:underline">
+                <Link to="/my-trips" className="text-xs text-primary hover:underline">
                   {mostRecentTrip ? "Full plan →" : "Create one →"}
                 </Link>
               </div>
