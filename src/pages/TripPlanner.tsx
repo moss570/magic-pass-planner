@@ -368,6 +368,17 @@ function ResultsView({
         )}
       </div>
 
+      {/* Off-site hotel suggestions */}
+      {!resortStay && lodging !== 'disney-resort' && (
+        <HotelSuggestions
+          lodging={lodging || ''}
+          startDate={startDate || ''}
+          endDate={endDate || ''}
+          adults={adults || 2}
+          children={children || 0}
+        />
+      )}
+
       {plans.map((plan, i) => (
         useEnhancedCards ? (
           <ItineraryCard
@@ -881,6 +892,11 @@ function TripPlannerWizard() {
           supabaseUrl={SUPABASE_URL}
           walkingSpeedKmh={draft.walkingSpeedKmh}
           tripId={savedTripId}
+          lodging={draft.lodging}
+          startDate={draft.startDate}
+          endDate={draft.endDate}
+          adults={draft.adults}
+          children={draft.children}
         />
       </DashboardLayout>
     );
