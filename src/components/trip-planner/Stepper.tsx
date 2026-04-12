@@ -6,6 +6,7 @@ const VACATION_STEPS = [
   "Party",
   "Parks & Dates",
   "Must-Dos",
+  "Meals",
   "Transport",
   "Lightning Lane",
   "Review",

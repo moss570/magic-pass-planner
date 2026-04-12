@@ -20,6 +20,7 @@ import StepBasics from "@/components/trip-planner/steps/StepBasics";
 import StepParty from "@/components/trip-planner/steps/StepParty";
 import StepParksDates from "@/components/trip-planner/steps/StepParksDates";
 import StepMustDos from "@/components/trip-planner/steps/StepMustDos";
+import StepMealPlanning from "@/components/trip-planner/steps/StepMealPlanning";
 import StepTransportLodging from "@/components/trip-planner/steps/StepTransportLodging";
 import StepLightningLaneTickets from "@/components/trip-planner/steps/StepLightningLaneTickets";
 import StepReview from "@/components/trip-planner/steps/StepReview";
@@ -708,6 +709,7 @@ function TripPlannerWizard() {
           nonParkDays: draft.mode === 'day-trip' ? 0 : nonParkDayCount,
           mustDoAttractions: draft.mustDoAttractions,
           walkingSpeedKmh: draft.walkingSpeedKmh,
+          mealPlanPreferences: draft.mealPlanPreferences,
         }),
       });
 
@@ -889,11 +891,11 @@ function TripPlannerWizard() {
   };
 
   // Day trip step mapping: 0=Basics, 1=Party, 2=Parks, 3=Must-Dos, 4=Review
-  // Vacation step mapping: 0=Basics, 1=Party, 2=Parks, 3=Must-Dos, 4=Transport, 5=LL, 6=Review
+  // Vacation step mapping: 0=Basics, 1=Party, 2=Parks, 3=Must-Dos, 4=Meals, 5=Transport, 6=LL, 7=Review
   const isDayTrip = draft.mode === 'day-trip';
 
   const getNextStep = (current: number): number => {
-    if (isDayTrip && current === 3) return 4; // Must-Dos -> Review (skip Transport + LL)
+    if (isDayTrip && current === 3) return 4; // Must-Dos -> Review (skip Meals + Transport + LL)
     return current + 1;
   };
 
@@ -902,8 +904,8 @@ function TripPlannerWizard() {
     return current - 1;
   };
 
-  const totalSteps = isDayTrip ? 5 : 7;
-  const isReviewStep = isDayTrip ? step === 4 : step === 6;
+  const totalSteps = isDayTrip ? 5 : 8;
+  const isReviewStep = isDayTrip ? step === 4 : step === 7;
 
   // Mode selection screen
   if (!modeSelected && !showResumeBanner) {
@@ -999,9 +1001,10 @@ function TripPlannerWizard() {
               {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} tripId={savedTripId} />}
               {step === 2 && <StepParksDates draft={draft} onChange={updateDraft} onContinue={() => goToStep(3)} onBack={() => goToStep(1)} />}
               {step === 3 && <StepMustDos draft={draft} onChange={updateDraft} onContinue={() => goToStep(4)} onBack={() => goToStep(2)} />}
-              {step === 4 && <StepTransportLodging draft={draft} onChange={updateDraft} onContinue={() => goToStep(5)} onBack={() => goToStep(3)} />}
-              {step === 5 && <StepLightningLaneTickets draft={draft} onChange={updateDraft} onContinue={() => goToStep(6)} onBack={() => goToStep(4)} />}
-              {step === 6 && <StepReview draft={draft} onBack={() => goToStep(5)} onGenerate={generateItinerary} generating={generating} />}
+              {step === 4 && <StepMealPlanning draft={draft} onChange={updateDraft} onContinue={() => goToStep(5)} onBack={() => goToStep(3)} />}
+              {step === 5 && <StepTransportLodging draft={draft} onChange={updateDraft} onContinue={() => goToStep(6)} onBack={() => goToStep(4)} />}
+              {step === 6 && <StepLightningLaneTickets draft={draft} onChange={updateDraft} onContinue={() => goToStep(7)} onBack={() => goToStep(5)} />}
+              {step === 7 && <StepReview draft={draft} onBack={() => goToStep(6)} onGenerate={generateItinerary} generating={generating} />}
             </>
           )}
         </div>

@@ -52,7 +52,7 @@ export default function PassingPointsAccordion({ passingPoints, onStoppingHere }
         className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-        <span className="font-medium">On the way</span>
+        <span className="font-medium">You'll pass these on the way — want to stop?</span>
         <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted">
           {passingPoints.length}
         </span>

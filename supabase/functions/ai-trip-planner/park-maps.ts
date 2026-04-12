@@ -12,6 +12,8 @@ export interface ParkLocation {
   avgWait: { low: number; moderate: number; high: number };
   llAvailable: boolean;
   tips: string;
+  diningType?: "snack" | "quick-service" | "table-service";
+  servesMeals?: ("breakfast" | "lunch" | "dinner")[];
 }
 
 // ─── MAGIC KINGDOM ────────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ export const MAGIC_KINGDOM: Record<string, ParkLocation> = {
   "Tomorrowland Speedway":           { x:78, y:85, land:"Tomorrowland", rideTime:5, category:"ride", thrillLevel:1, avgWait:{low:15,moderate:30,high:45}, llAvailable:false, tips:"Cars on a track, popular with kids" },
   "Astro Orbiter":                   { x:83, y:65, land:"Tomorrowland", rideTime:3, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:25,high:40}, llAvailable:false, tips:"Go in evening for great views" },
   "Walt Disney's Carousel of Progress":{ x:80,y:75,land:"Tomorrowland",rideTime:21,category:"show",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Great A/C break, classic show" },
-  "Tomorrowland Terrace":            { x:70,y:60,land:"Tomorrowland",category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Quick service, castle views" },
+  "Tomorrowland Terrace":            { x:70,y:60,land:"Tomorrowland",category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Quick service, castle views", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Fantasyland
   "Seven Dwarfs Mine Train":         { x:55, y:80, land:"Fantasyland", rideTime:3, category:"ride", thrillLevel:3, avgWait:{low:35,moderate:70,high:110}, llAvailable:true, tips:"Most popular family coaster. Book LL after TRON." },
   "Peter Pan's Flight":              { x:45, y:75, land:"Fantasyland", rideTime:3, category:"ride", thrillLevel:2, avgWait:{low:40,moderate:75,high:110}, llAvailable:true, tips:"Gentle ride but always long waits" },
@@ -36,22 +38,24 @@ export const MAGIC_KINGDOM: Record<string, ParkLocation> = {
   "The Barnstormer":                 { x:46, y:86, land:"Fantasyland", rideTime:2, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:35}, llAvailable:false, tips:"Mini coaster for first-time riders" },
   "Mad Tea Party":                   { x:52, y:75, land:"Fantasyland", rideTime:2, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:30}, llAvailable:false, tips:"Teacups" },
   "Mickey's PhilharMagic":           { x:47, y:73, land:"Fantasyland", rideTime:12, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:20}, llAvailable:false, tips:"4D movie, great A/C" },
-  "Be Our Guest Restaurant":         { x:43, y:78, land:"Fantasyland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required — most iconic dining in MK" },
-  "Pinocchio Village Haus":          { x:42, y:80, land:"Fantasyland", rideTime:30, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS, overlooks Small World" },
+  "Be Our Guest Restaurant":         { x:43, y:78, land:"Fantasyland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required — most iconic dining in MK", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Pinocchio Village Haus":          { x:42, y:80, land:"Fantasyland", rideTime:30, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS, overlooks Small World", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Liberty Square
   "Haunted Mansion":                 { x:32, y:70, land:"Liberty Square", rideTime:9, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:30,high:55}, llAvailable:true, tips:"Best in evening for atmosphere" },
-  "Columbia Harbour House":          { x:33, y:68, land:"Liberty Square", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in MK. Second floor has castle views." },
-  "Liberty Tree Tavern":             { x:35, y:65, land:"Liberty Square", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Colonial American." },
+  "Columbia Harbour House":          { x:33, y:68, land:"Liberty Square", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in MK. Second floor has castle views.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Liberty Tree Tavern":             { x:35, y:65, land:"Liberty Square", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Colonial American.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // Frontierland
   "Big Thunder Mountain Railroad":   { x:22, y:70, land:"Frontierland", rideTime:4, category:"ride", thrillLevel:3, avgWait:{low:20,moderate:40,high:70}, llAvailable:true, tips:"Wildest ride in wilderness. Great fireworks views." },
   "Tiana's Bayou Adventure":         { x:20, y:65, land:"Frontierland", rideTime:11, category:"ride", thrillLevel:3, avgWait:{low:25,moderate:50,high:90}, llAvailable:true, tips:"New and popular. Book LL when available." },
-  "Pecos Bill Tall Tale Inn & Cafe": { x:25, y:65, land:"Frontierland", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Largest QS in MK, good for groups" },
-  "Golden Oak Outpost":              { x:22, y:68, land:"Frontierland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"Waffle fries, fast" },
+  "Pecos Bill Tall Tale Inn & Cafe": { x:25, y:65, land:"Frontierland", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Largest QS in MK, good for groups", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Golden Oak Outpost":              { x:22, y:68, land:"Frontierland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"Waffle fries, fast", diningType:"snack", servesMeals:[] },
   // Adventureland
   "Pirates of the Caribbean":        { x:18, y:58, land:"Adventureland", rideTime:9, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:40}, llAvailable:false, tips:"Classic ride. Go after 3 PM for short waits." },
   "Jungle Cruise":                   { x:15, y:55, land:"Adventureland", rideTime:10, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:25,high:50}, llAvailable:true, tips:"Best jokes in WDW. Morning or evening." },
   "Walt Disney's Enchanted Tiki Room":{ x:13, y:52, land:"Adventureland", rideTime:12, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Classic show, great A/C" },
-  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! Only in MK." },
+  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! Only in MK.", diningType:"snack", servesMeals:[] },
+  "The Skipper Canteen":             { x:14, y:53, land:"Adventureland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Creative pan-Asian.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Storybook Treats":                { x:49, y:79, land:"Fantasyland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Ice cream and snacks", diningType:"snack", servesMeals:[] },
   // Landmarks
   "Main Street Hub":                 { x:50, y:48, land:"Main Street U.S.A.", category:"landmark", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Best fireworks position. Arrive 8:45 PM." },
 };
@@ -64,23 +68,23 @@ export const EPCOT: Record<string, ParkLocation> = {
   "Guardians of the Galaxy: Cosmic Rewind":{ x:75, y:30, land:"World Discovery", rideTime:4, category:"ride", thrillLevel:5, avgWait:{low:45,moderate:90,high:150}, llAvailable:true, tips:"Book LL the instant you enter — sells out first. Indoor coaster." },
   "Test Track":                      { x:80, y:35, land:"World Discovery", rideTime:5, category:"ride", thrillLevel:4, avgWait:{low:20,moderate:50,high:90}, llAvailable:true, tips:"Design a car, then test it at 65 mph. Book LL morning." },
   "Mission: SPACE":                  { x:72, y:35, land:"World Discovery", rideTime:5, category:"ride", thrillLevel:4, avgWait:{low:15,moderate:30,high:55}, llAvailable:false, tips:"Intense centrifuge simulator. Orange mission is intense, Green is tamer." },
-  "Space 220 Restaurant":            { x:70, y:28, land:"World Discovery", rideTime:90, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"RESERVATION REQUIRED — hardest table in WDW. Book at exactly 60 days." },
+  "Space 220 Restaurant":            { x:70, y:28, land:"World Discovery", rideTime:90, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"RESERVATION REQUIRED — hardest table in WDW. Book at exactly 60 days.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // World Nature
   "Soarin' Around the World":        { x:25, y:35, land:"World Nature", rideTime:5, category:"ride", thrillLevel:2, avgWait:{low:20,moderate:40,high:70}, llAvailable:true, tips:"Classic hang glider simulation. Book LL if Guardians isn't option." },
   "The Seas with Nemo & Friends":    { x:20, y:32, land:"World Nature", rideTime:6, category:"ride", thrillLevel:1, avgWait:{low:10,moderate:20,high:35}, llAvailable:false, tips:"Great for young kids. Usually walk-on morning." },
   "Turtle Talk with Crush":          { x:22, y:33, land:"World Nature", rideTime:15, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Interactive show with Crush. Kids love it." },
-  "Garden Grill Restaurant":         { x:28, y:38, land:"World Nature", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Rotating character dining." },
+  "Garden Grill Restaurant":         { x:28, y:38, land:"World Nature", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Rotating character dining.", diningType:"table-service", servesMeals:["breakfast","lunch","dinner"] },
   // World Celebration
   "Remy's Ratatouille Adventure":    { x:50, y:80, land:"World Showcase - France", rideTime:5, category:"ride", thrillLevel:2, avgWait:{low:30,moderate:60,high:95}, llAvailable:true, tips:"Charming ride, popular with families. Book LL early." },
   "Frozen Ever After":               { x:50, y:25, land:"World Showcase - Norway", rideTime:5, category:"ride", thrillLevel:2, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Boat ride through Arendelle. Book LL morning." },
   // World Showcase dining (key ones)
-  "Akershus Royal Banquet Hall":     { x:50, y:25, land:"World Showcase - Norway", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Princess character dining." },
-  "Le Cellier Steakhouse":           { x:50, y:45, land:"World Showcase - Canada", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Best steak in WDW." },
-  "Via Napoli Ristorante e Pizzeria":{ x:50, y:60, land:"World Showcase - Italy", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Authentic Neapolitan pizza." },
-  "Teppan Edo":                      { x:50, y:55, land:"World Showcase - Japan", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Teppanyaki style." },
-  "Refreshment Port":                { x:50, y:43, land:"World Showcase - Canada", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"QS, poutine!" },
-  "Sunshine Seasons":                { x:28, y:36, land:"World Nature", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in EPCOT. Huge variety, Food & Wine vibes." },
-  "Topolino's Terrace":              { x:70, y:38, land:"World Discovery area", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Rooftop character breakfast." },
+  "Akershus Royal Banquet Hall":     { x:50, y:25, land:"World Showcase - Norway", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Princess character dining.", diningType:"table-service", servesMeals:["breakfast","lunch","dinner"] },
+  "Le Cellier Steakhouse":           { x:50, y:45, land:"World Showcase - Canada", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Best steak in WDW.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Via Napoli Ristorante e Pizzeria":{ x:50, y:60, land:"World Showcase - Italy", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Authentic Neapolitan pizza.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Teppan Edo":                      { x:50, y:55, land:"World Showcase - Japan", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Teppanyaki style.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Refreshment Port":                { x:50, y:43, land:"World Showcase - Canada", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"QS, poutine!", diningType:"snack", servesMeals:[] },
+  "Sunshine Seasons":                { x:28, y:36, land:"World Nature", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in EPCOT. Huge variety, Food & Wine vibes.", diningType:"quick-service", servesMeals:["breakfast","lunch","dinner"] },
+  "Topolino's Terrace":              { x:70, y:38, land:"World Discovery area", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Rooftop character breakfast.", diningType:"table-service", servesMeals:["breakfast","dinner"] },
   // Fireworks
   "World Showcase Lagoon":           { x:50, y:50, land:"World Showcase", category:"landmark", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Best EPCOT fireworks view. France pavilion side is less crowded." },
 };
