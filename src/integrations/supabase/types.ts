@@ -3431,6 +3431,11 @@ export type Database = {
           ap_pass_tier: string | null
           avatar_url: string | null
           created_at: string | null
+          default_ll_option: string | null
+          default_party_adults: number | null
+          default_party_children: number | null
+          default_ride_preference: string | null
+          default_trip_mode: string | null
           disney_plus: boolean | null
           disney_visa: boolean | null
           email: string | null
@@ -3460,6 +3465,11 @@ export type Database = {
           ap_pass_tier?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          default_ll_option?: string | null
+          default_party_adults?: number | null
+          default_party_children?: number | null
+          default_ride_preference?: string | null
+          default_trip_mode?: string | null
           disney_plus?: boolean | null
           disney_visa?: boolean | null
           email?: string | null
@@ -3489,6 +3499,11 @@ export type Database = {
           ap_pass_tier?: string | null
           avatar_url?: string | null
           created_at?: string | null
+          default_ll_option?: string | null
+          default_party_adults?: number | null
+          default_party_children?: number | null
+          default_ride_preference?: string | null
+          default_trip_mode?: string | null
           disney_plus?: boolean | null
           disney_visa?: boolean | null
           email?: string | null
