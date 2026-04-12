@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Castle, RefreshCw, Calendar, Users, Minus, Plus, Sparkles,
   ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle,
@@ -483,7 +483,9 @@ export default function TripPlanner() {
 function TripPlannerWizard() {
   const { session, user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
   const userId = user?.id || 'anon';
+  const editTripId = (location.state as any)?.tripId as string | undefined;
 
   // Mode selection state — null means user hasn't chosen yet
   const [modeSelected, setModeSelected] = useState<boolean>(false);
@@ -500,7 +502,7 @@ function TripPlannerWizard() {
   const [budgetBreakdown, setBudgetBreakdown] = useState<Record<string, number> | null>(null);
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savedTripId, setSavedTripId] = useState<string | null>(null);
+  const [savedTripId, setSavedTripId] = useState<string | null>(editTripId || null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [ticketInfo, setTicketInfo] = useState<any>(null);
@@ -509,6 +511,7 @@ function TripPlannerWizard() {
   const [hotelNightlyBudget, setHotelNightlyBudget] = useState<number | null>(null);
   const [tripCoverage, setTripCoverage] = useState<any>(null);
   const [nonParkSuggestions, setNonParkSuggestions] = useState<any[]>([]);
+  const [hydrating, setHydrating] = useState(!!editTripId);
 
   // Version state
   const [versions, setVersions] = useState<TripVersion[]>([]);
@@ -607,13 +610,57 @@ function TripPlannerWizard() {
     } catch {}
   };
 
-  // Check for existing draft on mount
+  // Check for existing draft on mount (skip if editing a saved trip)
   useEffect(() => {
+    if (editTripId) return;
     const existing = loadDraft(userId);
     if (existing) {
       setShowResumeBanner(true);
     }
-  }, [userId]);
+  }, [userId, editTripId]);
+
+  // Hydrate from saved trip when editing
+  useEffect(() => {
+    if (!editTripId) return;
+    const hydrate = async () => {
+      try {
+        const { data, error } = await (await import("@/integrations/supabase/client")).supabase
+          .from("saved_trips")
+          .select("*")
+          .eq("id", editTripId)
+          .single();
+        if (error || !data) {
+          toast({ title: "Could not load trip", variant: "destructive" });
+          setHydrating(false);
+          return;
+        }
+        const inferredMode: TripMode = data.start_date === data.end_date ? 'day-trip' : 'vacation';
+        setDraft(prev => ({
+          ...prev,
+          mode: inferredMode,
+          tripName: data.name || '',
+          startDate: data.start_date || '',
+          endDate: data.end_date || '',
+          budget: data.budget || (inferredMode === 'day-trip' ? 500 : 6500),
+          adults: data.adults ?? 2,
+          children: data.children ?? 0,
+          ages: data.ages || '',
+          selectedParks: data.parks || [],
+          llOption: data.ll_option || 'multi',
+          ridePreference: data.ride_preference || 'mix',
+          specialNotes: data.special_notes || '',
+        }));
+        setSavedTripId(data.id);
+        setModeSelected(true);
+        setShowResumeBanner(false);
+      } catch {
+        toast({ title: "Could not load trip", variant: "destructive" });
+      } finally {
+        setHydrating(false);
+      }
+    };
+    hydrate();
+  }, [editTripId]);
 
   // Handle prefill from Best Days to Go or other sources
   useEffect(() => {
@@ -931,6 +978,17 @@ function TripPlannerWizard() {
 
   const totalSteps = isDayTrip ? 5 : 8;
   const isReviewStep = isDayTrip ? step === 4 : step === 7;
+
+  // Loading state when hydrating a saved trip
+  if (hydrating) {
+    return (
+      <DashboardLayout title="🗺️ Trip Planner" subtitle="Loading your trip…">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-12 justify-center">
+          <span className="animate-spin">⏳</span> Loading trip…
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   // Mode selection screen
   if (!modeSelected && !showResumeBanner) {

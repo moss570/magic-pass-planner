@@ -2962,6 +2962,62 @@ export type Database = {
         }
         Relationships: []
       }
+      support_emails: {
+        Row: {
+          body_html: string | null
+          body_text: string | null
+          created_at: string | null
+          from_address: string
+          from_name: string | null
+          id: string
+          in_reply_to: string | null
+          is_outbound: boolean | null
+          message_id: string | null
+          received_at: string | null
+          status: string | null
+          subject: string
+          to_address: string
+        }
+        Insert: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string | null
+          from_address: string
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          is_outbound?: boolean | null
+          message_id?: string | null
+          received_at?: string | null
+          status?: string | null
+          subject?: string
+          to_address: string
+        }
+        Update: {
+          body_html?: string | null
+          body_text?: string | null
+          created_at?: string | null
+          from_address?: string
+          from_name?: string | null
+          id?: string
+          in_reply_to?: string | null
+          is_outbound?: boolean | null
+          message_id?: string | null
+          received_at?: string | null
+          status?: string | null
+          subject?: string
+          to_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_emails_in_reply_to_fkey"
+            columns: ["in_reply_to"]
+            isOneToOne: false
+            referencedRelation: "support_emails"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tier_access_overrides: {
         Row: {
           feature_key: string
