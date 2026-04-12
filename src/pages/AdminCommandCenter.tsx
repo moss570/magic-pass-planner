@@ -4,7 +4,7 @@ import {
   Gamepad2, MessageSquare, Image, HelpCircle, Shield, RefreshCw, Globe,
   Edit2, Trash2, Check, X, Send, Eye, Archive, ChevronDown, ChevronUp,
   TrendingUp, Clock, Users, Star, Plus, Search, Calendar, Activity, AlertTriangle, Play,
-  Smartphone, Laugh
+  Smartphone, Laugh, Mail
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,9 @@ const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
-type Tab = "games" | "trivia" | "photos" | "messages" | "events" | "health" | "sources" | "linemind" | "haaaa";
+import SupportInbox from "@/components/admin/SupportInbox";
+
+type Tab = "games" | "trivia" | "photos" | "messages" | "events" | "health" | "sources" | "linemind" | "haaaa" | "support";
 
 export default function AdminCommandCenter() {
   const { user, session } = useAuth();
@@ -334,6 +336,7 @@ export default function AdminCommandCenter() {
     { id: "sources", label: "News Sources", icon: Globe },
     { id: "linemind", label: "Line Mind Words", icon: Smartphone },
     { id: "haaaa", label: "Haaaa!! Prompts", icon: Laugh },
+    { id: "support", label: "Support Inbox", icon: Mail },
   ];
 
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
@@ -1357,6 +1360,10 @@ export default function AdminCommandCenter() {
               );
             })()}
           </div>
+        )}
+
+        {tab === "support" && (
+          <SupportInbox />
         )}
 
       </div>
