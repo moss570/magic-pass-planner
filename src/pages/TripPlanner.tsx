@@ -23,7 +23,7 @@ import StepMustDos from "@/components/trip-planner/steps/StepMustDos";
 import StepTransportLodging from "@/components/trip-planner/steps/StepTransportLodging";
 import StepLightningLaneTickets from "@/components/trip-planner/steps/StepLightningLaneTickets";
 import StepReview from "@/components/trip-planner/steps/StepReview";
-import { loadDraft, saveDraft, clearDraft, getDefaultDraft, type TripDraft } from "@/lib/tripDraft";
+import { loadDraft, saveDraft, clearDraft, getDefaultDraft, type TripDraft, type TripMode } from "@/lib/tripDraft";
 import { toParkId } from "@/lib/parkContent";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -464,6 +464,9 @@ function TripPlannerWizard() {
   const { session, user } = useAuth();
   const { toast } = useToast();
   const userId = user?.id || 'anon';
+
+  // Mode selection state — null means user hasn't chosen yet
+  const [modeSelected, setModeSelected] = useState<boolean>(false);
 
   // Draft state
   const [draft, setDraft] = useState<TripDraft>(getDefaultDraft);
