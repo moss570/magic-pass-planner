@@ -95,25 +95,25 @@ export const HOLLYWOOD_STUDIOS: Record<string, ParkLocation> = {
   // Galaxy's Edge
   "Star Wars: Rise of the Resistance":{ x:20, y:85, land:"Galaxy's Edge", rideTime:20, category:"ride", thrillLevel:4, avgWait:{low:50,moderate:90,high:150}, llAvailable:true, tips:"Book LL immediately at park open. Most immersive ride in WDW." },
   "Millennium Falcon: Smugglers Run":{ x:25, y:80, land:"Galaxy's Edge", rideTime:5, category:"ride", thrillLevel:3, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Pilot the Falcon. Pilot role gets the best experience." },
-  "Docking Bay 7 Food and Cargo":    { x:22, y:82, land:"Galaxy's Edge", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"QS in Galaxy's Edge. Themed menu items." },
-  "Oga's Cantina":                   { x:23, y:84, land:"Galaxy's Edge", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"RESERVATION REQUIRED. 45 min limit. Galaxy cocktail bar." },
+  "Docking Bay 7 Food and Cargo":    { x:22, y:82, land:"Galaxy's Edge", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"QS in Galaxy's Edge. Themed menu items.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Oga's Cantina":                   { x:23, y:84, land:"Galaxy's Edge", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"RESERVATION REQUIRED. 45 min limit. Galaxy cocktail bar.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // Toy Story Land
   "Slinky Dog Dash":                 { x:75, y:75, land:"Toy Story Land", rideTime:3, category:"ride", thrillLevel:3, avgWait:{low:30,moderate:65,high:110}, llAvailable:true, tips:"Best family coaster in HS. Book LL early." },
   "Alien Swirling Saucers":          { x:80, y:78, land:"Toy Story Land", rideTime:2, category:"ride", thrillLevel:1, avgWait:{low:15,moderate:30,high:50}, llAvailable:false, tips:"Good for little kids" },
   "Toy Story Mania!":                { x:78, y:72, land:"Toy Story Land", rideTime:7, category:"ride", thrillLevel:2, avgWait:{low:20,moderate:45,high:75}, llAvailable:true, tips:"Interactive 4D shooter. Families love this." },
-  "Woody's Lunch Box":               { x:76, y:76, land:"Toy Story Land", rideTime:10, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"QS. Pop Tart French Toast is a fan favorite." },
+  "Woody's Lunch Box":               { x:76, y:76, land:"Toy Story Land", rideTime:10, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"QS. Pop Tart French Toast is a fan favorite.", diningType:"quick-service", servesMeals:["breakfast","lunch","dinner"] },
   // Sunset Boulevard
   "Tower of Terror":                 { x:85, y:55, land:"Sunset Boulevard", rideTime:5, category:"ride", thrillLevel:5, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Haunted elevator drops. Best thrill in HS. Morning." },
   // Rock 'n' Roller Coaster — CLOSED (removed)
   "Beauty and the Beast - Live on Stage":{ x:82,y:52,land:"Sunset Boulevard",rideTime:30,category:"show",thrillLevel:1,avgWait:{low:15,moderate:20,high:25},llAvailable:false,tips:"Great stage show. Good afternoon break." },
-  "Hollywood Brown Derby":           { x:50, y:20, land:"Hollywood Boulevard", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Fine dining, Cobb salad." },
-  "Sci-Fi Dine-In Theater Restaurant":{ x:55, y:30, land:"Echo Lake", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Drive-in movie atmosphere." },
-  "50's Prime Time Café":            { x:52, y:35, land:"Echo Lake", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Interactive servers, comfort food." },
+  "Hollywood Brown Derby":           { x:50, y:20, land:"Hollywood Boulevard", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Fine dining, Cobb salad.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Sci-Fi Dine-In Theater Restaurant":{ x:55, y:30, land:"Echo Lake", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Drive-in movie atmosphere.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "50's Prime Time Café":            { x:52, y:35, land:"Echo Lake", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Interactive servers, comfort food.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // Echo Lake / Misc
   "Mickey & Minnie's Runaway Railway":{ x:50, y:25, land:"Hollywood Boulevard", rideTime:7, category:"ride", thrillLevel:2, avgWait:{low:25,moderate:55,high:85}, llAvailable:true, tips:"The biggest ride upgrade in years. Book LL." },
   "Indiana Jones Epic Stunt Spectacular":{ x:55, y:45, land:"Echo Lake", rideTime:30, category:"show", thrillLevel:2, avgWait:{low:15,moderate:20,high:30}, llAvailable:false, tips:"Great live stunt show. Arrive 15 min early for front rows." },
   "Fantasmic! Amphitheater":         { x:85, y:65, land:"Sunset Boulevard", rideTime:30, category:"show", thrillLevel:1, avgWait:{low:20,moderate:30,high:45}, llAvailable:false, tips:"Evening show. Arrive 45 min early. Dine-in package available." },
-  "Backlot Express":                 { x:60, y:40, land:"Echo Lake", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Best QS in HS area. Near Galaxy's Edge." },
+  "Backlot Express":                 { x:60, y:40, land:"Echo Lake", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Best QS in HS area. Near Galaxy's Edge.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
 };
 
 // ─── ANIMAL KINGDOM ────────────────────────────────────────────────────────────
@@ -123,22 +123,22 @@ export const ANIMAL_KINGDOM: Record<string, ParkLocation> = {
   // Pandora
   "Avatar Flight of Passage":        { x:25, y:70, land:"Pandora", rideTime:5, category:"ride", thrillLevel:5, avgWait:{low:50,moderate:100,high:165}, llAvailable:true, tips:"Book LL immediately. Best ride in WDW. Fly on a banshee." },
   "Na'vi River Journey":             { x:22, y:75, land:"Pandora", rideTime:5, category:"ride", thrillLevel:1, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Gentle boat ride through Pandora at night. Stunning visuals." },
-  "Satu'li Canteen":                 { x:23, y:72, land:"Pandora", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in AK. Customizable bowls, alien-themed." },
+  "Satu'li Canteen":                 { x:23, y:72, land:"Pandora", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in AK. Customizable bowls, alien-themed.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Africa
   "Kilimanjaro Safaris":             { x:20, y:40, land:"Africa", rideTime:18, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:35,high:65}, llAvailable:true, tips:"Best safari in AK. Go first thing at rope drop — animals most active." },
   "Gorilla Falls Exploration Trail": { x:18, y:45, land:"Africa", rideTime:30, category:"show", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Walking trail with gorillas, hippos. Great 20-30 min break." },
-  "Tusker House Restaurant":         { x:22, y:42, land:"Africa", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Character dining with Donald Duck." },
-  "Harambe Market":                  { x:24, y:43, land:"Africa", rideTime:10, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS. African street food — ribs, corn, chicken." },
+  "Tusker House Restaurant":         { x:22, y:42, land:"Africa", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Character dining with Donald Duck.", diningType:"table-service", servesMeals:["breakfast","lunch","dinner"] },
+  "Harambe Market":                  { x:24, y:43, land:"Africa", rideTime:10, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS. African street food — ribs, corn, chicken.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Asia
   "Expedition Everest":              { x:80, y:55, land:"Asia", rideTime:4, category:"ride", thrillLevel:5, avgWait:{low:20,moderate:45,high:80}, llAvailable:true, tips:"Best rollercoaster in AK. Goes backwards! Morning for lowest waits." },
   "Kali River Rapids":               { x:75, y:60, land:"Asia", rideTime:5, category:"ride", thrillLevel:3, avgWait:{low:20,moderate:45,high:75}, llAvailable:false, tips:"You WILL get wet. Great on hot days. Afternoon = shortest wait." },
   "Maharajah Jungle Trek":           { x:78, y:58, land:"Asia", rideTime:20, category:"show", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Walking trail with tigers, gibbons. Peaceful break." },
-  "Yak & Yeti Restaurant":           { x:76, y:56, land:"Asia", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation recommended. Pan-Asian, good quality." },
-  "Mr. Kamal's":                     { x:80, y:52, land:"Asia", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"QS, seasoned fries and more" },
+  "Yak & Yeti Restaurant":           { x:76, y:56, land:"Asia", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation recommended. Pan-Asian, good quality.", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Mr. Kamal's":                     { x:80, y:52, land:"Asia", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"QS, seasoned fries and more", diningType:"snack", servesMeals:[] },
   // Discovery Island
   "It's Tough to be a Bug!":         { x:50, y:33, land:"Discovery Island", rideTime:9, category:"show", thrillLevel:2, avgWait:{low:10,moderate:15,high:25}, llAvailable:false, tips:"4D show inside Tree of Life. Great for families." },
-  "Flame Tree Barbecue":             { x:52, y:38, land:"Discovery Island", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:18}, llAvailable:false, tips:"Best BBQ in WDW. Outdoor seating with great views." },
-  "Tiffins Restaurant":              { x:55, y:40, land:"Discovery Island", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Best food in AK, globally inspired." },
+  "Flame Tree Barbecue":             { x:52, y:38, land:"Discovery Island", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:18}, llAvailable:false, tips:"Best BBQ in WDW. Outdoor seating with great views.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Tiffins Restaurant":              { x:55, y:40, land:"Discovery Island", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Best food in AK, globally inspired.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // DinoLand
   "DINOSAUR":                        { x:75, y:30, land:"DinoLand U.S.A.", rideTime:4, category:"ride", thrillLevel:3, avgWait:{low:20,moderate:40,high:65}, llAvailable:false, tips:"Dark, intense ride. Short waits usually." },
   "Primeval Whirl":                  { x:78, y:28, land:"DinoLand U.S.A.", rideTime:2, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:30,high:50}, llAvailable:false, tips:"Wild spinning coaster, often seasonal" },

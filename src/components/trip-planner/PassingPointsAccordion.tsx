@@ -19,8 +19,17 @@ interface PassingPoint {
 
 interface Props {
   passingPoints: PassingPoint[];
-  onStoppingHere: (point: PassingPoint) => void;
+  onStoppingHere: (point: PassingPoint & { defaultStopMinutes: number }) => void;
 }
+
+// Default stop durations by type (minutes)
+const STOP_DURATIONS: Record<string, number> = {
+  photopass: 8,
+  merch: 15,
+  snack: 10,
+  restroom: 5,
+  other: 10,
+};
 
 const SECTIONS = [
   { key: 'snack', label: 'Snacks Nearby', emoji: '🍿', icon: UtensilsCrossed },
@@ -117,14 +126,17 @@ export default function PassingPointsAccordion({ passingPoints, onStoppingHere }
                           )}
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="shrink-0 h-7 text-[10px] px-2"
-                        onClick={() => onStoppingHere(pp)}
-                      >
-                        I'm stopping here
-                      </Button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] text-muted-foreground">~{STOP_DURATIONS[section.key] || 10} min</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0 h-7 text-[10px] px-2"
+                          onClick={() => onStoppingHere({ ...pp, defaultStopMinutes: STOP_DURATIONS[section.key] || 10 } as any)}
+                        >
+                          I'm stopping here
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
