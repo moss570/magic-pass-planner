@@ -12,6 +12,8 @@ export interface ParkLocation {
   avgWait: { low: number; moderate: number; high: number };
   llAvailable: boolean;
   tips: string;
+  diningType?: "snack" | "quick-service" | "table-service";
+  servesMeals?: ("breakfast" | "lunch" | "dinner")[];
 }
 
 // ─── MAGIC KINGDOM ────────────────────────────────────────────────────────────
