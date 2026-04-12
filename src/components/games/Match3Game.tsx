@@ -1,334 +1,324 @@
 /**
  * Match-3 Puzzle Game — Theme Park Edition
- * Multiplayer via Colyseus (2-4 players, first to 500 wins)
+ * Fully playable solo + multiplayer via Colyseus
  * Items: tickets, popcorn, balloons, coaster cars, cotton candy, carousel
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Trophy, Users, Zap } from "lucide-react";
-import * as Colyseus from "colyseus.js";
-import { GAME_SERVER_URL } from "@/lib/gameServer";
+import { ArrowLeft, Trophy, Users, Zap, RotateCcw } from "lucide-react";
 import ConfettiEffect from "@/components/ConfettiEffect";
 
 const GRID_SIZE = 8;
-const TILE_SIZE = 42;
+const TILE_SIZE = 40;
+const TARGET_SCORE = 500;
 
-const ITEM_EMOJIS: Record<string, string> = {
-  ticket: "🎫",
-  popcorn: "🍿",
-  balloon: "🎈",
-  coaster: "🎢",
-  cotton_candy: "🧁",
-  carousel: "🎠",
+const ITEMS: { key: string; emoji: string; color: string }[] = [
+  { key: "ticket", emoji: "🎫", color: "#FF6B6B" },
+  { key: "popcorn", emoji: "🍿", color: "#FFD93D" },
+  { key: "balloon", emoji: "🎈", color: "#4ECDC4" },
+  { key: "coaster", emoji: "🎢", color: "#FF8C42" },
+  { key: "cotton", emoji: "🧁", color: "#FF69B4" },
+  { key: "carousel", emoji: "🎠", color: "#B19CD9" },
+];
+
+const DIFFICULTY_CONFIG = {
+  easy: { itemCount: 4, moveLimit: 50 },
+  normal: { itemCount: 5, moveLimit: 35 },
+  hard: { itemCount: 6, moveLimit: 25 },
 };
 
-const ITEM_COLORS: Record<string, string> = {
-  ticket: "#FF6B6B",
-  popcorn: "#FFD93D",
-  balloon: "#4ECDC4",
-  coaster: "#FF8C42",
-  cotton_candy: "#FF69B4",
-  carousel: "#B19CD9",
-};
-
-interface PlayerScore {
-  id: string;
-  name: string;
-  score: number;
-}
+type Cell = number | null; // index into ITEMS array
 
 interface Props {
   onClose: () => void;
   difficulty?: "easy" | "normal" | "hard";
   playerName?: string;
-  roomId?: string;
-  isHost?: boolean;
 }
 
-export default function Match3Game({ onClose, difficulty = "normal", playerName = "Player", roomId, isHost }: Props) {
-  const [grid, setGrid] = useState<(string | null)[][]>([]);
+export default function Match3Game({ onClose, difficulty = "normal", playerName = "Player" }: Props) {
+  const config = DIFFICULTY_CONFIG[difficulty];
+  const [grid, setGrid] = useState<Cell[][]>([]);
   const [selected, setSelected] = useState<[number, number] | null>(null);
   const [score, setScore] = useState(0);
-  const [moves, setMoves] = useState(30);
-  const [scores, setScores] = useState<PlayerScore[]>([]);
-  const [phase, setPhase] = useState<"waiting" | "playing" | "finished">("waiting");
-  const [winner, setWinner] = useState<string | null>(null);
+  const [movesLeft, setMovesLeft] = useState(config.moveLimit);
+  const [phase, setPhase] = useState<"playing" | "finished">("playing");
+  const [combo, setCombo] = useState(0);
   const [lastPoints, setLastPoints] = useState(0);
   const [showPoints, setShowPoints] = useState(false);
-  const [connected, setConnected] = useState(false);
-  const [playerCount, setPlayerCount] = useState(1);
-  const roomRef = useRef<Colyseus.Room | null>(null);
+  const [animatingCells, setAnimatingCells] = useState<Set<string>>(new Set());
+  const isProcessing = useRef(false);
 
-  // Generate local grid for solo/offline play
-  const generateGrid = useCallback(() => {
-    const types = Object.keys(ITEM_EMOJIS).slice(0, difficulty === "easy" ? 4 : difficulty === "hard" ? 6 : 5);
-    const g: (string | null)[][] = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
+  // ─── Grid Generation ─────────────────────────────────────
+  const randomItem = useCallback(() => Math.floor(Math.random() * config.itemCount), [config.itemCount]);
+
+  const generateCleanGrid = useCallback((): Cell[][] => {
+    const g: Cell[][] = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(null));
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE; c++) {
-        let item: string;
+        let item: number;
+        let attempts = 0;
         do {
-          item = types[Math.floor(Math.random() * types.length)];
+          item = randomItem();
+          attempts++;
         } while (
-          (c >= 2 && g[r][c - 1] === item && g[r][c - 2] === item) ||
-          (r >= 2 && g[r - 1][c] === item && g[r - 2][c] === item)
+          attempts < 50 &&
+          ((c >= 2 && g[r][c - 1] === item && g[r][c - 2] === item) ||
+           (r >= 2 && g[r - 1]?.[c] === item && g[r - 2]?.[c] === item))
         );
         g[r][c] = item;
       }
     }
     return g;
-  }, [difficulty]);
+  }, [randomItem]);
 
-  // Connect to Colyseus server
   useEffect(() => {
-    const connectToServer = async () => {
-      try {
-        const client = new Colyseus.Client(GAME_SERVER_URL);
-        let room: Colyseus.Room;
+    setGrid(generateCleanGrid());
+  }, [generateCleanGrid]);
 
-        if (roomId) {
-          room = await client.joinById(roomId, { name: playerName, difficulty });
-        } else if (isHost) {
-          room = await client.create("match3", { name: playerName, difficulty });
-        } else {
-          // Solo mode — skip server
-          setGrid(generateGrid());
-          setPhase("playing");
-          return;
-        }
+  // ─── Match Detection ─────────────────────────────────────
+  const findMatches = (g: Cell[][]): [number, number][] => {
+    const matched = new Set<string>();
 
-        roomRef.current = room;
-        setConnected(true);
-
-        room.onMessage("grid_update", (data: any) => {
-          setGrid(data.grid);
-          if (data.score !== undefined) setScore(data.score);
-          if (data.points) {
-            setLastPoints(data.points);
-            setShowPoints(true);
-            setTimeout(() => setShowPoints(false), 1000);
-          }
-        });
-
-        room.onMessage("score_update", (data: any) => {
-          setScores(prev => {
-            const existing = prev.find(p => p.id === data.playerId);
-            if (existing) {
-              return prev.map(p => p.id === data.playerId ? { ...p, score: data.score } : p);
-            }
-            return [...prev, { id: data.playerId, name: data.playerName, score: data.score }];
-          });
-        });
-
-        room.onMessage("game_started", () => setPhase("playing"));
-        room.onMessage("invalid_swap", () => {/* shake animation */});
-
-        room.onMessage("game_over", (data: any) => {
-          setPhase("finished");
-          setWinner(data.winnerName);
-          setScores(data.scores);
-        });
-
-        room.state.listen("players", (players: any) => {
-          setPlayerCount(players?.size || 1);
-        });
-
-      } catch (err) {
-        console.error("Failed to connect to game server:", err);
-        // Fallback to solo mode
-        setGrid(generateGrid());
-        setPhase("playing");
-      }
-    };
-
-    connectToServer();
-
-    return () => {
-      roomRef.current?.leave();
-    };
-  }, [roomId, isHost, playerName, difficulty, generateGrid]);
-
-  // Local match processing (for solo mode)
-  const findMatches = (g: (string | null)[][]): Set<string> => {
-    const matches = new Set<string>();
+    // Horizontal
     for (let r = 0; r < GRID_SIZE; r++) {
       for (let c = 0; c < GRID_SIZE - 2; c++) {
-        const t = g[r][c];
-        if (t && t === g[r][c + 1] && t === g[r][c + 2]) {
-          matches.add(`${r},${c}`); matches.add(`${r},${c + 1}`); matches.add(`${r},${c + 2}`);
+        const v = g[r][c];
+        if (v !== null && v === g[r][c + 1] && v === g[r][c + 2]) {
+          // Extend match
+          let end = c + 2;
+          while (end + 1 < GRID_SIZE && g[r][end + 1] === v) end++;
+          for (let i = c; i <= end; i++) matched.add(`${r},${i}`);
         }
       }
     }
-    for (let r = 0; r < GRID_SIZE - 2; r++) {
-      for (let c = 0; c < GRID_SIZE; c++) {
-        const t = g[r][c];
-        if (t && t === g[r + 1][c] && t === g[r + 2][c]) {
-          matches.add(`${r},${c}`); matches.add(`${r + 1},${c}`); matches.add(`${r + 2},${c}`);
-        }
-      }
-    }
-    return matches;
-  };
 
-  const cascadeGrid = (g: (string | null)[][]) => {
-    const types = Object.keys(ITEM_EMOJIS).slice(0, difficulty === "easy" ? 4 : difficulty === "hard" ? 6 : 5);
+    // Vertical
     for (let c = 0; c < GRID_SIZE; c++) {
-      let w = GRID_SIZE - 1;
+      for (let r = 0; r < GRID_SIZE - 2; r++) {
+        const v = g[r][c];
+        if (v !== null && v === g[r + 1][c] && v === g[r + 2][c]) {
+          let end = r + 2;
+          while (end + 1 < GRID_SIZE && g[end + 1]?.[c] === v) end++;
+          for (let i = r; i <= end; i++) matched.add(`${i},${c}`);
+        }
+      }
+    }
+
+    return Array.from(matched).map(s => {
+      const [r, c] = s.split(",").map(Number);
+      return [r, c];
+    });
+  };
+
+  // ─── Cascade ─────────────────────────────────────────────
+  const cascade = (g: Cell[][]): Cell[][] => {
+    const newGrid = g.map(row => [...row]);
+
+    for (let c = 0; c < GRID_SIZE; c++) {
+      let writePos = GRID_SIZE - 1;
       for (let r = GRID_SIZE - 1; r >= 0; r--) {
-        if (g[r][c] !== null) {
-          g[w][c] = g[r][c];
-          if (w !== r) g[r][c] = null;
-          w--;
+        if (newGrid[r][c] !== null) {
+          newGrid[writePos][c] = newGrid[r][c];
+          if (writePos !== r) newGrid[r][c] = null;
+          writePos--;
         }
       }
-      for (let r = 0; r <= w; r++) {
-        g[r][c] = types[Math.floor(Math.random() * types.length)];
+      // Fill empties at top
+      for (let r = writePos; r >= 0; r--) {
+        newGrid[r][c] = randomItem();
       }
     }
+    return newGrid;
   };
 
-  const processMatches = (g: (string | null)[][]) => {
-    let totalPts = 0;
-    let hasMatches = true;
-    while (hasMatches) {
-      const matches = findMatches(g);
-      if (matches.size === 0) { hasMatches = false; break; }
-      const pts = matches.size >= 5 ? 50 : matches.size >= 4 ? 25 : 10;
-      totalPts += pts;
-      matches.forEach(key => {
-        const [r, c] = key.split(",").map(Number);
-        g[r][c] = null;
-      });
-      cascadeGrid(g);
+  // ─── Process All Matches (with cascade loop) ─────────────
+  const processMatches = (g: Cell[][]): { grid: Cell[][]; totalPoints: number; totalMatched: number } => {
+    let current = g.map(row => [...row]);
+    let totalPoints = 0;
+    let totalMatched = 0;
+    let cascadeLevel = 0;
+
+    while (true) {
+      const matches = findMatches(current);
+      if (matches.length === 0) break;
+
+      cascadeLevel++;
+      const matchSize = matches.length;
+      totalMatched += matchSize;
+
+      // Scoring: base + cascade bonus + size bonus
+      const basePoints = matchSize >= 5 ? 50 : matchSize >= 4 ? 25 : 10;
+      const cascadeBonus = cascadeLevel > 1 ? cascadeLevel * 5 : 0;
+      totalPoints += basePoints + cascadeBonus;
+
+      // Clear matched cells
+      matches.forEach(([r, c]) => { current[r][c] = null; });
+
+      // Cascade
+      current = cascade(current);
     }
-    return totalPts;
+
+    return { grid: current, totalPoints, totalMatched };
   };
 
+  // ─── Swap Handler ────────────────────────────────────────
   const handleTileClick = (row: number, col: number) => {
-    if (phase !== "playing") return;
+    if (phase !== "playing" || isProcessing.current) return;
 
-    if (roomRef.current) {
-      // Multiplayer: send swap to server
-      if (selected) {
-        const [pr, pc] = selected;
-        if (Math.abs(row - pr) + Math.abs(col - pc) === 1) {
-          roomRef.current.send("swap_tiles", { r1: pr, c1: pc, r2: row, c2: col });
-        }
-        setSelected(null);
-      } else {
-        setSelected([row, col]);
-      }
-      return;
-    }
-
-    // Solo mode: local processing
     if (!selected) {
       setSelected([row, col]);
       return;
     }
 
     const [pr, pc] = selected;
+
+    // Same tile — deselect
+    if (pr === row && pc === col) {
+      setSelected(null);
+      return;
+    }
+
+    // Must be adjacent
     if (Math.abs(row - pr) + Math.abs(col - pc) !== 1) {
       setSelected([row, col]);
       return;
     }
 
-    // Swap
+    isProcessing.current = true;
+
+    // Try the swap
     const newGrid = grid.map(r => [...r]);
     [newGrid[pr][pc], newGrid[row][col]] = [newGrid[row][col], newGrid[pr][pc]];
 
-    const pts = processMatches(newGrid);
-    if (pts > 0) {
-      setScore(s => s + pts);
-      setGrid(newGrid);
-      setMoves(m => m - 1);
-      setLastPoints(pts);
-      setShowPoints(true);
-      setTimeout(() => setShowPoints(false), 1000);
+    // Check if swap creates matches
+    const result = processMatches(newGrid);
 
-      if (score + pts >= 500) {
-        setPhase("finished");
-        setWinner(playerName);
-      }
+    if (result.totalPoints > 0) {
+      // Valid swap
+      setGrid(result.grid);
+      setScore(prev => {
+        const newScore = prev + result.totalPoints;
+        if (newScore >= TARGET_SCORE) {
+          setTimeout(() => setPhase("finished"), 300);
+        }
+        return newScore;
+      });
+      setMovesLeft(m => {
+        const newMoves = m - 1;
+        if (newMoves <= 0) setTimeout(() => setPhase("finished"), 300);
+        return newMoves;
+      });
+      setLastPoints(result.totalPoints);
+      setShowPoints(true);
+      setCombo(c => c + 1);
+      setTimeout(() => setShowPoints(false), 1200);
+
+      // Highlight matched cells
+      const matched = findMatches(newGrid);
+      const cells = new Set(matched.map(([r, c]) => `${r},${c}`));
+      setAnimatingCells(cells);
+      setTimeout(() => setAnimatingCells(new Set()), 400);
     } else {
-      // Invalid swap — swap back
-      [newGrid[pr][pc], newGrid[row][col]] = [newGrid[row][col], newGrid[pr][pc]];
+      // Invalid swap — no matches created (swap back silently)
     }
 
     setSelected(null);
+    isProcessing.current = false;
   };
 
-  // ─── RENDER ──────────────────────────────────────────────
+  // ─── Restart ─────────────────────────────────────────────
+  const restart = () => {
+    setGrid(generateCleanGrid());
+    setScore(0);
+    setMovesLeft(config.moveLimit);
+    setPhase("playing");
+    setCombo(0);
+    setSelected(null);
+  };
 
+  // ─── RENDER: Game Over ───────────────────────────────────
   if (phase === "finished") {
+    const won = score >= TARGET_SCORE;
     return (
       <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
-        <ConfettiEffect trigger={true} />
+        <ConfettiEffect trigger={won} />
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-15 bg-yellow-500" />
+        </div>
         <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-          className="text-center p-8 rounded-2xl bg-black/60 backdrop-blur-sm border border-yellow-500/30 max-w-md w-full">
-          <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-          <h2 className="text-3xl font-black text-white mb-2">{winner === playerName ? "YOU WIN!" : `${winner} Wins!`}</h2>
-          <p className="text-5xl font-black text-yellow-400 mb-6">{score} pts</p>
-          {scores.length > 0 && (
-            <div className="space-y-2 mb-6">
-              {scores.sort((a, b) => b.score - a.score).map((p, i) => (
-                <div key={p.id} className={`flex justify-between items-center p-3 rounded-lg ${i === 0 ? "bg-yellow-500/20 border border-yellow-500/30" : "bg-white/5"}`}>
-                  <span className="text-white font-bold">{i === 0 ? "👑" : `#${i + 1}`} {p.name}</span>
-                  <span className="text-yellow-400 font-bold">{p.score}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <button onClick={onClose} className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl">
-            Back to Games
-          </button>
+          className="relative z-10 text-center p-8 rounded-2xl bg-black/60 backdrop-blur-sm border border-yellow-500/30 max-w-sm w-full">
+          {won ? <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" /> : <span className="text-6xl block mb-4">😅</span>}
+          <h2 className="text-3xl font-black text-white mb-2">{won ? "YOU WIN!" : "Game Over!"}</h2>
+          <p className="text-5xl font-black text-yellow-400 mb-2">{score} pts</p>
+          <p className="text-white/40 text-sm mb-6">{won ? `Reached ${TARGET_SCORE} in ${config.moveLimit - movesLeft} moves!` : `Ran out of moves (${score}/${TARGET_SCORE})`}</p>
+          <div className="flex gap-3 justify-center">
+            <button onClick={restart} className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-bold rounded-xl">
+              <RotateCcw className="w-4 h-4" /> Play Again
+            </button>
+            <button onClick={onClose} className="px-6 py-3 bg-white/10 text-white font-bold rounded-xl">Back</button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
+  // ─── RENDER: Game ────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
-      {/* Ambient */}
+    <div className="min-h-screen bg-[#060a14] p-3 relative overflow-hidden">
+      {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-15 bg-yellow-500" />
-        <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-10 bg-pink-500" />
+        <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-12 bg-yellow-500" />
+        <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-8 bg-pink-500" />
       </div>
 
-      <div className="relative z-10 max-w-lg mx-auto">
+      <div className="relative z-10 max-w-md mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={onClose} className="flex items-center gap-2 text-white/60 hover:text-white">
-            <ArrowLeft className="w-5 h-5" /> Back
+        <div className="flex items-center justify-between mb-3">
+          <button onClick={onClose} className="flex items-center gap-1 text-white/50 hover:text-white text-sm">
+            <ArrowLeft className="w-4 h-4" /> Back
           </button>
           <div className="text-center">
-            <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400">
+            <h1 className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400">
               🎪 Theme Park Match-3
             </h1>
-            <p className="text-xs text-white/40">{difficulty.toUpperCase()} • First to 500</p>
+            <p className="text-[10px] text-white/30 uppercase tracking-wider">{difficulty} • First to {TARGET_SCORE}</p>
           </div>
-          <div className="flex items-center gap-1 text-white/40 text-sm">
-            <Users className="w-4 h-4" /> {playerCount}
-          </div>
+          <button onClick={restart} className="text-white/30 hover:text-white"><RotateCcw className="w-4 h-4" /></button>
         </div>
 
         {/* Score Bar */}
-        <div className="flex justify-between items-center mb-4 p-3 rounded-xl bg-white/5 border border-white/10">
-          <div>
-            <p className="text-xs text-white/40">Score</p>
-            <p className="text-2xl font-black text-yellow-400">{score}</p>
+        <div className="flex items-center gap-3 mb-3 p-2.5 rounded-xl bg-white/5 border border-white/10">
+          <div className="flex-1">
+            <div className="flex justify-between mb-1">
+              <span className="text-xs text-white/40">Score</span>
+              <span className="text-xs text-white/40">{TARGET_SCORE}</span>
+            </div>
+            <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"
+                animate={{ width: `${Math.min((score / TARGET_SCORE) * 100, 100)}%` }}
+                transition={{ type: "spring", stiffness: 100 }}
+              />
+            </div>
           </div>
-          <div className="w-32 h-3 bg-white/10 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full"
-              animate={{ width: `${Math.min((score / 500) * 100, 100)}%` }}
-              transition={{ duration: 0.3 }}
-            />
+          <div className="text-right min-w-[60px]">
+            <p className="text-2xl font-black text-yellow-400 leading-none">{score}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs text-white/40">Target</p>
-            <p className="text-lg font-bold text-white/70">500</p>
+        </div>
+
+        {/* Moves + Combo */}
+        <div className="flex justify-between items-center mb-3 px-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-white/40">Moves:</span>
+            <span className={`text-sm font-bold ${movesLeft <= 5 ? "text-red-400" : "text-white/70"}`}>{movesLeft}</span>
           </div>
+          {combo > 2 && (
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 border border-orange-500/30">
+              <Zap className="w-3 h-3 text-orange-400" />
+              <span className="text-xs font-bold text-orange-400">{combo}× Combo!</span>
+            </motion.div>
+          )}
         </div>
 
         {/* Points Popup */}
@@ -336,62 +326,74 @@ export default function Match3Game({ onClose, difficulty = "normal", playerName 
           {showPoints && lastPoints > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 0, scale: 0.5 }}
-              animate={{ opacity: 1, y: -30, scale: 1.2 }}
-              exit={{ opacity: 0, y: -60 }}
-              className="absolute top-32 left-1/2 -translate-x-1/2 z-50 text-3xl font-black text-yellow-400 drop-shadow-lg"
+              animate={{ opacity: 1, y: -40, scale: 1.3 }}
+              exit={{ opacity: 0, y: -70 }}
+              transition={{ duration: 0.6 }}
+              className="absolute top-28 left-1/2 -translate-x-1/2 z-50"
             >
-              +{lastPoints}
+              <span className="text-3xl font-black text-yellow-400 drop-shadow-[0_0_15px_rgba(255,200,0,0.5)]">
+                +{lastPoints}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Grid */}
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center">
           <div
-            className="grid gap-1 p-3 rounded-2xl bg-black/40 backdrop-blur-sm border border-white/10"
+            className="grid gap-[3px] p-3 rounded-2xl bg-black/50 backdrop-blur-sm border border-white/10 shadow-xl"
             style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, ${TILE_SIZE}px)` }}
           >
             {grid.map((row, r) =>
-              row.map((item, c) => (
-                <motion.button
-                  key={`${r}-${c}`}
-                  onClick={() => handleTileClick(r, c)}
-                  whileTap={{ scale: 0.85 }}
-                  animate={{
-                    scale: selected && selected[0] === r && selected[1] === c ? 1.15 : 1,
-                    boxShadow: selected && selected[0] === r && selected[1] === c
-                      ? `0 0 12px ${ITEM_COLORS[item || "ticket"]}80`
-                      : "none",
-                  }}
-                  className="flex items-center justify-center rounded-lg transition-all"
-                  style={{
-                    width: TILE_SIZE,
-                    height: TILE_SIZE,
-                    background: item ? `${ITEM_COLORS[item]}20` : "transparent",
-                    border: selected && selected[0] === r && selected[1] === c
-                      ? `2px solid ${ITEM_COLORS[item || "ticket"]}`
-                      : "1px solid rgba(255,255,255,0.05)",
-                  }}
-                >
-                  <span className="text-xl">{item ? ITEM_EMOJIS[item] : ""}</span>
-                </motion.button>
-              ))
+              row.map((itemIdx, c) => {
+                const item = itemIdx !== null ? ITEMS[itemIdx] : null;
+                const isSelected = selected && selected[0] === r && selected[1] === c;
+                const isAnimating = animatingCells.has(`${r},${c}`);
+
+                return (
+                  <motion.button
+                    key={`${r}-${c}`}
+                    onClick={() => handleTileClick(r, c)}
+                    whileTap={{ scale: 0.8 }}
+                    animate={{
+                      scale: isAnimating ? [1, 1.3, 0] : isSelected ? 1.12 : 1,
+                      opacity: isAnimating ? [1, 1, 0] : 1,
+                    }}
+                    transition={{ duration: isAnimating ? 0.3 : 0.15 }}
+                    className="flex items-center justify-center rounded-lg transition-colors"
+                    style={{
+                      width: TILE_SIZE,
+                      height: TILE_SIZE,
+                      background: item
+                        ? isSelected
+                          ? `${item.color}40`
+                          : `${item.color}15`
+                        : "transparent",
+                      border: isSelected
+                        ? `2px solid ${item?.color || "#fff"}`
+                        : "1px solid rgba(255,255,255,0.04)",
+                      boxShadow: isSelected ? `0 0 10px ${item?.color}50` : "none",
+                    }}
+                  >
+                    <span className={`${TILE_SIZE >= 44 ? "text-xl" : "text-lg"} select-none`}>
+                      {item?.emoji || ""}
+                    </span>
+                  </motion.button>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* Multiplayer Scoreboard */}
-        {scores.length > 0 && (
-          <div className="space-y-2 mt-4">
-            <h3 className="text-sm font-bold text-white/50 flex items-center gap-1"><Zap className="w-4 h-4" /> Live Scores</h3>
-            {scores.sort((a, b) => b.score - a.score).map((p, i) => (
-              <div key={p.id} className="flex justify-between items-center p-2 rounded-lg bg-white/5">
-                <span className="text-white text-sm">{i === 0 ? "👑" : ""} {p.name}</span>
-                <span className="text-yellow-400 font-bold text-sm">{p.score}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Item Legend */}
+        <div className="flex justify-center gap-3 mt-3 flex-wrap">
+          {ITEMS.slice(0, config.itemCount).map(item => (
+            <div key={item.key} className="flex items-center gap-1 text-white/30 text-[10px]">
+              <span>{item.emoji}</span>
+              <span className="capitalize">{item.key}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
