@@ -61,7 +61,20 @@ const Dashboard = () => {
       .not("itinerary", "is", null)
       .order("updated_at", { ascending: false })
       .limit(1)
-      .then(({ data }) => setMostRecentTrip(data?.[0] || null));
+      .then(async ({ data }) => {
+        const trip = data?.[0] || null;
+        setMostRecentTrip(trip);
+        if (trip) {
+          const { data: versions } = await supabase
+            .from("trip_versions")
+            .select("name, version_number")
+            .eq("trip_id", trip.id)
+            .eq("user_id", user.id)
+            .eq("is_active", true)
+            .limit(1);
+          if (versions?.[0]) setActiveVersion(versions[0]);
+        }
+      });
 
     // Active dining + extra alerts count
     supabase.from("dining_alerts")
