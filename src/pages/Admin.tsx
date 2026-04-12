@@ -338,6 +338,9 @@ export default function Admin() {
             <a href="/admin/park-content" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
               🏪 Park Content CMS
             </a>
+            <a href="/admin/tier-access" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
+              🔐 Tier Access
+            </a>
             <span className="text-xs text-muted-foreground">Last refresh: {lastRefresh.toLocaleTimeString()}</span>
             <button
               onClick={loadStats}

@@ -93,13 +93,11 @@ export default function TierAccessManager() {
     const defaultVal = getDefaultValue(feature, planId);
     let next: OverrideValue;
 
-    if (typeof defaultVal === "boolean") {
-      next = !current;
-    } else if (defaultVal === "unlimited" || defaultVal === "none" || defaultVal === "links_only" || typeof defaultVal === "number") {
+    if (typeof defaultVal === "string" && (defaultVal === "unlimited" || defaultVal === "none" || defaultVal === "links_only") || typeof defaultVal === "number") {
       const cycle: OverrideValue[] = ["none", 1, 3, 7, 10, 20, "unlimited", "links_only"];
       const idx = cycle.findIndex(v => v === current);
       next = cycle[(idx + 1) % cycle.length];
-    } else if (defaultVal === "read_only" || defaultVal === true || defaultVal === false) {
+    } else if (typeof defaultVal === "string" && defaultVal === "read_only" || typeof defaultVal === "boolean") {
       const cycle: OverrideValue[] = [false, true, "read_only"];
       const idx = cycle.findIndex(v => v === current);
       next = cycle[(idx + 1) % cycle.length];
