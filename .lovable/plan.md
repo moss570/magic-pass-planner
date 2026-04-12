@@ -1,51 +1,60 @@
 
 
-## Fix User Management Tiers, VIP Visibility, and Add Beta Tester Support
+## Alert Confirmation Email + Keyword Alert Audit
 
-### Problems Found
+### Summary
+Add a branded confirmation email sent via Brevo when users create any alert (dining, event, hotel, airfare). The email includes a thank-you, remaining alert count, upgrade CTA, and a rotating feature spotlight. Also audit the Keyword Alert system in the AP Command Center.
 
-1. **Outdated tier names** in UserManager dropdown — still shows "Pre-Trip Planner", "Magic Pass", "AP Command Center", "AP Command Center PLUS" instead of the current 6-tier model.
-2. **Andi Davidoff-Moss IS a VIP** in the `vip_accounts` table (status: "invited"), but her `user_id` is not linked (null), and she has no subscription record. The UserManager doesn't show VIP status at all.
-3. **VIP invite function** creates subscriptions with `plan_name: "Magic Pass"` (legacy name) instead of `magic_pass_plus` — which is what VIP Free Forever should map to (full access).
-4. **Beta testers need** — you want to grant 1-year free access without requiring a credit card. The VIP system is close but needs a "beta_tester" variant with a 1-year expiration instead of "free forever".
+### Keyword Alert Audit Findings
+The keyword alert in `MerchDropAlertsSection.tsx` creates records in `ap_merch_alerts` with a `keywords` array. The polling function `ap-merch-alert-check` correctly matches new drops against those keywords and sends notifications via `send-notification`. **However**, the edge function has no logs — meaning either no active keyword alerts exist, or the cron job that calls it is not scheduled. This needs verification and potentially a pg_cron job to be created.
 
 ### Plan
 
-#### 1. Update PLAN_OPTIONS in UserManager (lines 21-28)
-Replace with current tier names matching `src/lib/stripe.ts`:
-- No Plan, Free (7 Day Trial), 90 Day Magic Pass Planner, 90 Day Magic Pass Friend, Magic Pass Planner, Magic Pass Plus, Founders Pass, VIP Free Forever
+#### 1. Create `send-alert-confirmation` edge function
+A new edge function that sends a branded Brevo email when called. It accepts:
+- `user_id`, `alert_type` (dining/event/hotel/airfare), `alert_details` (name, date, etc.)
+- Looks up user email, current plan, and active alert counts
+- Computes remaining alerts based on plan limits from the PLAN_ACCESS matrix
+- Selects a rotating feature spotlight (cycle through top-tier features like Lightning Lane Gap Finder, Golden Hour Planner, AP Discount Database, etc.)
+- Sends a branded HTML email via Brevo with:
+  - Thank-you header with plan name
+  - Alert details (what they're watching)
+  - "You have X of Y alerts remaining" or "Unlimited alerts" for Plus/Founders
+  - Upgrade section showing next tier's limits (hidden for unlimited plans)
+  - Feature Spotlight section promoting a different top-tier feature each time
 
-#### 2. Show VIP badge in UserManager
-- In the `admin-user-manage` edge function's `list-users` action, also query `vip_accounts` for matching user IDs and include `is_vip: true/false` and `vip_status` in the response.
-- In the UserManager UI, show a gold "VIP" badge next to users who are VIP accounts. If a user is VIP, the tier dropdown should show "VIP Free Forever" and be non-editable (or warn before changing).
+#### 2. Add client-side calls after alert creation
+After each successful alert creation (without modifying the edge functions that handle dining/event alerts), add a fire-and-forget call to `send-alert-confirmation` in:
+- `src/pages/DiningAlerts.tsx` — after `handleCreateAlert` succeeds
+- `src/pages/EventAlerts.tsx` — after `handleCreateAlert` succeeds  
+- `src/pages/HotelAlerts.tsx` — after `createAlert` succeeds
+- `src/pages/AirfareTracker.tsx` — after alert creation succeeds
 
-#### 3. Fix Andi's VIP record
-- Link her `vip_accounts` record to her `users_profile` ID (`ad8a8cd8-3481-40f8-88ac-5de003518b48`)
-- Create a subscription record for her: `plan_name: 'magic_pass_plus'`, `status: 'active'`, `stripe_subscription_id: 'vip_ad8a8cd8...'`, `current_period_end: '2099-12-31'`
+These calls are fire-and-forget (no error handling needed — the alert was already created successfully).
 
-#### 4. Fix VIP invite function
-- Change `plan_name: "Magic Pass"` to `plan_name: "magic_pass_plus"` in the invite flow so VIPs get the correct current tier.
+#### 3. Verify Keyword Alert cron job
+Check whether `ap-merch-alert-check` has a pg_cron schedule. If not, create one (e.g., every 15 minutes). This is independent of the dining/event alert systems per the isolation constraint.
 
-#### 5. Add Beta Tester system
-Best approach: extend the existing VIP invite system with a `type` field:
-- **VIP Free Forever**: `current_period_end = 2099-12-31` (existing behavior)
-- **Beta Tester (1 Year)**: `current_period_end = now + 1 year`
+### Files to create/edit
+- **Create** `supabase/functions/send-alert-confirmation/index.ts` — new edge function using Brevo API
+- **Edit** `src/pages/DiningAlerts.tsx` — add confirmation email call after line 172
+- **Edit** `src/pages/EventAlerts.tsx` — add confirmation email call after alert creation
+- **Edit** `src/pages/HotelAlerts.tsx` — add confirmation email call after alert creation
+- **Edit** `src/pages/AirfareTracker.tsx` — add confirmation email call after alert creation
+- **Possibly** database migration for pg_cron job for keyword alerts
 
-Both types create a subscription record with `stripe_customer_id: 'vip_free_forever'` or `'beta_tester'` — no Stripe checkout needed, no credit card required. The user signs up normally via the invite link and gets a subscription record injected.
+### Email Template Design
+Dark theme matching existing notification emails:
+- Header: "🏰 Magic Pass Plus" gold banner
+- "Alert Created!" green confirmation banner
+- Alert details card (type, name, date, etc.)
+- "Alerts Remaining" section with usage bar
+- Upgrade CTA (if not on unlimited plan): "Upgrade to Magic Pass Plus for unlimited alerts →" linking to `/pricing`
+- Feature Spotlight: rotating highlight of a premium feature with description and link
 
-Changes:
-- Add a `type` column to `vip_accounts` (values: `'vip'`, `'beta_tester'`; default `'vip'`)
-- Update `vip-invite` edge function to accept `type` param and set expiration accordingly
-- Update the Admin VIP management UI to allow choosing VIP vs Beta Tester when inviting
-- In the UserManager, show "Beta Tester" badge for beta accounts
-
-#### 6. Fix existing bad subscription data
-- Update Lisa Simpson and Brandon Moss subscriptions from "AP Command Center" to the correct current plan names via data update.
-
-### Files to edit
-- **`src/components/admin/UserManager.tsx`** — update PLAN_OPTIONS, add VIP/Beta badges, add VIP column to AdminUser interface
-- **`supabase/functions/admin-user-manage/index.ts`** — join `vip_accounts` in list-users response
-- **`supabase/functions/vip-invite/index.ts`** — fix plan_name from "Magic Pass" to "magic_pass_plus", add beta_tester type with 1-year expiration
-- **Database migration** — add `type` column to `vip_accounts`
-- **Data fixes** — update Andi's vip_accounts record, create her subscription, fix Lisa/Brandon plan names
+### Technical Notes
+- Uses existing `BREVO_API_KEY` secret (already configured)
+- Plan limits sourced by querying `subscriptions` table and hardcoding the same PLAN_ACCESS limits
+- Feature spotlight rotates based on `day of year % feature_count` for variety
+- No changes to dining-alerts, event-alerts, or hotel-alerts edge functions (per constraint)
 
