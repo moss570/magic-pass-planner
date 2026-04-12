@@ -630,6 +630,9 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Section 5c: Trip Planner Defaults */}
+      <TripPlannerDefaultsSection userId={user?.id} />
+
       <TripProfilesSection userId={user?.id} navigate={navigate} />
 
       {/* Section 6: Referral Program — Coming Soon */}
