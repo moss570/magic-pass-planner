@@ -23,7 +23,7 @@ import StepMustDos from "@/components/trip-planner/steps/StepMustDos";
 import StepTransportLodging from "@/components/trip-planner/steps/StepTransportLodging";
 import StepLightningLaneTickets from "@/components/trip-planner/steps/StepLightningLaneTickets";
 import StepReview from "@/components/trip-planner/steps/StepReview";
-import { loadDraft, saveDraft, clearDraft, getDefaultDraft, type TripDraft } from "@/lib/tripDraft";
+import { loadDraft, saveDraft, clearDraft, getDefaultDraft, type TripDraft, type TripMode } from "@/lib/tripDraft";
 import { toParkId } from "@/lib/parkContent";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
@@ -465,6 +465,9 @@ function TripPlannerWizard() {
   const { toast } = useToast();
   const userId = user?.id || 'anon';
 
+  // Mode selection state — null means user hasn't chosen yet
+  const [modeSelected, setModeSelected] = useState<boolean>(false);
+
   // Draft state
   const [draft, setDraft] = useState<TripDraft>(getDefaultDraft);
   const [showResumeBanner, setShowResumeBanner] = useState(false);
@@ -596,29 +599,47 @@ function TripPlannerWizard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const prefillDates = params.get("prefillDates");
-    const prefillPark = params.get("prefillPark");
-    if (prefillDates) {
-      const dates = prefillDates.split(",").filter(Boolean).sort();
-      if (dates.length > 0) {
-        const patch: Partial<TripDraft> = {
-          startDate: dates[0],
-          endDate: dates[dates.length - 1],
-        };
-        if (prefillPark) {
-          const parkNames: Record<string, string> = {
-            "magic-kingdom": "Magic Kingdom",
-            "epcot": "EPCOT",
-            "hollywood-studios": "Hollywood Studios",
-            "animal-kingdom": "Animal Kingdom",
-          };
-          const name = parkNames[prefillPark] || prefillPark;
-          patch.selectedParks = [name];
+    const prefillParks = params.get("prefillParks") || params.get("prefillPark");
+    const prefillMode = params.get("mode") as TripMode | null;
+    const prefillParkHopper = params.get("parkHopper") === "true";
+
+    if (prefillDates || prefillMode) {
+      const dates = prefillDates ? prefillDates.split(",").filter(Boolean).sort() : [];
+      const parkNames: Record<string, string> = {
+        "magic-kingdom": "Magic Kingdom",
+        "epcot": "EPCOT",
+        "hollywood-studios": "Hollywood Studios",
+        "animal-kingdom": "Animal Kingdom",
+      };
+      const patch: Partial<TripDraft> = {};
+
+      if (prefillMode === 'day-trip' || prefillMode === 'vacation') {
+        patch.mode = prefillMode;
+        if (prefillMode === 'day-trip') {
+          patch.budget = 500;
         }
-        setDraft(prev => ({ ...prev, ...patch }));
-        setShowResumeBanner(false);
-        // Clean URL
-        window.history.replaceState({}, "", window.location.pathname);
       }
+
+      if (dates.length > 0) {
+        patch.startDate = dates[0];
+        patch.endDate = dates[dates.length - 1];
+      }
+
+      if (prefillParks) {
+        const parkIds = prefillParks.split(",").filter(Boolean);
+        patch.selectedParks = parkIds.map(id => parkNames[id] || id);
+      }
+
+      if (prefillParkHopper) {
+        patch.parkHopper = true;
+      }
+
+      setDraft(prev => ({ ...prev, ...patch }));
+      setShowResumeBanner(false);
+      setModeSelected(true);
+
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
@@ -627,6 +648,7 @@ function TripPlannerWizard() {
     if (existing) {
       setDraft(existing);
       setStep(existing.currentStep || 0);
+      setModeSelected(true);
     }
     setShowResumeBanner(false);
   };
@@ -669,6 +691,8 @@ function TripPlannerWizard() {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
+          mode: draft.mode,
+          hasAnnualPass: draft.hasAnnualPass,
           parks: draft.selectedParks,
           startDate: draft.startDate,
           endDate: draft.endDate || draft.startDate,
@@ -680,8 +704,8 @@ function TripPlannerWizard() {
           llOption: draft.llOption,
           specialNotes: draft.specialNotes,
           parkHopper: draft.parkHopper,
-          resortStay: draft.lodging === 'disney-resort',
-          nonParkDays: nonParkDayCount,
+          resortStay: draft.mode === 'day-trip' ? false : draft.lodging === 'disney-resort',
+          nonParkDays: draft.mode === 'day-trip' ? 0 : nonParkDayCount,
           mustDoAttractions: draft.mustDoAttractions,
           walkingSpeedKmh: draft.walkingSpeedKmh,
         }),
@@ -853,9 +877,95 @@ function TripPlannerWizard() {
     );
   }
 
+  const selectMode = (mode: TripMode) => {
+    setDraft(prev => ({
+      ...prev,
+      mode,
+      budget: mode === 'day-trip' ? 500 : 6500,
+      endDate: mode === 'day-trip' ? prev.startDate : prev.endDate,
+    }));
+    setModeSelected(true);
+    setStep(0);
+  };
+
+  // Day trip step mapping: 0=Basics, 1=Party, 2=Parks, 3=Must-Dos, 4=Review
+  // Vacation step mapping: 0=Basics, 1=Party, 2=Parks, 3=Must-Dos, 4=Transport, 5=LL, 6=Review
+  const isDayTrip = draft.mode === 'day-trip';
+
+  const getNextStep = (current: number): number => {
+    if (isDayTrip && current === 3) return 4; // Must-Dos -> Review (skip Transport + LL)
+    return current + 1;
+  };
+
+  const getPrevStep = (current: number): number => {
+    if (isDayTrip && current === 4) return 3; // Review -> Must-Dos
+    return current - 1;
+  };
+
+  const totalSteps = isDayTrip ? 5 : 7;
+  const isReviewStep = isDayTrip ? step === 4 : step === 6;
+
+  // Mode selection screen
+  if (!modeSelected && !showResumeBanner) {
+    return (
+      <DashboardLayout title="🗺️ Trip Planner" subtitle="How are you visiting the parks?">
+        <div className="space-y-4 max-w-lg mx-auto py-8">
+          <button
+            onClick={() => selectMode('vacation')}
+            className="w-full rounded-xl border-2 border-primary/20 hover:border-primary/50 bg-card p-6 text-left transition-all hover:shadow-lg group"
+          >
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">🏰</span>
+              <div>
+                <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">Vacation Planner</h3>
+                <p className="text-xs text-muted-foreground mt-1">Multi-day trips with hotels, transportation, airfare & full budget planning</p>
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {['Hotels', 'Airfare', 'Transport', 'Multi-Park', 'Full Budget'].map(tag => (
+                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => selectMode('day-trip')}
+            className="w-full rounded-xl border-2 border-primary/20 hover:border-primary/50 bg-card p-6 text-left transition-all hover:shadow-lg group"
+          >
+            <div className="flex items-start gap-4">
+              <span className="text-3xl">☀️</span>
+              <div>
+                <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors">Day Trip Itinerary</h3>
+                <p className="text-xs text-muted-foreground mt-1">Single-day park visit — no hotel, no airfare, streamlined budget</p>
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {['1 Day', 'AP Friendly', 'Park Hopper', 'Quick Budget'].map(tag => (
+                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <DashboardLayout title="🗺️ Trip Planner" subtitle="Plan your perfect trip step by step">
+    <DashboardLayout title={isDayTrip ? "☀️ Day Trip Planner" : "🗺️ Trip Planner"} subtitle={isDayTrip ? "Plan your perfect park day" : "Plan your perfect trip step by step"}>
       <div className="space-y-4">
+        {/* Mode badge + change */}
+        <div className="flex items-center gap-2">
+          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isDayTrip ? 'bg-yellow-500/15 text-yellow-400' : 'bg-primary/15 text-primary'}`}>
+            {isDayTrip ? '☀️ Day Trip' : '🏰 Vacation'}
+          </span>
+          <button
+            onClick={() => { setModeSelected(false); setStep(0); }}
+            className="text-[10px] text-muted-foreground hover:text-foreground underline"
+          >
+            Change mode
+          </button>
+        </div>
+
         {/* Resume banner */}
         {showResumeBanner && (
           <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 flex items-center justify-between gap-3">
@@ -871,17 +981,29 @@ function TripPlannerWizard() {
         )}
 
         {/* Stepper */}
-        <Stepper currentStep={step} onStepClick={goToStep} />
+        <Stepper currentStep={step} onStepClick={goToStep} mode={draft.mode} />
 
         {/* Step content */}
         <div className="rounded-xl border border-border p-5 bg-card">
-          {step === 0 && <StepBasics draft={draft} onChange={updateDraft} onContinue={() => goToStep(1)} />}
-          {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} tripId={savedTripId} />}
-          {step === 2 && <StepParksDates draft={draft} onChange={updateDraft} onContinue={() => goToStep(3)} onBack={() => goToStep(1)} />}
-          {step === 3 && <StepMustDos draft={draft} onChange={updateDraft} onContinue={() => goToStep(4)} onBack={() => goToStep(2)} />}
-          {step === 4 && <StepTransportLodging draft={draft} onChange={updateDraft} onContinue={() => goToStep(5)} onBack={() => goToStep(3)} />}
-          {step === 5 && <StepLightningLaneTickets draft={draft} onChange={updateDraft} onContinue={() => goToStep(6)} onBack={() => goToStep(4)} />}
-          {step === 6 && <StepReview draft={draft} onBack={() => goToStep(5)} onGenerate={generateItinerary} generating={generating} />}
+          {isDayTrip ? (
+            <>
+              {step === 0 && <StepBasics draft={draft} onChange={updateDraft} onContinue={() => goToStep(1)} />}
+              {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} tripId={savedTripId} />}
+              {step === 2 && <StepParksDates draft={draft} onChange={updateDraft} onContinue={() => goToStep(3)} onBack={() => goToStep(1)} />}
+              {step === 3 && <StepMustDos draft={draft} onChange={updateDraft} onContinue={() => goToStep(4)} onBack={() => goToStep(2)} />}
+              {step === 4 && <StepReview draft={draft} onBack={() => goToStep(3)} onGenerate={generateItinerary} generating={generating} />}
+            </>
+          ) : (
+            <>
+              {step === 0 && <StepBasics draft={draft} onChange={updateDraft} onContinue={() => goToStep(1)} />}
+              {step === 1 && <StepParty draft={draft} onChange={updateDraft} onContinue={() => goToStep(2)} onBack={() => goToStep(0)} tripId={savedTripId} />}
+              {step === 2 && <StepParksDates draft={draft} onChange={updateDraft} onContinue={() => goToStep(3)} onBack={() => goToStep(1)} />}
+              {step === 3 && <StepMustDos draft={draft} onChange={updateDraft} onContinue={() => goToStep(4)} onBack={() => goToStep(2)} />}
+              {step === 4 && <StepTransportLodging draft={draft} onChange={updateDraft} onContinue={() => goToStep(5)} onBack={() => goToStep(3)} />}
+              {step === 5 && <StepLightningLaneTickets draft={draft} onChange={updateDraft} onContinue={() => goToStep(6)} onBack={() => goToStep(4)} />}
+              {step === 6 && <StepReview draft={draft} onBack={() => goToStep(5)} onGenerate={generateItinerary} generating={generating} />}
+            </>
+          )}
         </div>
       </div>
     </DashboardLayout>

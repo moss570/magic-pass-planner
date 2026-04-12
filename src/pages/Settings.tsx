@@ -630,6 +630,9 @@ const Settings = () => {
         </div>
       )}
 
+      {/* Section 5c: Trip Planner Defaults */}
+      <TripPlannerDefaultsSection userId={user?.id} />
+
       <TripProfilesSection userId={user?.id} navigate={navigate} />
 
       {/* Section 6: Referral Program — Coming Soon */}
@@ -725,6 +728,131 @@ const Settings = () => {
   );
 };
 
+
+// Trip Planner Defaults Section Component
+function TripPlannerDefaultsSection({ userId }: { userId?: string }) {
+  const [defaults, setDefaults] = useState({
+    default_trip_mode: 'vacation',
+    default_party_adults: 2,
+    default_party_children: 0,
+    default_ride_preference: 'mix',
+    default_ll_option: 'multi',
+  });
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("users_profile")
+      .select("default_trip_mode, default_party_adults, default_party_children, default_ride_preference, default_ll_option")
+      .eq("id", userId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setDefaults({
+            default_trip_mode: (data as any).default_trip_mode || 'vacation',
+            default_party_adults: (data as any).default_party_adults ?? 2,
+            default_party_children: (data as any).default_party_children ?? 0,
+            default_ride_preference: (data as any).default_ride_preference || 'mix',
+            default_ll_option: (data as any).default_ll_option || 'multi',
+          });
+        }
+        setLoaded(true);
+      });
+  }, [userId]);
+
+  const handleSave = async () => {
+    if (!userId) return;
+    setSaving(true);
+    const { error } = await supabase.from("users_profile").upsert({
+      id: userId,
+      ...defaults,
+    } as any);
+    setSaving(false);
+    if (error) {
+      toast.error("❌ Save failed — please try again");
+    } else {
+      toast.success("✅ Trip Planner defaults saved");
+    }
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
+      <CardHeader className="p-4 md:p-6">
+        <CardTitle className="text-base md:text-lg">🗺️ Trip Planner Defaults</CardTitle>
+        <CardDescription>Pre-fill your Trip Planner wizard with your usual preferences</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Default Planning Mode</label>
+            <Select value={defaults.default_trip_mode} onValueChange={(v) => setDefaults(d => ({ ...d, default_trip_mode: v }))}>
+              <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="vacation">🏰 Vacation Planner</SelectItem>
+                <SelectItem value="day-trip">☀️ Day Trip Itinerary</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Default Ride Preference</label>
+            <Select value={defaults.default_ride_preference} onValueChange={(v) => setDefaults(d => ({ ...d, default_ride_preference: v }))}>
+              <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="thrill">🎢 Thrill Seeker</SelectItem>
+                <SelectItem value="family">🎠 Family Friendly</SelectItem>
+                <SelectItem value="little">👶 Little Ones First</SelectItem>
+                <SelectItem value="mix">⚖️ Mix of Everything</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Default Adults</label>
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={defaults.default_party_adults}
+              onChange={(e) => setDefaults(d => ({ ...d, default_party_adults: parseInt(e.target.value) || 1 }))}
+              className="bg-background/50 border-primary/20 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Default Children</label>
+            <Input
+              type="number"
+              min={0}
+              max={20}
+              value={defaults.default_party_children}
+              onChange={(e) => setDefaults(d => ({ ...d, default_party_children: parseInt(e.target.value) || 0 }))}
+              className="bg-background/50 border-primary/20 text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Lightning Lane Preference</label>
+            <Select value={defaults.default_ll_option} onValueChange={(v) => setDefaults(d => ({ ...d, default_ll_option: v }))}>
+              <SelectTrigger className="bg-background/50 border-primary/20 text-sm"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="multi">Multi Pass</SelectItem>
+                <SelectItem value="individual">Individual LL</SelectItem>
+                <SelectItem value="both">Both</SelectItem>
+                <SelectItem value="none">None</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <p className="text-[10px] text-muted-foreground">These defaults auto-fill the Trip Planner wizard. Your Annual Pass status is pulled from your Disney Profile above.</p>
+        <Button className="text-xs" onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+          Save Trip Planner Defaults
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 // Trip Profiles Section Component
 function TripProfilesSection({ userId, navigate }: { userId?: string; navigate: ReturnType<typeof useNavigate> }) {

@@ -888,25 +888,30 @@ serve(async (req) => {
     }
 
     // Budget calculations
+    const isDayTrip = input.mode === 'day-trip';
+    const hasAnnualPass = input.hasAnnualPass === true;
+
     const dayKey = numDays <= 1 ? "oneDay" : numDays === 2 ? "twoDay" : numDays === 3 ? "threeDay" : numDays === 4 ? "fourDay" : numDays <= 5 ? "fiveDay" : "sevenDay";
     const adultTicket = TICKET_PRICES[dayKey]?.adult || TICKET_PRICES.sevenDay.adult;
     const childTicket = TICKET_PRICES[dayKey]?.child || TICKET_PRICES.sevenDay.child;
-    const ticketCost = (input.adults || 2) * adultTicket + (input.children || 0) * childTicket;
+    const ticketCost = hasAnnualPass ? 0 : (input.adults || 2) * adultTicket + (input.children || 0) * childTicket;
     const llCost = input.llOption === "multi" ? totalPeople * 22 * numDays : input.llOption === "individual" ? (input.adults || 2) * 35 : 0;
     const diningCost = ((input.adults || 2) * 75 + (input.children || 0) * 45) * numDays;
     const miscCost = totalPeople * 35 * numDays;
-    const nightlyBudget = Math.max(100, Math.round((input.budget - ticketCost - llCost - diningCost - miscCost) / numDays));
-    const hotelCost = nightlyBudget * numDays;
+
+    // Day trips skip hotel costs
+    const nightlyBudget = isDayTrip ? 0 : Math.max(100, Math.round((input.budget - ticketCost - llCost - diningCost - miscCost) / numDays));
+    const hotelCost = isDayTrip ? 0 : nightlyBudget * numDays;
     const estimatedTotal = ticketCost + hotelCost + diningCost + llCost + miscCost;
 
-    const hotels = nightlyBudget >= 700 ? HOTEL_DATA.deluxe : nightlyBudget >= 350 ? HOTEL_DATA.moderate : nightlyBudget >= 100 ? HOTEL_DATA.value : HOTEL_DATA.offsite;
+    const hotels = isDayTrip ? [] : (nightlyBudget >= 700 ? HOTEL_DATA.deluxe : nightlyBudget >= 350 ? HOTEL_DATA.moderate : nightlyBudget >= 100 ? HOTEL_DATA.value : HOTEL_DATA.offsite);
 
     const uniqueParks = [...new Set(input.parks as string[])];
     const diningRecs: any = {};
     uniqueParks.forEach((p: string) => { if (DINING_RECOMMENDATIONS[p]) diningRecs[p] = DINING_RECOMMENDATIONS[p]; });
 
-    // Non-park day suggestions
-    const nonParkSuggestions = input.nonParkDays > 0 ? [
+    // Non-park day suggestions (skip for day trips)
+    const nonParkSuggestions = (!isDayTrip && input.nonParkDays > 0) ? [
       { name: "Universal Studios / Epic Universe", distance: "15 min from WDW", why: "Harry Potter, Minions, new Epic Universe opens 2025", link: "https://www.universalorlando.com" },
       { name: "Kennedy Space Center", distance: "1 hour east (Merritt Island)", why: "NASA history, rocket launches, astronaut experiences", link: "https://www.kennedyspacecenter.com" },
       { name: "Clearwater Beach", distance: "1.5 hours west", why: "#1 beach in America. White sand, calm water. Perfect beach day.", link: "https://www.visitstpeteclearwater.com" },
@@ -918,22 +923,38 @@ serve(async (req) => {
     ].slice(0, Math.min(input.nonParkDays * 2, 6)) : [];
 
     // Park Hopper cost calculation
-    const parkHopperCost = input.parkHopper ? (input.adults + input.children) * 65 : 0;
+    const parkHopperCost = input.parkHopper ? (hasAnnualPass ? 0 : (input.adults + input.children) * 65) : 0;
     const finalEstimatedTotal = estimatedTotal + parkHopperCost;
+
+    // Build budget breakdown — exclude zero categories for day trips
+    const budgetBreakdown: Record<string, number> = {
+      ...(ticketCost > 0 ? { tickets: ticketCost + parkHopperCost } : parkHopperCost > 0 ? { parkHopper: parkHopperCost } : {}),
+      ...(hotelCost > 0 ? { hotel: hotelCost } : {}),
+      dining: diningCost,
+      ...(llCost > 0 ? { lightningLane: llCost } : {}),
+      miscSouvenirs: miscCost,
+    };
 
     return new Response(JSON.stringify({
       success: true, plans, numDays, estimatedTotal: finalEstimatedTotal,
-      budgetBreakdown: { tickets: ticketCost + parkHopperCost, hotel: hotelCost, dining: diningCost, lightningLane: llCost, miscSouvenirs: miscCost },
+      mode: input.mode || 'vacation',
+      hasAnnualPass,
+      budgetBreakdown,
       parkHopperCost,
       parkHopperAdded: input.parkHopper || false,
-      ticketInfo: {
+      ticketInfo: hasAnnualPass ? {
+        cost: 0,
+        recommendation: "Annual Pass — no ticket purchase needed",
+        perPersonPerDay: 0,
+        options: ["✅ Annual Pass holder — tickets included"],
+      } : {
         cost: ticketCost,
         recommendation: `${numDays}-Day Ticket`,
         perPersonPerDay: Math.round(adultTicket / numDays),
         options: [`Adults: $${adultTicket}/person`, input.children > 0 ? `Children: $${childTicket}/person` : null, `Total tickets: $${ticketCost}`, numDays >= 3 ? "💡 Add Park Hopper (+$65/person) to visit multiple parks daily" : null].filter(Boolean),
       },
-      hotelRecommendations: hotels.slice(0, 3),
-      hotelNightlyBudget: nightlyBudget,
+      hotelRecommendations: isDayTrip ? [] : hotels.slice(0, 3),
+      hotelNightlyBudget: isDayTrip ? null : nightlyBudget,
       diningRecommendations: diningRecs,
       nonParkSuggestions,
       earlyEntry: input.resortStay || false,
