@@ -19,6 +19,7 @@ import Match3Game from "@/components/games/Match3Game";
 import PokerGame from "@/components/games/PokerGame";
 import SpitGame from "@/components/games/SpitGame";
 import MysteryGame from "@/components/games/MysteryGame";
+import InkMysteryGame from "@/components/games/InkMysteryGame";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -209,7 +210,7 @@ export default function LineGames() {
   }
 
   if (activeGame === "mystery-adventure") {
-    return <MysteryGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} playerName="Detective" />;
+    return <InkMysteryGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   return (
