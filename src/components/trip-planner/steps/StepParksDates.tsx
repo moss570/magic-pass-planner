@@ -79,6 +79,9 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
         currentParks.splice(idx, 1);
         eveningOnly = eveningOnly.filter(p => p !== park);
       } else if (currentParks.length < 3) {
+        // Remove non-park sentinel if adding a real park
+        const npIdx = currentParks.indexOf(NON_PARK_ID);
+        if (npIdx >= 0) currentParks.splice(npIdx, 1);
         currentParks.push(park);
       }
       return { date, parkId: currentParks[0] ?? null, parkIds: currentParks, eveningOnly };
