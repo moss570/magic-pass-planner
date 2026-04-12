@@ -21,6 +21,20 @@ export interface ParkDayAssignment {
   eveningOnly: string[]; // parks marked as evening-only (dinner/fireworks)
 }
 
+export type MealLocation = 'in-park-qs' | 'in-park-ts' | 'at-hotel' | 'making-at-room' | 'packed' | 'off-property' | 'on-the-way' | 'skip';
+
+export interface DayMealPlan {
+  date: string;
+  breakfast: MealLocation;
+  lunch: MealLocation;
+  dinner: MealLocation;
+}
+
+export interface MealPlanPreferences {
+  wantPoolBreak: boolean;
+  dayMealPlans: DayMealPlan[];
+}
+
 export interface TripDraft {
   // Mode
   mode: TripMode;
@@ -41,12 +55,14 @@ export interface TripDraft {
   parkDayAssignments: ParkDayAssignment[];
   // Step 4 — Must-Dos
   mustDoAttractions: { [parkId: string]: MustDoPreference };
-  // Step 5 — Transportation & Lodging
+  // Step 5 — Meal Planning
+  mealPlanPreferences: MealPlanPreferences;
+  // Step 6 — Transportation & Lodging
   transportation: string[];
   lodging: 'disney-resort' | 'off-property' | 'not-sure' | '';
   resortCategory: string;
   walkingSpeedKmh: number;
-  // Step 6 — Lightning Lane & Tickets
+  // Step 7 — Lightning Lane & Tickets
   llOption: string;
   llMultiPassSelections: string[];
   llIndividualSelections: string[];
