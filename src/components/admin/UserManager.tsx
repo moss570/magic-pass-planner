@@ -20,11 +20,13 @@ const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
 const PLAN_OPTIONS = [
   { value: "none", label: "No Plan" },
-  { value: "Pre-Trip Planner", label: "Pre-Trip Planner" },
-  { value: "Magic Pass", label: "Magic Pass" },
-  { value: "AP Command Center", label: "AP Command Center" },
-  { value: "AP Command Center PLUS", label: "AP Command Center PLUS" },
+  { value: "free", label: "Free – 7 Day Trial" },
+  { value: "ninety_day_planner", label: "90 Day Magic Pass Planner" },
+  { value: "ninety_day_friend", label: "90 Day Magic Pass Friend" },
+  { value: "magic_pass_planner", label: "Magic Pass Planner" },
+  { value: "magic_pass_plus", label: "Magic Pass Plus" },
   { value: "founders_pass", label: "Founders Pass" },
+  { value: "vip_free_forever", label: "VIP Free Forever" },
 ];
 
 interface AdminUser {
@@ -39,6 +41,9 @@ interface AdminUser {
   billing_interval: string | null;
   sub_updated_at: string | null;
   active_alerts: number;
+  is_vip: boolean;
+  vip_type: string | null;
+  vip_status: string | null;
 }
 
 type SortKey = "email" | "plan_name" | "status" | "active_alerts" | "created_at";
@@ -254,18 +259,26 @@ export default function UserManager() {
             ) : filtered.map(u => (
               <TableRow key={u.id}>
                 <TableCell>
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{u.first_name || ""} {u.last_name || ""}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{u.first_name || ""} {u.last_name || ""}</p>
+                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    </div>
+                    {u.is_vip && u.vip_type === "beta_tester" && (
+                      <Badge className="bg-blue-500/20 text-blue-400 text-[10px] px-1.5 py-0">Beta</Badge>
+                    )}
+                    {u.is_vip && u.vip_type !== "beta_tester" && (
+                      <Badge className="bg-yellow-500/20 text-yellow-400 text-[10px] px-1.5 py-0">VIP</Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Select
                     value={u.plan_name || "none"}
                     onValueChange={v => handleTierChange(u.id, v)}
-                    disabled={tierLoading === u.id}
+                    disabled={tierLoading === u.id || (u.is_vip && u.vip_type !== "beta_tester")}
                   >
-                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectTrigger className="w-[180px] h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

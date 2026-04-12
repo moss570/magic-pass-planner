@@ -3544,6 +3544,7 @@ export type Database = {
           notes: string | null
           reason: string | null
           status: string | null
+          type: string
           updated_at: string | null
           user_id: string | null
         }
@@ -3560,6 +3561,7 @@ export type Database = {
           notes?: string | null
           reason?: string | null
           status?: string | null
+          type?: string
           updated_at?: string | null
           user_id?: string | null
         }
@@ -3576,6 +3578,7 @@ export type Database = {
           notes?: string | null
           reason?: string | null
           status?: string | null
+          type?: string
           updated_at?: string | null
           user_id?: string | null
         }

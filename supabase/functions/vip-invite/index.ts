@@ -120,8 +120,10 @@ serve(async (req) => {
 
     // ── INVITE VIP ────────────────────────────────────────
     if (action === "invite" && req.method === "POST") {
-      const { email, first_name, last_name, reason, notes } = await req.json();
+      const { email, first_name, last_name, reason, notes, type: inviteType } = await req.json();
       if (!email) throw new Error("Email required");
+
+      const accountType = inviteType === "beta_tester" ? "beta_tester" : "vip";
 
       // Generate invite token
       const inviteToken = crypto.randomUUID().replace(/-/g, "");
@@ -133,11 +135,12 @@ serve(async (req) => {
           email: email.toLowerCase().trim(),
           first_name: first_name || "",
           last_name: last_name || "",
-          reason: reason || "VIP invite",
+          reason: reason || (accountType === "beta_tester" ? "Beta tester invite" : "VIP invite"),
           notes: notes || "",
           invited_by: userData.user.id,
           invite_sent_at: new Date().toISOString(),
           status: "invited",
+          type: accountType,
           updated_at: new Date().toISOString(),
         }, { onConflict: "email" })
         .select()
@@ -153,22 +156,28 @@ serve(async (req) => {
         inviteToken,
       });
 
+      // Calculate expiration based on type
+      const periodEnd = accountType === "beta_tester"
+        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        : new Date("2099-12-31").toISOString();
+
+      const stripeCustomerId = accountType === "beta_tester" ? "beta_tester" : "vip_free_forever";
+
       // Create/update their Supabase auth account with free subscription
-      // Try to find existing user
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find(u => u.email === email.toLowerCase().trim());
 
       if (existingUser) {
-        // Grant them VIP subscription in subscriptions table
+        // Grant them subscription
         await supabase.from("subscriptions").upsert({
           user_id: existingUser.id,
-          stripe_customer_id: "vip_free_forever",
-          stripe_subscription_id: `vip_${existingUser.id}`,
-          plan_name: "Magic Pass",
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: `${accountType}_${existingUser.id}`,
+          plan_name: "magic_pass_plus",
           plan_interval: "monthly",
           status: "active",
           trial_end: null,
-          current_period_end: new Date("2099-12-31").toISOString(),
+          current_period_end: periodEnd,
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
 
