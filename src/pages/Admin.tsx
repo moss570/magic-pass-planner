@@ -341,6 +341,9 @@ export default function Admin() {
             <a href="/admin/tier-access" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
               🔐 Tier Access
             </a>
+            <a href="/admin/users" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
+              👥 Users
+            </a>
             <span className="text-xs text-muted-foreground">Last refresh: {lastRefresh.toLocaleTimeString()}</span>
             <button
               onClick={loadStats}
