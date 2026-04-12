@@ -46,36 +46,49 @@ Deno.serve(async (req) => {
       }
 
       const userIds = profiles.map(p => p.id);
+      const emails = profiles.map(p => p.email?.toLowerCase()).filter(Boolean);
 
-      // Get subscriptions for these users
-      const { data: subs } = await admin.from("subscriptions").select("user_id, plan_name, status, billing_interval, created_at, updated_at").in("user_id", userIds);
+      // Get subscriptions, VIP accounts, and alert counts in parallel
+      const [subsResult, vipResult, ...alertResults] = await Promise.all([
+        admin.from("subscriptions").select("user_id, plan_name, status, billing_interval, created_at, updated_at").in("user_id", userIds),
+        admin.from("vip_accounts").select("email, user_id, type, status").in("email", emails),
+        ...["dining_alerts", "event_alerts", "hotel_alerts", "airfare_alerts"].map(table =>
+          admin.from(table).select("user_id").eq("status", "watching").in("user_id", userIds)
+        ),
+      ]);
 
-      // Get alert counts per user
-      const alertTables = ["dining_alerts", "event_alerts", "hotel_alerts", "airfare_alerts"];
       const alertCounts: Record<string, number> = {};
-      for (const table of alertTables) {
-        const { data: alerts } = await admin.from(table).select("user_id").eq("status", "watching").in("user_id", userIds);
-        (alerts || []).forEach((a: any) => {
+      alertResults.forEach(r => {
+        (r.data || []).forEach((a: any) => {
           alertCounts[a.user_id] = (alertCounts[a.user_id] || 0) + 1;
         });
-      }
+      });
 
       const subMap: Record<string, any> = {};
-      (subs || []).forEach(s => { subMap[s.user_id] = s; });
+      (subsResult.data || []).forEach(s => { subMap[s.user_id] = s; });
 
-      const users = profiles.map(p => ({
-        id: p.id,
-        email: p.email,
-        first_name: p.first_name,
-        last_name: p.last_name,
-        avatar_url: p.avatar_url,
-        created_at: p.created_at,
-        plan_name: subMap[p.id]?.plan_name || null,
-        status: subMap[p.id]?.status || "none",
-        billing_interval: subMap[p.id]?.billing_interval || null,
-        sub_updated_at: subMap[p.id]?.updated_at || null,
-        active_alerts: alertCounts[p.id] || 0,
-      }));
+      const vipMap: Record<string, any> = {};
+      (vipResult.data || []).forEach(v => { vipMap[v.email?.toLowerCase()] = v; });
+
+      const users = profiles.map(p => {
+        const vip = vipMap[p.email?.toLowerCase()];
+        return {
+          id: p.id,
+          email: p.email,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          avatar_url: p.avatar_url,
+          created_at: p.created_at,
+          plan_name: subMap[p.id]?.plan_name || null,
+          status: subMap[p.id]?.status || "none",
+          billing_interval: subMap[p.id]?.billing_interval || null,
+          sub_updated_at: subMap[p.id]?.updated_at || null,
+          active_alerts: alertCounts[p.id] || 0,
+          is_vip: !!vip && vip.status !== "revoked",
+          vip_type: vip?.type || null,
+          vip_status: vip?.status || null,
+        };
+      });
 
       return new Response(JSON.stringify({ users, hasMore: profiles.length === limit }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }

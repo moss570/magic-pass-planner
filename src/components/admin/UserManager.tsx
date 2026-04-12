@@ -20,11 +20,13 @@ const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
 const PLAN_OPTIONS = [
   { value: "none", label: "No Plan" },
-  { value: "Pre-Trip Planner", label: "Pre-Trip Planner" },
-  { value: "Magic Pass", label: "Magic Pass" },
-  { value: "AP Command Center", label: "AP Command Center" },
-  { value: "AP Command Center PLUS", label: "AP Command Center PLUS" },
+  { value: "free", label: "Free – 7 Day Trial" },
+  { value: "ninety_day_planner", label: "90 Day Magic Pass Planner" },
+  { value: "ninety_day_friend", label: "90 Day Magic Pass Friend" },
+  { value: "magic_pass_planner", label: "Magic Pass Planner" },
+  { value: "magic_pass_plus", label: "Magic Pass Plus" },
   { value: "founders_pass", label: "Founders Pass" },
+  { value: "vip_free_forever", label: "VIP Free Forever" },
 ];
 
 interface AdminUser {
@@ -39,6 +41,9 @@ interface AdminUser {
   billing_interval: string | null;
   sub_updated_at: string | null;
   active_alerts: number;
+  is_vip: boolean;
+  vip_type: string | null;
+  vip_status: string | null;
 }
 
 type SortKey = "email" | "plan_name" | "status" | "active_alerts" | "created_at";
