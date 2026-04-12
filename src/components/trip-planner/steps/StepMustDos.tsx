@@ -44,7 +44,7 @@ function ParkMustDoPicker({
   onSelect: (id: string, state: TriState) => void;
 }) {
   const [expandedLands, setExpandedLands] = useState<Set<string>>(new Set());
-  const [allExpanded, setAllExpanded] = useState(true);
+  const [allExpanded, setAllExpanded] = useState(false);
 
   // Group attractions by land
   const landGroups = useMemo(() => {
