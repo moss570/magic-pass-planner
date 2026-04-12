@@ -35,7 +35,7 @@ export default function ScoreExplosion({ points, show, onComplete }: ScoreExplos
           {/* Score text */}
           <motion.div
             initial={{ scale: 0, opacity: 0, rotate: -10 }}
-            animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 1], rotate: [−10, 5, 0] }}
+            animate={{ scale: [0, 1.4, 1], opacity: [0, 1, 1], rotate: [-10, 5, 0] }}
             exit={{ scale: 0, opacity: 0, y: -50 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="relative"
