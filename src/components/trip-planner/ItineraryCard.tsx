@@ -422,6 +422,40 @@ export default function ItineraryCard({
                             <CompassButton destination={item.location} context={item.land || plan.park} size="inline" />
                           </div>
                         )}
+
+                        {/* Remove & Replace actions */}
+                        {!item.locked && !item.dropped && (
+                          <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/50">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive gap-1"
+                              onClick={() => handleRemoveItem(i)}
+                              disabled={recalcLoading}
+                            >
+                              <X className="w-3 h-3" /> Remove
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
+                                  disabled={recalcLoading}
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Replace
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-56">
+                                {getAlternatives(item).map((alt) => (
+                                  <DropdownMenuItem key={alt} onClick={() => handleReplaceItem(i, alt)}>
+                                    {alt}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
