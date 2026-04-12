@@ -75,9 +75,10 @@ export default function PicturePerfectGame({ onClose }: { onClose: () => void })
   if (gameOver || guessed) {
     return (
       <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
-      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-pink-500" />
-      </div>
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-pink-500" />
+        </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-pink-500/30 max-w-md w-full">
           <Trophy className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
@@ -91,7 +92,8 @@ export default function PicturePerfectGame({ onClose }: { onClose: () => void })
 
   return (
     <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
-      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
+      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-pink-500" />
         <div className="absolute bottom-1/4 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-rose-400" />
       </div>
