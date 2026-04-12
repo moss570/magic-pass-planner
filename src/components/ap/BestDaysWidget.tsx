@@ -28,7 +28,7 @@ interface Props {
 }
 
 export default function BestDaysWidget({ userPassTier = null }: Props) {
-  const [parkId, setParkId] = useState("magic-kingdom");
+  const [selectedParks, setSelectedParks] = useState<string[]>(["magic-kingdom"]);
   const [sortBy, setSortBy] = useState<"score" | "date">("score");
   const [predictions, setPredictions] = useState<BestDayPrediction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +36,15 @@ export default function BestDaysWidget({ userPassTier = null }: Props) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Fetch predictions for the first selected park (primary view)
+  const primaryParkId = selectedParks[0] || "magic-kingdom";
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setSelectedDates(new Set());
 
-    fetchBestDays(parkId, userPassTier, sortBy)
+    fetchBestDays(primaryParkId, userPassTier, sortBy)
       .then((data) => {
         if (!cancelled) {
           setPredictions(data);
@@ -54,7 +57,7 @@ export default function BestDaysWidget({ userPassTier = null }: Props) {
       });
 
     return () => { cancelled = true; };
-  }, [parkId, userPassTier, sortBy]);
+  }, [primaryParkId, userPassTier, sortBy]);
 
   const toggleDate = (date: string) => {
     setSelectedDates((prev) => {
@@ -68,10 +71,19 @@ export default function BestDaysWidget({ userPassTier = null }: Props) {
   const handleSendToPlanner = () => {
     const dates = Array.from(selectedDates).sort();
     if (dates.length === 0) return;
+
+    const parkHopper = selectedParks.length > 1;
+    const parkNames = selectedParks.map(id => PARK_NAMES[id] || id);
+
     const params = new URLSearchParams({
       prefillDates: dates.join(","),
-      prefillPark: parkId,
+      prefillParks: selectedParks.join(","),
+      mode: "day-trip",
     });
+    if (parkHopper) {
+      params.set("parkHopper", "true");
+    }
+
     navigate(`/trip-planner?${params}`);
   };
 
@@ -99,9 +111,13 @@ export default function BestDaysWidget({ userPassTier = null }: Props) {
       <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧠 Best Days to Go</h2>
       <p className="text-xs text-muted-foreground mb-4">Rolling 10-day forecast — scored by crowds, weather & your pass tier</p>
 
-      {/* Park chips */}
+      {/* Park chips — multi-select */}
       <div className="mb-3">
-        <ParkSelectorChips selected={parkId} onSelect={setParkId} />
+        <ParkSelectorChips
+          multiSelect
+          selectedMulti={selectedParks}
+          onSelectMulti={setSelectedParks}
+        />
       </div>
 
       {/* Sort toggle + legend */}
@@ -152,7 +168,7 @@ export default function BestDaysWidget({ userPassTier = null }: Props) {
           className="flex-1"
         >
           <Send className="w-4 h-4 mr-1" />
-          Send to Trip Planner
+          Send to Day Trip Planner
         </Button>
         <Button
           variant="outline"

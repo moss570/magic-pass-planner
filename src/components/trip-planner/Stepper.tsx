@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
+import type { TripMode } from "@/lib/tripDraft";
 
-const STEP_LABELS = [
+const VACATION_STEPS = [
   "Basics",
   "Party",
   "Parks & Dates",
@@ -10,15 +11,26 @@ const STEP_LABELS = [
   "Review",
 ];
 
+const DAY_TRIP_STEPS = [
+  "Basics",
+  "Party",
+  "Park(s)",
+  "Must-Dos",
+  "Review",
+];
+
 interface StepperProps {
   currentStep: number;
   onStepClick?: (step: number) => void;
+  mode?: TripMode;
 }
 
-export default function Stepper({ currentStep, onStepClick }: StepperProps) {
+export default function Stepper({ currentStep, onStepClick, mode = 'vacation' }: StepperProps) {
+  const labels = mode === 'day-trip' ? DAY_TRIP_STEPS : VACATION_STEPS;
+
   return (
     <div className="flex items-center gap-1 overflow-x-auto pb-2 px-1">
-      {STEP_LABELS.map((label, i) => {
+      {labels.map((label, i) => {
         const done = i < currentStep;
         const active = i === currentStep;
         return (

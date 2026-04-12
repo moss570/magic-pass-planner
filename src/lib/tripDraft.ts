@@ -1,5 +1,7 @@
 // localStorage persistence helper for trip wizard drafts
 
+export type TripMode = 'vacation' | 'day-trip';
+
 export interface TripMember {
   firstName: string;
   lastName: string;
@@ -18,6 +20,9 @@ export interface ParkDayAssignment {
 }
 
 export interface TripDraft {
+  // Mode
+  mode: TripMode;
+  hasAnnualPass: boolean;
   // Step 1 — Basics
   tripName: string;
   startDate: string;
@@ -55,15 +60,29 @@ export interface TripDraft {
 const DRAFT_PREFIX = 'mpp:trip-draft:';
 const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-export function getDefaultDraft(): TripDraft {
+export interface TripPlannerDefaults {
+  default_trip_mode?: string;
+  default_party_adults?: number;
+  default_party_children?: number;
+  default_ride_preference?: string;
+  default_ll_option?: string;
+  ap_pass_tier?: string;
+}
+
+export function getDefaultDraft(defaults?: TripPlannerDefaults): TripDraft {
+  const hasAP = defaults?.ap_pass_tier ? defaults.ap_pass_tier !== 'None' : false;
+  const mode = (defaults?.default_trip_mode === 'day-trip' ? 'day-trip' : 'vacation') as TripMode;
+
   return {
+    mode,
+    hasAnnualPass: hasAP,
     tripName: '',
     startDate: '',
     endDate: '',
-    budget: 6500,
+    budget: mode === 'day-trip' ? 500 : 6500,
     specialNotes: '',
-    adults: 2,
-    children: 0,
+    adults: defaults?.default_party_adults ?? 2,
+    children: defaults?.default_party_children ?? 0,
     ages: '',
     tripMembers: [],
     selectedParks: [],
@@ -73,12 +92,12 @@ export function getDefaultDraft(): TripDraft {
     lodging: '',
     resortCategory: '',
     walkingSpeedKmh: 2.5,
-    llOption: 'multi',
+    llOption: defaults?.default_ll_option ?? 'multi',
     llMultiPassSelections: [],
     llIndividualSelections: [],
     dropTimeStrategy: 'park-open',
     parkHopper: false,
-    ridePreference: 'mix',
+    ridePreference: defaults?.default_ride_preference ?? 'mix',
     currentStep: 0,
     updatedAt: Date.now(),
   };
@@ -97,6 +116,9 @@ export function loadDraft(userId: string): TripDraft | null {
       localStorage.removeItem(getDraftKey(userId));
       return null;
     }
+    // Ensure mode field exists for legacy drafts
+    if (!draft.mode) draft.mode = 'vacation';
+    if (draft.hasAnnualPass === undefined) draft.hasAnnualPass = false;
     return draft;
   } catch {
     return null;
