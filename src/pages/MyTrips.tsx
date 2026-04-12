@@ -270,7 +270,7 @@ function TripCard({ trip, past, onDelete, onView, navigate, versionCount }: {
           </>
         )}
         {versionCount >= 2 && (
-          <Button variant="outline" size="sm" className="border-secondary/30 text-secondary-foreground hover:bg-secondary/10 text-xs" onClick={() => navigate("/trip-compare", { state: { tripId: trip.id } })}>
+          <Button variant="outline" size="sm" className="border-secondary/30 text-secondary-foreground hover:bg-secondary/10 text-xs" onClick={() => navigate(`/trip/${trip.id}/compare`)}>
             <GitCompare className="w-3 h-3 mr-1" /> Compare
           </Button>
         )}
