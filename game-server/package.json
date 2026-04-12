@@ -1,0 +1,24 @@
+{
+  "name": "magic-pass-games-server",
+  "version": "1.0.0",
+  "description": "Multiplayer game server for Magic Pass Plus",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "dependencies": {
+    "colyseus": "^0.15.0",
+    "@colyseus/ws-transport": "^0.15.0",
+    "@colyseus/monitor": "^0.15.0",
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0",
+    "nodemon": "^2.0.0"
+  }
+}
