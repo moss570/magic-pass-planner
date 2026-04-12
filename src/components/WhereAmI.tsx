@@ -83,7 +83,7 @@ export default function WhereAmI({ onClose }: WhereAmIProps) {
 
   // Menu
   if (screen === "menu") return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6" style={{ background: "#080E1E" }}>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6" style={{ background: "#070b15" }}>
       <button onClick={onClose} className="absolute top-4 left-4 text-muted-foreground hover:text-foreground"><ArrowLeft className="w-5 h-5" /></button>
       <div className="text-6xl mb-4">📸</div>
       <h1 className="text-3xl font-black text-foreground mb-2">Where Am I?</h1>
@@ -102,8 +102,8 @@ export default function WhereAmI({ onClose }: WhereAmIProps) {
       
       <button onClick={() => { if (photos.length > 0) { setCurrentIdx(0); setScore(0); setStreak(0); setSelected(null); setShowResult(false); setTimeLeft(25); setScreen("playing"); } }}
         disabled={photos.length === 0}
-        className="w-full max-w-xs py-4 rounded-2xl font-black text-xl text-[#080E1E] disabled:opacity-40 mb-4"
-        style={{ background: "#F5C842" }}>
+        className="w-full max-w-xs py-4 rounded-2xl font-black text-xl text-[#070b15] disabled:opacity-40 mb-4"
+        style={{ background: "#F0B429" }}>
         🏰 Start Game
       </button>
     </div>
@@ -112,7 +112,7 @@ export default function WhereAmI({ onClose }: WhereAmIProps) {
   if (screen === "playing" && photos.length > 0) {
     const current = photos[currentIdx];
     return (
-      <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#080E1E" }}>
+      <div className="fixed inset-0 z-50 flex flex-col" style={{ background: "#070b15" }}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
           <div>
@@ -175,8 +175,8 @@ export default function WhereAmI({ onClose }: WhereAmIProps) {
           
           {showResult && (
             <button onClick={nextQuestion}
-              className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2 mt-1"
-              style={{ background: "#F5C842" }}>
+              className="w-full py-3 rounded-xl font-bold text-sm text-[#070b15] flex items-center justify-center gap-2 mt-1"
+              style={{ background: "#F0B429" }}>
               {currentIdx + 1 >= photos.length ? "See Results →" : "Next Question →"}
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -188,13 +188,13 @@ export default function WhereAmI({ onClose }: WhereAmIProps) {
 
   // Game over
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6" style={{ background: "#080E1E" }}>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-6" style={{ background: "#070b15" }}>
       <p className="text-5xl mb-4">🏆</p>
       <h2 className="text-3xl font-black text-foreground mb-2">Game Over!</h2>
       <p className="text-4xl font-black text-primary mb-1">{score.toLocaleString()}</p>
       <p className="text-sm text-muted-foreground mb-8">points</p>
       <div className="flex gap-3">
-        <button onClick={() => { setScreen("menu"); loadPhotos(); }} className="px-6 py-3 rounded-2xl font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Play Again</button>
+        <button onClick={() => { setScreen("menu"); loadPhotos(); }} className="px-6 py-3 rounded-2xl font-bold text-[#070b15]" style={{ background: "#F0B429" }}>Play Again</button>
         <button onClick={onClose} className="px-6 py-3 rounded-2xl font-bold text-foreground border border-white/20">Exit</button>
       </div>
     </div>

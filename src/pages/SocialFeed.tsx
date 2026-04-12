@@ -234,7 +234,7 @@ export default function SocialFeed() {
         <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
           {FILTER_TABS.map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors ${filter === f.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 border transition-colors ${filter === f.id ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground"}`}>
               {f.label}
             </button>
           ))}
@@ -276,7 +276,7 @@ export default function SocialFeed() {
                   placeholder="What's on your mind? Share a Disney tip, deal, photo, or trip update..."
                   rows={3}
                   className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-none"
-                  style={{ background: "#0D1230" }}
+                  style={{ background: "#0c1225" }}
                   autoFocus
                 />
 
@@ -301,7 +301,7 @@ export default function SocialFeed() {
                   {/* Park selector */}
                   <select value={newPostPark} onChange={e => setNewPostPark(e.target.value)}
                     className="px-2.5 py-1.5 rounded-lg text-xs border border-white/10 text-muted-foreground focus:outline-none focus:border-primary/40"
-                    style={{ background: "#0D1230" }}>
+                    style={{ background: "#0c1225" }}>
                     <option value="">📍 Tag a park (optional)</option>
                     {PARKS.map(p => <option key={p} value={p}>{p}</option>)}
                   </select>
@@ -317,9 +317,9 @@ export default function SocialFeed() {
                 </div>
 
                 <button onClick={submitPost} disabled={posting || !newPostContent.trim()}
-                  className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ background: "#F5C842" }}>
-                  {posting ? <><span className="w-4 h-4 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Posting...</> : <><Send className="w-4 h-4" /> Share with Community</>}
+                  className="w-full py-2.5 rounded-xl font-bold text-sm text-[#070b15] disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ background: "#F0B429" }}>
+                  {posting ? <><span className="w-4 h-4 rounded-full border-2 border-[#070b15] border-t-transparent animate-spin" /> Posting...</> : <><Send className="w-4 h-4" /> Share with Community</>}
                 </button>
               </div>
             )}
@@ -475,11 +475,11 @@ export default function SocialFeed() {
                             onKeyDown={e => e.key === "Enter" && !e.shiftKey && postComment(post.id, post.comment_count)}
                             placeholder="Write a comment..."
                             className="flex-1 px-3 py-1.5 rounded-full text-xs text-foreground border border-white/10 focus:outline-none focus:border-primary/40"
-                            style={{ background: "#0D1230" }}
+                            style={{ background: "#0c1225" }}
                           />
                           <button onClick={() => postComment(post.id, post.comment_count)}
                             disabled={postingComment === post.id || !commentText[post.id]?.trim()}
-                            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[#080E1E] disabled:opacity-50 shrink-0">
+                            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-[#070b15] disabled:opacity-50 shrink-0">
                             <Send className="w-3.5 h-3.5" />
                           </button>
                         </div>

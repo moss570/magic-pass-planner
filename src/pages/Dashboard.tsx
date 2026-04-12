@@ -100,7 +100,7 @@ const Dashboard = () => {
     if (searchParams.get("checkout") === "success") {
       sonnerToast.success("🎉 Welcome to Magic Pass Plus! Your 7-day free trial has started.", {
         duration: 6000,
-        style: { background: "#F5C842", color: "#080E1E", border: "none", fontWeight: 600 },
+        style: { background: "#F0B429", color: "#070b15", border: "none", fontWeight: 600 },
       });
       setSearchParams({}, { replace: true });
     }
@@ -218,7 +218,7 @@ const Dashboard = () => {
                   <p className="text-2xl md:text-3xl font-extrabold text-foreground">${tripExpenses.total.toLocaleString()}</p>
                   <p className="text-[10px] md:text-xs text-muted-foreground mt-1">of ${tripExpenses.budget.toLocaleString()} budget used</p>
                   <div className="w-full bg-white/10 rounded-full h-1.5 mt-1.5">
-                    <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, (tripExpenses.total / tripExpenses.budget) * 100)}%`, background: tripExpenses.total > tripExpenses.budget ? "#F43F5E" : "#F5C842" }} />
+                    <div className="h-1.5 rounded-full" style={{ width: `${Math.min(100, (tripExpenses.total / tripExpenses.budget) * 100)}%`, background: tripExpenses.total > tripExpenses.budget ? "#F43F5E" : "#F0B429" }} />
                   </div>
                 </>
               ) : (
@@ -274,7 +274,7 @@ const Dashboard = () => {
                   <p className="text-3xl mb-3">🏰</p>
                   <p className="text-sm font-semibold text-foreground mb-1">No itinerary planned</p>
                   <p className="text-xs text-muted-foreground mb-4">Create a trip to see your day-by-day schedule here</p>
-                  <Link to="/trip-planner" className="px-5 py-2 rounded-lg font-bold text-sm text-[#080E1E] inline-block" style={{ background: "#F5C842" }}>
+                  <Link to="/trip-planner" className="px-5 py-2 rounded-lg font-bold text-sm text-[#070b15] inline-block" style={{ background: "#F0B429" }}>
                     Create My First Trip →
                   </Link>
                 </div>
@@ -312,7 +312,7 @@ const Dashboard = () => {
               </div>
 
               {/* Clark's Recommendation */}
-              <div className="rounded-xl border-l-4 p-4" style={{ background: "#111827", borderLeftColor: "#F5C842" }}>
+              <div className="rounded-xl border-l-4 p-4" style={{ background: "#111827", borderLeftColor: "#F0B429" }}>
                 <p className="text-xs font-bold text-primary mb-2 flex items-center gap-1">💡 Clark's Recommendation</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">{getClarkRecommendation()}</p>
               </div>

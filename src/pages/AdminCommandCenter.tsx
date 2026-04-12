@@ -339,9 +339,9 @@ export default function AdminCommandCenter() {
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
 
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
+    <div className="min-h-screen" style={{ background: "#070b15" }}>
       {/* Header */}
-      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0c1225" }}>
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div>
             <div className="flex items-center gap-2">
@@ -363,7 +363,7 @@ export default function AdminCommandCenter() {
               <t.icon className="w-3.5 h-3.5" />
               {t.label}
               {(t.badge || 0) > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[#080E1E] text-[9px] font-black flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-[#070b15] text-[9px] font-black flex items-center justify-center">
                   {t.badge}
                 </span>
               )}
@@ -422,7 +422,7 @@ export default function AdminCommandCenter() {
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0D1230" }}>
+                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0c1225" }}>
                   <p className="text-muted-foreground mb-1">Last Dining Check</p>
                   {(() => {
                     const lastChecked = healthData.diningAlerts.filter(a => a.last_checked_at).sort((a, b) => new Date(b.last_checked_at).getTime() - new Date(a.last_checked_at).getTime())[0];
@@ -431,7 +431,7 @@ export default function AdminCommandCenter() {
                     return <p className={`font-semibold ${ago > 15 ? "text-red-400" : "text-green-400"}`}>{ago} min ago</p>;
                   })()}
                 </div>
-                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0D1230" }}>
+                <div className="rounded-lg p-3 border border-white/5" style={{ background: "#0c1225" }}>
                   <p className="text-muted-foreground mb-1">Last Event Check</p>
                   {(() => {
                     const lastChecked = healthData.eventAlerts.filter(a => a.last_checked_at).sort((a, b) => new Date(b.last_checked_at).getTime() - new Date(a.last_checked_at).getTime())[0];
@@ -451,7 +451,7 @@ export default function AdminCommandCenter() {
                   <p className="text-xs text-muted-foreground mb-2">Dining ({healthData.diningNotifs.length})</p>
                   <div className="space-y-1 max-h-48 overflow-y-auto">
                     {healthData.diningNotifs.slice(0, 10).map(n => (
-                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0c1225" }}>
                         <span className="text-foreground truncate flex-1">{n.restaurant_name || "Unknown"}</span>
                         <span className={`font-semibold ml-2 ${n.delivery_status === "sent" ? "text-green-400" : n.delivery_status === "failed" ? "text-red-400" : "text-yellow-400"}`}>
                           {n.delivery_status}
@@ -465,7 +465,7 @@ export default function AdminCommandCenter() {
                   <p className="text-xs text-muted-foreground mb-2">Events ({healthData.eventNotifs.length})</p>
                   <div className="space-y-1 max-h-48 overflow-y-auto">
                     {healthData.eventNotifs.slice(0, 10).map(n => (
-                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                      <div key={n.id} className="flex items-center justify-between text-xs px-2 py-1.5 rounded" style={{ background: "#0c1225" }}>
                         <span className="text-foreground truncate flex-1">{n.event_name || "Unknown"}</span>
                         <span className={`font-semibold ml-2 ${n.delivery_status === "sent" ? "text-green-400" : n.delivery_status === "failed" ? "text-red-400" : "text-yellow-400"}`}>
                           {n.delivery_status}
@@ -488,8 +488,8 @@ export default function AdminCommandCenter() {
                 <button
                   onClick={runDiagnosticBatch}
                   disabled={diagRunning}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] disabled:opacity-50"
-                  style={{ background: "#F5C842" }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold text-sm text-[#070b15] disabled:opacity-50"
+                  style={{ background: "#F0B429" }}
                 >
                   {diagRunning ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
                   {diagRunning ? "Running..." : "Run Diagnostics"}
@@ -506,7 +506,7 @@ export default function AdminCommandCenter() {
                     <span>Event</span><span>Status</span><span>Scrapable</span><span>Updated</span>
                   </div>
                   {diagResults.map((r, i) => (
-                    <div key={i} className="grid grid-cols-[1fr_80px_80px_80px] gap-2 text-xs px-2 py-1.5 rounded" style={{ background: "#0D1230" }}>
+                    <div key={i} className="grid grid-cols-[1fr_80px_80px_80px] gap-2 text-xs px-2 py-1.5 rounded" style={{ background: "#0c1225" }}>
                       <span className="text-foreground truncate" title={r.url}>{r.event_name}</span>
                       <span className={r.ok ? "text-green-400" : "text-red-400"}>{r.ok ? "✅ OK" : "❌ Fail"}</span>
                       <span className={r.scrapable ? "text-green-400" : "text-yellow-400"}>{r.scrapable ? "Yes" : "No"}</span>
@@ -531,7 +531,7 @@ export default function AdminCommandCenter() {
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">Create and manage Magic Beacon community events. Users RSVP from the Events tab.</p>
               <button onClick={() => setShowAddEvent(!showAddEvent)}
-                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>
+                className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg font-bold text-[#070b15]" style={{ background: "#F0B429" }}>
                 <Plus className="w-3.5 h-3.5" /> New Event
               </button>
             </div>
@@ -554,15 +554,15 @@ export default function AdminCommandCenter() {
                   <p className="text-sm font-bold text-foreground mb-4">{editingEvent ? "✏️ Edit Event" : "🎪 Create New Event"}</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <input placeholder="Event title *" value={evt.title} onChange={e => setEvt({ title: e.target.value })}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                     <input placeholder="Emoji (e.g. 🃏)" value={evt.emoji} onChange={e => setEvt({ emoji: e.target.value })} maxLength={4}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                     <select value={evt.park} onChange={e => setEvt({ park: e.target.value })}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }}>
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }}>
                       {PARKS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                     <input placeholder="Location (e.g. CommuniCore Plaza) *" value={evt.location} onChange={e => setEvt({ location: e.target.value })}
-                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                      className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Event Date *</label>
                       <input 
@@ -571,7 +571,7 @@ export default function AdminCommandCenter() {
                         onChange={e => setEvt({ event_date: e.target.value })}
                         min={new Date().toISOString().split("T")[0]}
                         className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                        style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                        style={{ background: "#0c1225", minHeight: 44, colorScheme: "dark" }}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -594,7 +594,7 @@ export default function AdminCommandCenter() {
                             setEvt({ event_time: existingEnd ? `${startStr} – ${existingEnd}` : startStr });
                           }}
                           className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                          style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                          style={{ background: "#0c1225", minHeight: 44, colorScheme: "dark" }}
                         />
                       </div>
                       <div>
@@ -611,7 +611,7 @@ export default function AdminCommandCenter() {
                             setEvt({ event_time: existingStart ? `${existingStart} – ${endStr}` : endStr });
                           }}
                           className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                          style={{ background: "#0D1230", minHeight: 44, colorScheme: "dark" }}
+                          style={{ background: "#0c1225", minHeight: 44, colorScheme: "dark" }}
                         />
                       </div>
                     </div>
@@ -620,7 +620,7 @@ export default function AdminCommandCenter() {
                     )}
                   </div>
                   <textarea placeholder="Description..." value={evt.description} onChange={e => setEvt({ description: e.target.value })} rows={3}
-                    className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3" style={{ background: "#0D1230" }} />
+                    className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3" style={{ background: "#0c1225" }} />
                   <div className="mb-4">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">Badge Style</p>
                     <div className="flex flex-wrap gap-2">
@@ -634,7 +634,7 @@ export default function AdminCommandCenter() {
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => saveEvent(!editingEvent)}
-                      className="px-5 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                      className="px-5 py-2.5 rounded-lg font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
                       {editingEvent ? "Save Changes" : "Create Event"}
                     </button>
                     <button onClick={() => { setShowAddEvent(false); setEditingEvent(null); }}
@@ -752,8 +752,8 @@ export default function AdminCommandCenter() {
                   style={{ background: "#111827" }} />
               </div>
               <button onClick={() => setShowAddTrivia(s => !s)}
-                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2 shrink-0"
-                style={{ background: "#F5C842" }}>
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#070b15] flex items-center gap-2 shrink-0"
+                style={{ background: "#F0B429" }}>
                 <Plus className="w-4 h-4" /> Add Question
               </button>
             </div>
@@ -766,7 +766,7 @@ export default function AdminCommandCenter() {
                   <textarea value={newQuestion.question} onChange={e => setNewQuestion(q => ({...q, question: e.target.value}))}
                     placeholder="Question text *" rows={2}
                     className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none"
-                    style={{ background: "#0D1230" }} />
+                    style={{ background: "#0c1225" }} />
                   {newQuestion.options.map((opt, i) => (
                     <div key={i} className="flex gap-2 items-center">
                       <button onClick={() => setNewQuestion(q => ({...q, correct_answer: i}))}
@@ -776,25 +776,25 @@ export default function AdminCommandCenter() {
                       <input value={opt} onChange={e => { const o = [...newQuestion.options]; o[i] = e.target.value; setNewQuestion(q => ({...q, options: o})); }}
                         placeholder={`Option ${i+1}${newQuestion.correct_answer === i ? " ✓ correct" : ""}`}
                         className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                        style={{ background: "#0D1230", borderColor: newQuestion.correct_answer === i ? "rgba(34,197,94,0.4)" : undefined }} />
+                        style={{ background: "#0c1225", borderColor: newQuestion.correct_answer === i ? "rgba(34,197,94,0.4)" : undefined }} />
                     </div>
                   ))}
                   <div className="flex gap-2">
                     <select value={newQuestion.category} onChange={e => setNewQuestion(q => ({...q, category: e.target.value}))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                       {["general","history","rides","dining","characters","movies","resorts","facts","shows"].map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select value={newQuestion.difficulty} onChange={e => setNewQuestion(q => ({...q, difficulty: e.target.value}))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                       {["easy","medium","hard"].map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                     <input value={newQuestion.park} onChange={e => setNewQuestion(q => ({...q, park: e.target.value}))}
                       placeholder="Park (optional)"
-                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none" style={{ background: "#0D1230" }} />
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none" style={{ background: "#0c1225" }} />
                   </div>
                   <div className="flex gap-2">
                     <button onClick={() => setShowAddTrivia(false)} className="flex-1 py-2 rounded-lg border border-white/10 text-sm text-muted-foreground">Cancel</button>
-                    <button onClick={addQuestion} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Add Question</button>
+                    <button onClick={addQuestion} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>Add Question</button>
                   </div>
                 </div>
               </div>
@@ -811,7 +811,7 @@ export default function AdminCommandCenter() {
                     {editingQuestion?.id === q.id ? (
                       <div className="space-y-2">
                         <textarea value={editingQuestion.question} onChange={e => setEditingQuestion((eq: any) => ({...eq, question: e.target.value}))} rows={2}
-                          className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0D1230] focus:outline-none resize-none" />
+                          className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0c1225] focus:outline-none resize-none" />
                         {editingQuestion.options.map((opt: string, i: number) => (
                           <div key={i} className="flex gap-2">
                             <button onClick={() => setEditingQuestion((eq: any) => ({...eq, correct_answer: i}))}
@@ -819,11 +819,11 @@ export default function AdminCommandCenter() {
                               {i+1}
                             </button>
                             <input value={opt} onChange={e => { const o = [...editingQuestion.options]; o[i] = e.target.value; setEditingQuestion((eq: any) => ({...eq, options: o})); }}
-                              className="flex-1 px-2 py-1 rounded border border-white/10 text-xs text-foreground bg-[#0D1230] focus:outline-none" />
+                              className="flex-1 px-2 py-1 rounded border border-white/10 text-xs text-foreground bg-[#0c1225] focus:outline-none" />
                           </div>
                         ))}
                         <div className="flex gap-2 mt-1">
-                          <button onClick={() => updateTriviaQuestion(editingQuestion)} className="px-3 py-1.5 rounded text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Save</button>
+                          <button onClick={() => updateTriviaQuestion(editingQuestion)} className="px-3 py-1.5 rounded text-xs font-bold text-[#070b15]" style={{ background: "#F0B429" }}>Save</button>
                           <button onClick={() => setEditingQuestion(null)} className="px-3 py-1.5 rounded text-xs text-muted-foreground border border-white/10">Cancel</button>
                         </div>
                       </div>
@@ -890,7 +890,7 @@ export default function AdminCommandCenter() {
                         {photo.gps_lat && <p className="text-xs text-muted-foreground mb-2">📍 GPS: {photo.gps_lat?.toFixed(4)}, {photo.gps_lng?.toFixed(4)}</p>}
                         <div className="flex gap-2">
                           <button onClick={() => reviewPhoto(photo.id, "approved")}
-                            className="flex-1 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center justify-center gap-1"
+                            className="flex-1 py-2 rounded-lg font-bold text-sm text-[#070b15] flex items-center justify-center gap-1"
                             style={{ background: "#22c55e" }}>
                             <Check className="w-4 h-4" /> Approve
                           </button>
@@ -987,7 +987,7 @@ export default function AdminCommandCenter() {
                       </button>
                     </div>
                   </div>
-                  <div className="rounded-lg p-3 mb-4 flex-1" style={{ background: "#0D1230" }}>
+                  <div className="rounded-lg p-3 mb-4 flex-1" style={{ background: "#0c1225" }}>
                     <p className="text-sm text-foreground leading-relaxed">{selectedMessage.message}</p>
                   </div>
                   {selectedMessage.admin_reply && (
@@ -999,10 +999,10 @@ export default function AdminCommandCenter() {
                   <textarea value={replyText} onChange={e => setReplyText(e.target.value)} rows={4}
                     placeholder="Type your reply..."
                     className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3"
-                    style={{ background: "#0D1230" }} />
+                    style={{ background: "#0c1225" }} />
                   <button onClick={sendReply} disabled={sendingReply || !replyText.trim()}
-                    className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                    style={{ background: "#F5C842" }}>
+                    className="w-full py-2.5 rounded-xl font-bold text-sm text-[#070b15] disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ background: "#F0B429" }}>
                     <Send className="w-4 h-4" /> {sendingReply ? "Sending..." : "Send Reply"}
                   </button>
                 </div>
@@ -1020,8 +1020,8 @@ export default function AdminCommandCenter() {
                 <p className="text-xs text-muted-foreground">Sources Clark checks 5x daily for Disney deals and news</p>
               </div>
               <button onClick={() => setShowAddSource(s => !s)}
-                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2"
-                style={{ background: "#F5C842" }}>
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#070b15] flex items-center gap-2"
+                style={{ background: "#F0B429" }}>
                 + Add Source
               </button>
             </div>
@@ -1029,20 +1029,20 @@ export default function AdminCommandCenter() {
               <div className="rounded-xl p-4 border border-primary/20" style={{ background: "#111827" }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <input value={newSource.name} onChange={e => setNewSource(s => ({...s, name: e.target.value}))} placeholder="Source name *"
-                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                   <input value={newSource.url} onChange={e => setNewSource(s => ({...s, url: e.target.value}))} placeholder="URL * (https://...)"
-                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                   <select value={newSource.category} onChange={e => setNewSource(s => ({...s, category: e.target.value}))}
-                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                     {["disney_deals","disney_news","ap_exclusive","dining","orlando_attractions","entertainment"].map(c => <option key={c} value={c}>{c.replace("_"," ")}</option>)}
                   </select>
                   <select value={newSource.scrape_frequency} onChange={e => setNewSource(s => ({...s, scrape_frequency: e.target.value}))}
-                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                     {["realtime","daily","weekly"].map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
                 <input value={newSource.notes} onChange={e => setNewSource(s => ({...s, notes: e.target.value}))} placeholder="Notes (optional)"
-                  className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" style={{ background: "#0D1230" }} />
+                  className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground mb-3 focus:outline-none focus:border-primary/40" style={{ background: "#0c1225" }} />
                 <button onClick={async () => {
                   if (!newSource.name || !newSource.url) return;
                   await supabase.from("news_sources").insert(newSource);
@@ -1050,7 +1050,7 @@ export default function AdminCommandCenter() {
                   setShowAddSource(false);
                   setNewSource({ name: "", url: "", category: "disney_deals", notes: "", scrape_frequency: "daily" });
                   loadTab("sources");
-                }} className="px-6 py-2.5 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                }} className="px-6 py-2.5 rounded-lg font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
                   Add Source
                 </button>
               </div>
@@ -1111,8 +1111,8 @@ export default function AdminCommandCenter() {
                 {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <button onClick={() => setShowAddWord(s => !s)}
-                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2 shrink-0"
-                style={{ background: "#F5C842" }}>
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#070b15] flex items-center gap-2 shrink-0"
+                style={{ background: "#F0B429" }}>
                 <Plus className="w-4 h-4" /> Add Word
               </button>
             </div>
@@ -1125,9 +1125,9 @@ export default function AdminCommandCenter() {
                   <input value={newWord.word} onChange={e => setNewWord(w => ({...w, word: e.target.value}))}
                     placeholder="Disney word or phrase *"
                     className="flex-1 px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                    style={{ background: "#0D1230" }} />
+                    style={{ background: "#0c1225" }} />
                   <select value={newWord.category} onChange={e => setNewWord(w => ({...w, category: e.target.value}))}
-                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                    className="px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                     {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -1138,7 +1138,7 @@ export default function AdminCommandCenter() {
                     const { error } = await (supabase.from("headsup_words" as any).insert({ word: newWord.word.trim(), category: newWord.category, is_active: true }) as any);
                     if (!error) { toast({ title: "✅ Word added!" }); setShowAddWord(false); setNewWord({ word: "", category: "characters" }); loadTab("linemind"); }
                     else toast({ title: "Failed", description: error.message, variant: "destructive" });
-                  }} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Add Word</button>
+                  }} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>Add Word</button>
                 </div>
               </div>
             )}
@@ -1174,15 +1174,15 @@ export default function AdminCommandCenter() {
                           {editingWord?.id === w.id ? (
                             <div className="flex gap-2 items-center">
                               <input value={editingWord.word} onChange={e => setEditingWord((ew: any) => ({...ew, word: e.target.value}))}
-                                className="flex-1 px-2 py-1.5 rounded border border-white/10 text-sm text-foreground bg-[#0D1230] focus:outline-none" />
+                                className="flex-1 px-2 py-1.5 rounded border border-white/10 text-sm text-foreground bg-[#0c1225] focus:outline-none" />
                               <select value={editingWord.category} onChange={e => setEditingWord((ew: any) => ({...ew, category: e.target.value}))}
-                                className="px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0D1230]">
+                                className="px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0c1225]">
                                 {["characters","rides","food","movies","parks","general"].map(c => <option key={c} value={c}>{c}</option>)}
                               </select>
                               <button onClick={async () => {
                                 await (supabase.from("headsup_words" as any).update({ word: editingWord.word, category: editingWord.category }) as any).eq("id", editingWord.id);
                                 toast({ title: "✅ Word updated" }); setEditingWord(null); loadTab("linemind");
-                              }} className="px-3 py-1.5 rounded text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Save</button>
+                              }} className="px-3 py-1.5 rounded text-xs font-bold text-[#070b15]" style={{ background: "#F0B429" }}>Save</button>
                               <button onClick={() => setEditingWord(null)} className="px-2 py-1.5 rounded text-xs text-muted-foreground border border-white/10">✕</button>
                             </div>
                           ) : (
@@ -1234,8 +1234,8 @@ export default function AdminCommandCenter() {
                 {["characters","rides","parks","history","movies","star_wars","pixar","food","general"].map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <button onClick={() => setShowAddHaaaa(s => !s)}
-                className="px-4 py-2 rounded-lg font-bold text-sm text-[#080E1E] flex items-center gap-2 shrink-0"
-                style={{ background: "#F5C842" }}>
+                className="px-4 py-2 rounded-lg font-bold text-sm text-[#070b15] flex items-center gap-2 shrink-0"
+                style={{ background: "#F0B429" }}>
                 <Plus className="w-4 h-4" /> Add Prompt
               </button>
             </div>
@@ -1247,18 +1247,18 @@ export default function AdminCommandCenter() {
                   <textarea value={newPrompt.prompt} onChange={e => setNewPrompt(p => ({...p, prompt: e.target.value}))}
                     placeholder="Prompt question *" rows={2}
                     className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none"
-                    style={{ background: "#0D1230" }} />
+                    style={{ background: "#0c1225" }} />
                   <input value={newPrompt.real_answer} onChange={e => setNewPrompt(p => ({...p, real_answer: e.target.value}))}
                     placeholder="Real answer *"
                     className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                    style={{ background: "#0D1230" }} />
+                    style={{ background: "#0c1225" }} />
                   <div className="flex gap-2">
                     <select value={newPrompt.category} onChange={e => setNewPrompt(p => ({...p, category: e.target.value}))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                       {["general","characters","rides","parks","history","movies","star_wars","pixar","food"].map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                     <select value={newPrompt.difficulty} onChange={e => setNewPrompt(p => ({...p, difficulty: e.target.value}))}
-                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0D1230" }}>
+                      className="flex-1 px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground" style={{ background: "#0c1225" }}>
                       {["easy","medium","hard"].map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
@@ -1269,7 +1269,7 @@ export default function AdminCommandCenter() {
                       const { error } = await (supabase.from("haaaa_prompts" as any).insert({ ...newPrompt, is_active: true }) as any);
                       if (!error) { toast({ title: "✅ Prompt added!" }); setShowAddHaaaa(false); setNewPrompt({ prompt: "", real_answer: "", category: "general", difficulty: "medium" }); loadTab("haaaa"); }
                       else toast({ title: "Failed", description: error.message, variant: "destructive" });
-                    }} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Add Prompt</button>
+                    }} className="flex-1 py-2 rounded-lg font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>Add Prompt</button>
                   </div>
                 </div>
               </div>
@@ -1301,16 +1301,16 @@ export default function AdminCommandCenter() {
                           {editingPrompt?.id === p.id ? (
                             <div className="space-y-2">
                               <textarea value={editingPrompt.prompt} onChange={e => setEditingPrompt((ep: any) => ({...ep, prompt: e.target.value}))} rows={2}
-                                className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0D1230] focus:outline-none resize-none" />
+                                className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0c1225] focus:outline-none resize-none" />
                               <input value={editingPrompt.real_answer} onChange={e => setEditingPrompt((ep: any) => ({...ep, real_answer: e.target.value}))}
-                                className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0D1230] focus:outline-none" />
+                                className="w-full px-3 py-2 rounded-lg border border-white/10 text-sm text-foreground bg-[#0c1225] focus:outline-none" />
                               <div className="flex gap-2">
                                 <select value={editingPrompt.category} onChange={e => setEditingPrompt((ep: any) => ({...ep, category: e.target.value}))}
-                                  className="flex-1 px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0D1230]">
+                                  className="flex-1 px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0c1225]">
                                   {["general","characters","rides","parks","history","movies","star_wars","pixar","food"].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                                 <select value={editingPrompt.difficulty} onChange={e => setEditingPrompt((ep: any) => ({...ep, difficulty: e.target.value}))}
-                                  className="flex-1 px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0D1230]">
+                                  className="flex-1 px-2 py-1.5 rounded border border-white/10 text-xs text-foreground bg-[#0c1225]">
                                   {["easy","medium","hard"].map(d => <option key={d} value={d}>{d}</option>)}
                                 </select>
                               </div>
@@ -1318,7 +1318,7 @@ export default function AdminCommandCenter() {
                                 <button onClick={async () => {
                                   await (supabase.from("haaaa_prompts" as any).update({ prompt: editingPrompt.prompt, real_answer: editingPrompt.real_answer, category: editingPrompt.category, difficulty: editingPrompt.difficulty }) as any).eq("id", editingPrompt.id);
                                   toast({ title: "✅ Prompt updated" }); setEditingPrompt(null); loadTab("haaaa");
-                                }} className="px-3 py-1.5 rounded text-xs font-bold text-[#080E1E]" style={{ background: "#F5C842" }}>Save</button>
+                                }} className="px-3 py-1.5 rounded text-xs font-bold text-[#070b15]" style={{ background: "#F0B429" }}>Save</button>
                                 <button onClick={() => setEditingPrompt(null)} className="px-3 py-1.5 rounded text-xs text-muted-foreground border border-white/10">Cancel</button>
                               </div>
                             </div>

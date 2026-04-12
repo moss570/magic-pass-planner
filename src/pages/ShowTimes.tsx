@@ -62,7 +62,7 @@ export default function ShowTimes({ selectedPark = "Magic Kingdom", inPark = fal
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {["all", "show", "parade", "fireworks", "character"].map(f => (
           <button key={f} onClick={() => setFilter(f as any)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${filter === f ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${filter === f ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground"}`}>
             {f === "all" ? "All" : f === "fireworks" ? "🎆 Fireworks" : f === "parade" ? "🎠 Parades" : f === "show" ? "🎭 Shows" : "🎪 Characters"}
           </button>
         ))}

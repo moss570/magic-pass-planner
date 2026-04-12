@@ -146,7 +146,7 @@ export default function PhotoFun({ selectedPark = "Magic Kingdom", userLat, user
           { id: "photopass", label: "📷 PhotoPass" },
         ].map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id as any)}
-            className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-all ${activeSection === s.id ? "bg-primary text-[#080E1E]" : "text-muted-foreground hover:text-foreground"}`}>
+            className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold transition-all ${activeSection === s.id ? "bg-primary text-[#070b15]" : "text-muted-foreground hover:text-foreground"}`}>
             {s.label}
           </button>
         ))}

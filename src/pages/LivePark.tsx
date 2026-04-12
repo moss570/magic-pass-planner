@@ -395,8 +395,8 @@ function LineGames() {
             {answered !== null && (
               <button
                 onClick={handleTriviaNext}
-                className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] mt-2"
-                style={{ background: "#F5C842" }}
+                className="w-full py-3 rounded-xl font-bold text-sm text-[#070b15] mt-2"
+                style={{ background: "#F0B429" }}
               >
                 {triviaQ + 1 >= triviaQuestions.length ? "See My Score 🏆" : "Next Question →"}
               </button>
@@ -409,7 +409,7 @@ function LineGames() {
       {activeGame === "speed-tapper" && (
         <div className="text-center">
           {!tapActive && tapTimeLeft === 10 && (
-            <button onClick={startTapper} className="px-8 py-4 rounded-xl font-bold text-lg text-[var(--background)] w-full" style={{ background: "#F5C842" }}>
+            <button onClick={startTapper} className="px-8 py-4 rounded-xl font-bold text-lg text-[var(--background)] w-full" style={{ background: "#F0B429" }}>
               Start Tapping!
             </button>
           )}
@@ -430,7 +430,7 @@ function LineGames() {
               <p className="text-sm text-muted-foreground">
                 {tapCount >= 80 ? "🏆 You're a tapping legend!" : tapCount >= 50 ? "🔥 Great speed!" : tapCount >= 30 ? "👍 Nice work!" : "Keep practicing!"}
               </p>
-              <button onClick={startTapper} className="mt-4 px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Try Again</button>
+              <button onClick={startTapper} className="mt-4 px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F0B429" }}>Try Again</button>
             </div>
           )}
         </div>
@@ -457,7 +457,7 @@ function LineGames() {
               className={`flex-1 px-4 py-2.5 rounded-lg bg-[#1a2235] border text-sm text-foreground focus:outline-none transition-colors ${scrambleCorrect === true ? "border-green-500" : scrambleCorrect === false ? "border-red-500" : "border-white/10 focus:border-primary/50"}`}
               style={{ minHeight: 44 }}
             />
-            <button onClick={handleScrambleSubmit} className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>
+            <button onClick={handleScrambleSubmit} className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F0B429" }}>
               Check
             </button>
           </div>
@@ -475,7 +475,7 @@ function LineGames() {
           <div className="text-4xl mb-2">🏆</div>
           <p className="text-xl font-bold text-primary mb-1">Game Over!</p>
           <p className="text-muted-foreground text-sm mb-4">Final Score: {score}/{activeGame === "disney-trivia" ? triviaQuestions.length : LINE_GAMES[2].words.length}</p>
-          <button onClick={() => { setActiveGame(null); }} className="px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Play Again</button>
+          <button onClick={() => { setActiveGame(null); }} className="px-6 py-2 rounded-lg font-bold text-sm text-[var(--background)]" style={{ background: "#F0B429" }}>Play Again</button>
         </div>
       )}
     </div>
@@ -684,7 +684,7 @@ export default function LivePark() {
             <button
               onClick={() => setLiveMenuOpen(true)}
               className="w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
-              style={{ background: "#F5C842" }}
+              style={{ background: "#F0B429" }}
             >
               <Zap className="w-4 h-4" /> LIVE PARK MENU
             </button>
@@ -703,7 +703,7 @@ export default function LivePark() {
               <button
                 onClick={() => setLiveMenuOpen(true)}
                 className="flex-1 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
-                style={{ background: "#F5C842" }}
+                style={{ background: "#F0B429" }}
               >
                 <Zap className="w-4 h-4" /> LIVE PARK MENU
               </button>
@@ -725,7 +725,7 @@ export default function LivePark() {
             <button
               onClick={() => setLiveMenuOpen(true)}
               className="w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
-              style={{ background: "#F5C842" }}
+              style={{ background: "#F0B429" }}
             >
               <Zap className="w-4 h-4" /> LIVE PARK MENU
             </button>

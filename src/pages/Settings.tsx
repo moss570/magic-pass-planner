@@ -231,7 +231,7 @@ const Settings = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <p className="text-sm text-muted-foreground">No active plan · Free trial available</p>
                   <Link to="/pricing">
-                    <Button className="text-xs" style={{ background: "#F5C842", color: "#080E1E" }}>Choose a Plan →</Button>
+                    <Button className="text-xs" style={{ background: "#F0B429", color: "#070b15" }}>Choose a Plan →</Button>
                   </Link>
                 </div>
               );
@@ -784,7 +784,7 @@ function DisneyConnectSection() {
                 onClick={handleConnect}
                 disabled={connecting}
                 className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60"
-                style={{ background: "#F5C842", color: "#080E1E" }}
+                style={{ background: "#F0B429", color: "#070b15" }}
               >
                 🏰 Connect Disney Account
               </button>
@@ -824,7 +824,7 @@ function DisneyConnectSection() {
                   onClick={handleConnect}
                   disabled={connecting || !manualToken.trim()}
                   className="flex-1 py-2.5 rounded-xl font-bold text-sm disabled:opacity-50"
-                  style={{ background: "#F5C842", color: "#080E1E" }}
+                  style={{ background: "#F0B429", color: "#070b15" }}
                 >
                   {connecting ? "Verifying..." : "✅ Save Token"}
                 </button>

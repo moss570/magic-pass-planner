@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Gamepad2, Users, Trophy, Clock, Zap } from "lucide-react";
+import { Gamepad2, Users, Trophy, Clock, Zap, ArrowLeft, Home } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import GameCard from "@/components/GameCard";
@@ -111,6 +111,17 @@ const GamesDiscovery = () => {
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Back to Dashboard */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          className="mb-6">
+          <button onClick={() => navigate("/dashboard")}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all">
+            <ArrowLeft className="w-4 h-4" />
+            <Home className="w-4 h-4" />
+            <span className="text-sm font-semibold">Dashboard</span>
+          </button>
+        </motion.div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}

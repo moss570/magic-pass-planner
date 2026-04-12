@@ -215,7 +215,7 @@ export default function MagicBeacon() {
             { id: "my-beacon", label: "🏰 My Beacon" },
           ].map(t => (
             <button key={t.id} onClick={() => setActiveTab(t.id as any)}
-              className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-semibold transition-all ${activeTab === t.id ? "bg-primary text-[#080E1E]" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`flex-1 py-2.5 px-2 rounded-lg text-xs font-semibold transition-all ${activeTab === t.id ? "bg-primary text-[#070b15]" : "text-muted-foreground hover:text-foreground"}`}>
               {t.label}
             </button>
           ))}
@@ -262,7 +262,7 @@ export default function MagicBeacon() {
                 <p className="text-base font-bold text-foreground mb-2">No Beacons currently live now</p>
                 <p className="text-sm text-muted-foreground mb-5">Start a Beacon and meet a new friend.</p>
                 <button onClick={() => setActiveTab("my-beacon")}
-                  className="px-6 py-3 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                  className="px-6 py-3 rounded-xl font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
                   🏰 Start My Beacon
                 </button>
               </div>
@@ -325,8 +325,8 @@ export default function MagicBeacon() {
                         {going && " (including you! ✅)"}
                       </p>
                       <button onClick={() => rsvpEvent(event.id)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${going ? "bg-green-500/20 text-green-400 border border-green-500/30" : "text-[#080E1E]"}`}
-                        style={!going ? { background: "#F5C842" } : {}}>
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${going ? "bg-green-500/20 text-green-400 border border-green-500/30" : "text-[#070b15]"}`}
+                        style={!going ? { background: "#F0B429" } : {}}>
                         {going ? "✅ I'm Going!" : "RSVP →"}
                       </button>
                     </div>
@@ -341,9 +341,9 @@ export default function MagicBeacon() {
               <p className="text-xs text-muted-foreground mb-3">Have an idea for a meetup? Submit it and we'll consider scheduling it!</p>
               <textarea rows={3} placeholder="Describe your event idea (e.g. EPCOT Food & Wine progressive dinner starting at Morocco pavilion...)"
                 className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40 resize-none mb-3"
-                style={{ background: "#0D1230" }} />
+                style={{ background: "#0c1225" }} />
               <button onClick={() => toast({ title: "Thanks! We'll review your idea." })}
-                className="w-full py-2.5 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+                className="w-full py-2.5 rounded-xl font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
                 Submit Idea →
               </button>
             </div>
@@ -390,7 +390,7 @@ export default function MagicBeacon() {
                     <input value={beaconTitle} onChange={e => setBeaconTitle(e.target.value)} maxLength={60}
                       placeholder="e.g. Pin Trading at Frontierland!"
                       className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                      style={{ background: "#0D1230", minHeight: 44 }} />
+                      style={{ background: "#0c1225", minHeight: 44 }} />
                   </div>
 
                   {/* Park */}
@@ -399,7 +399,7 @@ export default function MagicBeacon() {
                     <div className="flex flex-wrap gap-1.5">
                       {PARKS.map(p => (
                         <button key={p} onClick={() => { setSelectedPark(p); setSelectedSpot(""); }}
-                          className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${selectedPark === p ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                          className={`text-xs px-3 py-1.5 rounded-full font-medium border transition-all ${selectedPark === p ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground"}`}>
                           {p}
                         </button>
                       ))}
@@ -411,7 +411,7 @@ export default function MagicBeacon() {
                     <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Meeting spot *</label>
                     <select value={selectedSpot} onChange={e => setSelectedSpot(e.target.value)}
                       className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                      style={{ background: "#0D1230", minHeight: 44 }}>
+                      style={{ background: "#0c1225", minHeight: 44 }}>
                       <option value="">Select a landmark...</option>
                       {(QUEUE_MAP[selectedPark] || []).map(spot => <option key={spot} value={spot}>{spot}</option>)}
                     </select>
@@ -423,7 +423,7 @@ export default function MagicBeacon() {
                     <input value={fineLocation} onChange={e => setFineLocation(e.target.value)} maxLength={80}
                       placeholder="e.g. Third bench on the left, wearing a Haunted Mansion shirt"
                       className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                      style={{ background: "#0D1230", minHeight: 44 }} />
+                      style={{ background: "#0c1225", minHeight: 44 }} />
                     <p className="text-xs text-muted-foreground mt-1">Helps people find you beyond GPS accuracy</p>
                   </div>
 
@@ -445,7 +445,7 @@ export default function MagicBeacon() {
                     <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Beacon Activity *</label>
                     <select value={beaconActivity} onChange={e => { setBeaconActivity(e.target.value); if (e.target.value !== "Custom") setCustomActivity(""); }}
                       className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                      style={{ background: "#0D1230", minHeight: 44 }}>
+                      style={{ background: "#0c1225", minHeight: 44 }}>
                       <option value="">Select an activity...</option>
                       {BEACON_ACTIVITIES.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
@@ -453,7 +453,7 @@ export default function MagicBeacon() {
                       <input value={customActivity} onChange={e => setCustomActivity(e.target.value)} maxLength={60}
                         placeholder="Describe your activity..."
                         className="w-full mt-2 px-3 py-2.5 rounded-xl border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                        style={{ background: "#0D1230", minHeight: 44 }} />
+                        style={{ background: "#0c1225", minHeight: 44 }} />
                     )}
                   </div>
 
@@ -476,7 +476,7 @@ export default function MagicBeacon() {
                     <div className="flex gap-2">
                       {[{v:"30", l:"30 min"}, {v:"60", l:"1 hour"}, {v:"120", l:"2 hours"}, {v:"close", l:"Until park close"}].map(d => (
                         <button key={d.v} onClick={() => setDuration(d.v as any)}
-                          className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${duration === d.v ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+                          className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${duration === d.v ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground"}`}>
                           {d.l}
                         </button>
                       ))}
@@ -489,8 +489,8 @@ export default function MagicBeacon() {
 
                   <FeatureGate hasAccess={!!access.magicBeaconCreation} featureName="Magic Beacon Creation" requiredPlan="Magic Pass Planner" inline>
                     <button onClick={startBeacon} disabled={!selectedSpot || !beaconTitle.trim() || !beaconActivity || (beaconActivity === "Custom" && !customActivity.trim())}
-                      className="w-full py-4 rounded-2xl font-black text-base text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                      style={{ background: "#F5C842" }}>
+                      className="w-full py-4 rounded-2xl font-black text-base text-[#070b15] disabled:opacity-50 flex items-center justify-center gap-2"
+                      style={{ background: "#F0B429" }}>
                       <Radio className="w-5 h-5" /> Start My Beacon
                     </button>
                   </FeatureGate>

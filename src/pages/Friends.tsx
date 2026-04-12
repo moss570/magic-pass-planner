@@ -255,7 +255,7 @@ export default function Friends() {
                 <p className="text-sm font-semibold text-foreground mb-1">No friends yet</p>
                 <p className="text-xs text-muted-foreground mb-4">Add friends by email or QR code to plan trips together</p>
                 <button onClick={() => setTab("add")}
-                  className="px-5 py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>
+                  className="px-5 py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F0B429" }}>
                   Add Your First Friend →
                 </button>
               </div>
@@ -354,7 +354,7 @@ export default function Friends() {
                   style={{ minHeight: 44 }} />
                 <button onClick={addByEmail} disabled={addLoading || !addEmail.trim()}
                   className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
-                  style={{ background: "#F5C842" }}>
+                  style={{ background: "#F0B429" }}>
                   {addLoading ? "..." : "Send"}
                 </button>
               </div>
@@ -373,7 +373,7 @@ export default function Friends() {
               {!scanning ? (
                 <button onClick={startScanner}
                   className="w-full px-4 py-3 rounded-lg font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
-                  style={{ background: "#F5C842" }}>
+                  style={{ background: "#F0B429" }}>
                   <Camera className="w-4 h-4" /> Open Camera Scanner
                 </button>
               ) : (
@@ -392,7 +392,7 @@ export default function Friends() {
                     style={{ minHeight: 44 }} maxLength={32} />
                   <button onClick={() => addByQR()} disabled={addLoading || !qrInput.trim()}
                     className="px-4 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
-                    style={{ background: "#F5C842" }}>
+                    style={{ background: "#F0B429" }}>
                     {addLoading ? "..." : "Add"}
                   </button>
                 </div>

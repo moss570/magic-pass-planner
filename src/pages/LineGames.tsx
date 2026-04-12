@@ -14,6 +14,7 @@ import GeographyGame from "@/components/GeographyGame";
 import SpyWordGame from "@/components/SpyWordGame";
 import PicturePerfectGame from "@/components/PicturePerfectGame";
 import MysteryCaseGame from "@/components/MysteryCaseGame";
+import GameLauncher from "@/components/GameLauncher";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -87,11 +88,27 @@ const gameParamMap: { [key: string]: string } = {
   "mystery-case": "mystery-case",
 };
 
+
+const GAME_META: { [key: string]: { name: string; emoji: string; gradient: string } } = {
+  "trivia": { name: "Trivia", emoji: "🎓", gradient: "bg-gradient-to-br from-red-500 to-orange-500" },
+  "bingo": { name: "Bingo", emoji: "🎲", gradient: "bg-gradient-to-br from-emerald-400 to-teal-500" },
+  "who-did-it": { name: "Who Did It?", emoji: "🕵️", gradient: "bg-gradient-to-br from-purple-500 to-fuchsia-500" },
+  "would-you-rather": { name: "Would You Rather", emoji: "🤔", gradient: "bg-gradient-to-br from-blue-500 to-indigo-500" },
+  "picture-perfect": { name: "Picture Perfect", emoji: "🎨", gradient: "bg-gradient-to-br from-pink-500 to-rose-500" },
+  "song-lyric": { name: "Song Lyric", emoji: "🎵", gradient: "bg-gradient-to-br from-amber-400 to-red-500" },
+  "geography": { name: "Geography", emoji: "🌍", gradient: "bg-gradient-to-br from-green-500 to-teal-500" },
+  "spy-word": { name: "Spy Word", emoji: "🕵️", gradient: "bg-gradient-to-br from-cyan-400 to-indigo-600" },
+  "haaaa": { name: "HAAAA!", emoji: "😂", gradient: "bg-gradient-to-br from-teal-400 to-emerald-500" },
+  "linemind": { name: "Line Mind", emoji: "🧠", gradient: "bg-gradient-to-br from-violet-500 to-fuchsia-500" },
+  "mystery-case": { name: "Mystery Case", emoji: "🔍", gradient: "bg-gradient-to-br from-amber-500 to-orange-600" },
+};
+
 export default function LineGames() {
   const [searchParams] = useSearchParams();
   const gameParam = searchParams.get("game");
   const mappedGameId = gameParam ? gameParamMap[gameParam] || null : null;
-  const [activeGame, setActiveGame] = useState<string | null>(mappedGameId || null);
+  const [activeGame, setActiveGame] = useState<string | null>(null);
+  const [launchingGame, setLaunchingGame] = useState<string | null>(mappedGameId || null);
   const [isGameDev, setIsGameDev] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -103,52 +120,68 @@ export default function LineGames() {
     });
   }, [user]);
 
+
+  // Show launcher (Solo/Host/Join) before starting any game
+  if (launchingGame && !activeGame) {
+    const meta = GAME_META[launchingGame] || { name: launchingGame, emoji: "🎮", gradient: "bg-gradient-to-br from-gray-500 to-gray-600" };
+    return (
+      <GameLauncher
+        gameType={launchingGame}
+        gameName={meta.name}
+        gameEmoji={meta.emoji}
+        gradient={meta.gradient}
+        onStartSolo={() => setActiveGame(launchingGame)}
+        onClose={() => { setLaunchingGame(null); navigate("/games"); }}
+      />
+    );
+  }
+
   if (activeGame === "where-am-i") {
-    return <WhereAmI onClose={() => setActiveGame(null)} />;
+    return <WhereAmI onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "trivia") {
-    return <DisneyTrivia onClose={() => setActiveGame(null)} />;
+    return <DisneyTrivia onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "linemind") {
-    return <LineMind onClose={() => setActiveGame(null)} />;
+    return <LineMind onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "haaaa") {
-    return <HaaaaGame onClose={() => setActiveGame(null)} />;
+    return <HaaaaGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "bingo") {
-    return <BingoGame onClose={() => setActiveGame(null)} />;
+    return <BingoGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "who-did-it") {
-    return <WhoDidItGame onClose={() => setActiveGame(null)} />;
+    return <WhoDidItGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "would-you-rather") {
-    return <WouldYouRatherGame onClose={() => setActiveGame(null)} />;
+    return <WouldYouRatherGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "song-lyric") {
-    return <SongLyricGame onClose={() => setActiveGame(null)} />;
+    return <SongLyricGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "geography") {
-    return <GeographyGame onClose={() => setActiveGame(null)} />;
+    return <GeographyGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "spy-word") {
-    return <SpyWordGame onClose={() => setActiveGame(null)} />;
+    return <SpyWordGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "picture-perfect") {
-    return <PicturePerfectGame onClose={() => setActiveGame(null)} />;
+    return <PicturePerfectGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   if (activeGame === "mystery-case") {
-    return <MysteryCaseGame onClose={() => setActiveGame(null)} />;
+    return <MysteryCaseGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
   }
 
   return (

@@ -193,7 +193,7 @@ export default function LineMind({ onClose }: LineWindProps) {
   // ── MENU ──
   if (phase === "menu") {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: "#080E1E" }}>
+      <div className="min-h-screen flex flex-col" style={{ background: "#070b15" }}>
         <div className="flex items-center gap-3 p-4 border-b border-white/10">
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10">
             <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -248,8 +248,8 @@ export default function LineMind({ onClose }: LineWindProps) {
           <button
             onClick={startGame}
             disabled={words.length === 0}
-            className="w-full max-w-sm py-4 rounded-2xl font-black text-lg text-[#080E1E] disabled:opacity-50 transition-transform active:scale-[0.97]"
-            style={{ background: "#F5C842" }}
+            className="w-full max-w-sm py-4 rounded-2xl font-black text-lg text-[#070b15] disabled:opacity-50 transition-transform active:scale-[0.97]"
+            style={{ background: "#F0B429" }}
           >
             {words.length === 0 ? "Loading..." : `Start (${words.length} words)`}
           </button>
@@ -261,7 +261,7 @@ export default function LineMind({ onClose }: LineWindProps) {
   // ── COUNTDOWN ──
   if (phase === "countdown") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#080E1E" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: "#070b15" }}>
         <Smartphone className="w-16 h-16 text-primary mb-6 animate-bounce" />
         <div className="text-8xl font-black text-primary mb-4">{countdown || "GO!"}</div>
         <p className="text-lg text-muted-foreground font-semibold animate-pulse">
@@ -278,7 +278,7 @@ export default function LineMind({ onClose }: LineWindProps) {
       <div
         className="min-h-screen flex flex-col items-center justify-center relative transition-colors duration-200"
         style={{
-          background: flash === "green" ? "#166534" : flash === "red" ? "#991b1b" : "#080E1E",
+          background: flash === "green" ? "#166534" : flash === "red" ? "#991b1b" : "#070b15",
         }}
       >
         {/* Timer */}
@@ -332,7 +332,7 @@ export default function LineMind({ onClose }: LineWindProps) {
 
   // ── GAME OVER ──
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#080E1E" }}>
+    <div className="min-h-screen flex flex-col" style={{ background: "#070b15" }}>
       <div className="flex items-center gap-3 p-4 border-b border-white/10">
         <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10">
           <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -392,8 +392,8 @@ export default function LineMind({ onClose }: LineWindProps) {
           </button>
           <button
             onClick={onClose}
-            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-[#080E1E]"
-            style={{ background: "#F5C842" }}
+            className="flex-1 py-3.5 rounded-2xl font-bold text-sm text-[#070b15]"
+            style={{ background: "#F0B429" }}
           >
             Back to Games
           </button>

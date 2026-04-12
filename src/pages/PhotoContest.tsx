@@ -162,7 +162,7 @@ export default function PhotoContest() {
         <div className="flex gap-3">
           <button onClick={() => setShowUpload(s => !s)}
             className="flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
-            style={{ background: "#F5C842", color: "#080E1E" }}>
+            style={{ background: "#F0B429", color: "#070b15" }}>
             <Camera className="w-4 h-4" /> {showUpload ? "Cancel" : "Submit Your Photo"}
           </button>
         </div>
@@ -171,7 +171,7 @@ export default function PhotoContest() {
         <div className="flex gap-2 overflow-x-auto pb-1">
           {[{ id: "all", label: "All Photos" }, ...PHOTO_TYPES.map(t => ({ id: t.id, label: t.label }))].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${filter === f.id ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground"}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap shrink-0 transition-colors border ${filter === f.id ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground"}`}>
               {f.label}
             </button>
           ))}
@@ -239,9 +239,9 @@ export default function PhotoContest() {
                 style={{ background: "var(--muted)" }} />
 
               <button onClick={submitPhoto} disabled={uploading || !selectedFile || !title.trim()}
-                className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: "#F5C842" }}>
-                {uploading ? <><span className="w-4 h-4 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Submitting...</> : <><Upload className="w-4 h-4" /> Submit Photo</>}
+                className="w-full py-3 rounded-xl font-bold text-sm text-[#070b15] disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: "#F0B429" }}>
+                {uploading ? <><span className="w-4 h-4 rounded-full border-2 border-[#070b15] border-t-transparent animate-spin" /> Submitting...</> : <><Upload className="w-4 h-4" /> Submit Photo</>}
               </button>
             </div>
           </div>
@@ -255,7 +255,7 @@ export default function PhotoContest() {
             <Sparkles className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm font-semibold text-foreground mb-2">No photos yet!</p>
             <p className="text-xs text-muted-foreground mb-4">Be the first to share a fireworks ride shot or Disney sunset photo.</p>
-            <button onClick={() => setShowUpload(true)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+            <button onClick={() => setShowUpload(true)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
               Submit the First Photo →
             </button>
           </div>
@@ -269,7 +269,7 @@ export default function PhotoContest() {
                   <div className="relative">
                     <img src={photo.image_url} className="w-full object-cover" alt={photo.title} loading="lazy" onError={e => (e.currentTarget.style.display='none')} />
                     {photo.is_featured && (
-                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-400/90 text-[#080E1E] text-xs font-bold">⭐ Featured</div>
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-yellow-400/90 text-[#070b15] text-xs font-bold">⭐ Featured</div>
                     )}
                     <span className="absolute top-2 right-2 text-lg">{typeLabel.split(" ")[0]}</span>
                   </div>

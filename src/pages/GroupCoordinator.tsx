@@ -137,7 +137,7 @@ export default function GroupCoordinator() {
             <Map className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-sm font-semibold text-foreground mb-2">No trips yet</p>
             <p className="text-xs text-muted-foreground mb-6">Create a trip in Trip Planner to coordinate with your group</p>
-            <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[var(--background)] inline-block" style={{ background: "#F5C842" }}>
+            <Link to="/trip-planner" className="px-6 py-2.5 rounded-xl font-bold text-sm text-[var(--background)] inline-block" style={{ background: "#F0B429" }}>
               Plan a Trip →
             </Link>
           </div>
@@ -317,7 +317,7 @@ export default function GroupCoordinator() {
               <div className="space-y-4">
                 <button onClick={() => setShowPollForm(s => !s)}
                   className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2"
-                  style={{ background: "#F5C842" }}>
+                  style={{ background: "#F0B429" }}>
                   <Plus className="w-4 h-4" /> Create Group Poll
                 </button>
 
@@ -331,7 +331,7 @@ export default function GroupCoordinator() {
                         className="w-full px-3 py-2 rounded-lg bg-[var(--muted)] border border-white/10 text-sm text-foreground mb-2 focus:outline-none focus:border-primary/40" />
                     ))}
                     <button onClick={() => setPollOptions(p => [...p, ""])} className="text-xs text-primary hover:underline mb-3 block">+ Add option</button>
-                    <button onClick={createPoll} className="w-full py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F5C842" }}>Create Poll</button>
+                    <button onClick={createPoll} className="w-full py-2 rounded-xl font-bold text-sm text-[var(--background)]" style={{ background: "#F0B429" }}>Create Poll</button>
                   </div>
                 )}
 
@@ -361,7 +361,7 @@ export default function GroupCoordinator() {
                                   <span className="text-muted-foreground">{opt.votes} vote{opt.votes !== 1 ? "s" : ""} {isLeading && "🏆"}</span>
                                 </div>
                                 <div className="w-full bg-white/5 rounded-full h-1.5">
-                                  <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, background: isLeading ? "#F5C842" : "#7C3AED" }} />
+                                  <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, background: isLeading ? "#F0B429" : "#7C3AED" }} />
                                 </div>
                               </div>
                             </button>

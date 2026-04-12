@@ -170,7 +170,7 @@ export default function CarFinder() {
   const isClose = distance !== null && distance < 30;
 
   // Arrow color based on accuracy
-  const arrowColor = isClose ? "#10B981" : distance !== null && distance < 100 ? "#F5C842" : "#F43F5E";
+  const arrowColor = isClose ? "#10B981" : distance !== null && distance < 100 ? "#F0B429" : "#F43F5E";
 
   const lots = PARKING_AREAS[selectedPark] || [];
 
@@ -200,7 +200,7 @@ export default function CarFinder() {
             <p className="text-sm font-semibold text-foreground mb-1">No car location saved</p>
             <p className="text-xs text-muted-foreground mb-4">Save your parking spot when you arrive so you can find your way back</p>
             <button onClick={() => setMode("save")}
-              className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>
+              className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>
               📍 Save My Car Location
             </button>
           </div>
@@ -213,7 +213,7 @@ export default function CarFinder() {
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Which park?</label>
               <select value={selectedPark} onChange={e => { setSelectedPark(e.target.value); setSelectedLot(""); }}
                 className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none"
-                style={{ background: "#0D1230", minHeight: 44 }}>
+                style={{ background: "#0c1225", minHeight: 44 }}>
                 {Object.keys(PARKING_AREAS).map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
@@ -223,7 +223,7 @@ export default function CarFinder() {
               <div className="grid grid-cols-2 gap-1.5">
                 {lots.map(lot => (
                   <button key={lot.name} onClick={() => setSelectedLot(lot.name)}
-                    className={`py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all ${selectedLot === lot.name ? "bg-primary text-[#080E1E] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
+                    className={`py-2 px-3 rounded-lg text-xs font-semibold border text-left transition-all ${selectedLot === lot.name ? "bg-primary text-[#070b15] border-primary" : "border-white/10 text-muted-foreground hover:border-primary/40"}`}>
                     {lot.name}
                   </button>
                 ))}
@@ -234,14 +234,14 @@ export default function CarFinder() {
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Row number</label>
               <input value={rowNumber} onChange={e => setRowNumber(e.target.value)} placeholder="e.g. 15, A15, Row 15"
                 className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                style={{ background: "#0D1230", minHeight: 44 }} />
+                style={{ background: "#0c1225", minHeight: 44 }} />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Additional notes (optional)</label>
               <input value={areaNote} onChange={e => setAreaNote(e.target.value)} placeholder="e.g. Near the lamp post, blue pickup truck"
                 className="w-full px-3 py-2.5 rounded-lg border border-white/10 text-sm text-foreground focus:outline-none focus:border-primary/40"
-                style={{ background: "#0D1230", minHeight: 44 }} />
+                style={{ background: "#0c1225", minHeight: 44 }} />
             </div>
 
             <div className="flex gap-2">
@@ -249,9 +249,9 @@ export default function CarFinder() {
                 Cancel
               </button>
               <button onClick={saveCar} disabled={gpsLoading || !selectedLot}
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-[#080E1E] disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: "#F5C842" }}>
-                {gpsLoading ? <><span className="w-4 h-4 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Getting GPS...</> : <><MapPin className="w-4 h-4" /> Save Location</>}
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm text-[#070b15] disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ background: "#F0B429" }}>
+                {gpsLoading ? <><span className="w-4 h-4 rounded-full border-2 border-[#070b15] border-t-transparent animate-spin" /> Getting GPS...</> : <><MapPin className="w-4 h-4" /> Save Location</>}
               </button>
             </div>
           </div>
@@ -274,8 +274,8 @@ export default function CarFinder() {
               </div>
             </div>
             <button onClick={() => setMode("finding")}
-              className="w-full py-3 rounded-xl font-bold text-sm text-[#080E1E] flex items-center justify-center gap-2"
-              style={{ background: "#F5C842" }}>
+              className="w-full py-3 rounded-xl font-bold text-sm text-[#070b15] flex items-center justify-center gap-2"
+              style={{ background: "#F0B429" }}>
               <Navigation className="w-4 h-4" /> Find My Car
             </button>
           </div>
@@ -312,7 +312,7 @@ export default function CarFinder() {
             {!isClose && (
               <div className="flex flex-col items-center">
                 <div className="w-32 h-32 rounded-full border-2 border-primary/30 flex items-center justify-center relative"
-                  style={{ background: "#0D1230" }}>
+                  style={{ background: "#0c1225" }}>
                   {/* Cardinal labels */}
                   <span className="absolute top-2 text-xs text-muted-foreground font-bold">N</span>
                   <span className="absolute bottom-2 text-xs text-muted-foreground font-bold">S</span>

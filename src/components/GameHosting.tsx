@@ -68,7 +68,7 @@ export default function GameHosting({ gameType, gameName, onStart, onClose }: Ga
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080E1E] via-[#0D1230] to-[#080E1E] p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#070b15] via-[#0c1225] to-[#070b15] p-4">
       <div className="max-w-md mx-auto">
         <button onClick={onClose} className="flex items-center gap-2 text-white/60 hover:text-white mb-6">
           <ArrowLeft className="w-5 h-5" /> Back
@@ -153,7 +153,7 @@ export function JoinGame({ joinCode, onJoined, onClose }: { joinCode: string; on
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#080E1E] via-[#0D1230] to-[#080E1E] p-4 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#070b15] via-[#0c1225] to-[#070b15] p-4 flex items-center justify-center">
       <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
         className="max-w-md w-full p-6 rounded-2xl bg-card border border-primary/20">
         <h1 className="text-2xl font-bold text-white text-center mb-2">Join Game</h1>

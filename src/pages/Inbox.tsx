@@ -325,7 +325,7 @@ export default function Inbox() {
                             {isDiningAlert && msg.reference_id && (
                               <a href={msg.reference_id} target="_blank" rel="noopener noreferrer"
                                 className="mt-2 inline-block px-3 py-1.5 rounded-lg text-xs font-bold text-[var(--background)]"
-                                style={{ background: "#F5C842" }}>
+                                style={{ background: "#F0B429" }}>
                                 Book Now →
                               </a>
                             )}
@@ -353,7 +353,7 @@ export default function Inbox() {
                         onClick={sendMessage}
                         disabled={sending || !replyText.trim()}
                         className="px-4 py-2 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
-                        style={{ background: "#F5C842" }}
+                        style={{ background: "#F0B429" }}
                       >
                         {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       </button>

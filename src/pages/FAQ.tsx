@@ -223,7 +223,7 @@ export default function FAQ() {
           <a
             href="mailto:support@magicpassplus.com"
             className="inline-block px-6 py-2.5 rounded-lg font-bold text-sm text-[var(--background)]"
-            style={{ background: "#F5C842" }}
+            style={{ background: "#F0B429" }}
           >
             Contact Support →
           </a>

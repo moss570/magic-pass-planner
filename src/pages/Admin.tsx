@@ -517,7 +517,7 @@ export default function Admin() {
           </div>
           <button onClick={sendVipInvite} disabled={sendingInvite || !vipEmail}
             className="px-6 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] mb-5 disabled:opacity-50"
-            style={{ background: "#F5C842" }}>
+            style={{ background: "#F0B429" }}>
             {sendingInvite ? "Sending..." : "🎁 Send VIP Invite"}
           </button>
 
@@ -733,7 +733,7 @@ export default function Admin() {
           <button
             onClick={saveNotes}
             className="mt-2 px-5 py-2 rounded-lg font-bold text-sm text-[var(--background)]"
-            style={{ background: "#F5C842" }}
+            style={{ background: "#F0B429" }}
           >
             Save Notes
           </button>

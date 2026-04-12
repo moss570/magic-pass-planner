@@ -228,7 +228,7 @@ export default function EventAlerts() {
         <AlertLimitBanner limit={eventLimit} currentCount={activeAlerts.length} alertTypeName="Event Alerts" />
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
-        <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F5C842" }}>
+        <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F0B429" }}>
           <h2 className="text-base font-bold text-foreground mb-4">🔔 Set a New Alert</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,7 +371,7 @@ export default function EventAlerts() {
             onClick={handleCreateAlert}
             disabled={submitting || !selectedEvent || !date || !canAddAlert}
             className="mt-5 w-full py-3 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: "#F5C842" }}
+            style={{ background: "#F0B429" }}
           >
             {submitting ? "Creating Alert..." : "🎪 Start Watching This Event"}
           </button>
@@ -453,7 +453,7 @@ export default function EventAlerts() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-bold text-sm text-[var(--background)] transition-opacity hover:opacity-90"
-                        style={{ background: "#F5C842" }}
+                        style={{ background: "#F0B429" }}
                       >
                         🎪 Book This Event →
                         <ExternalLink className="w-3.5 h-3.5" />

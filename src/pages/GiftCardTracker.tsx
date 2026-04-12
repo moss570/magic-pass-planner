@@ -132,7 +132,7 @@ export default function GiftCardTracker() {
                     <div className="px-4 pb-4">
                       <a href={deal.deal_url} target="_blank" rel="noopener noreferrer"
                         className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                        style={{ background: "#F5C842" }}>
+                        style={{ background: "#F0B429" }}>
                         🛒 Shop This Deal <ExternalLink className="w-3.5 h-3.5" />
                       </a>
                     </div>
@@ -190,7 +190,7 @@ export default function GiftCardTracker() {
           </div>
           <button onClick={saveAlert} disabled={settingAlert}
             className="w-full py-2.5 rounded-xl font-bold text-sm text-[var(--background)] disabled:opacity-60"
-            style={{ background: "#F5C842" }}>
+            style={{ background: "#F0B429" }}>
             {settingAlert ? "Saving..." : alertPrefs.active ? "✅ Update Alert Settings" : "🔔 Set Alert"}
           </button>
         </div>

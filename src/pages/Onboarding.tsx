@@ -146,7 +146,7 @@ const Onboarding = () => {
 
       toast.success(`🎉 Welcome to Magic Pass Plus, ${firstName.trim()}!`, {
         duration: 5000,
-        style: { background: "#F5C842", color: "#080E1E", border: "none", fontWeight: 600 },
+        style: { background: "#F0B429", color: "#070b15", border: "none", fontWeight: 600 },
       });
       navigate("/dashboard", { replace: true });
     } catch (err) {

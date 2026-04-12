@@ -158,7 +158,7 @@ export default function GameDeveloper() {
         <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
         <p className="text-sm font-semibold text-foreground mb-2">Game Developer Access Required</p>
         <p className="text-xs text-muted-foreground mb-6">This mode is only available to designated Game Developers. Contact Brandon to get access.</p>
-        <button onClick={() => navigate("/live-park")} className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#080E1E]" style={{ background: "#F5C842" }}>Back to Live Park →</button>
+        <button onClick={() => navigate("/live-park")} className="px-6 py-2.5 rounded-xl font-bold text-sm text-[#070b15]" style={{ background: "#F0B429" }}>Back to Live Park →</button>
       </div>
     </DashboardLayout>
   );
@@ -276,8 +276,8 @@ export default function GameDeveloper() {
         {/* Submit button */}
         <button onClick={submitContent} disabled={submitting || !selectedImage || !title.trim()}
           className="w-full py-4 rounded-2xl font-bold text-lg disabled:opacity-50 flex items-center justify-center gap-2"
-          style={{ background: "#F5C842", color: "#080E1E" }}>
-          {submitting ? <><span className="w-5 h-5 rounded-full border-2 border-[#080E1E] border-t-transparent animate-spin" /> Submitting...</> : <><Upload className="w-5 h-5" /> Submit for Review</>}
+          style={{ background: "#F0B429", color: "#070b15" }}>
+          {submitting ? <><span className="w-5 h-5 rounded-full border-2 border-[#070b15] border-t-transparent animate-spin" /> Submitting...</> : <><Upload className="w-5 h-5" /> Submit for Review</>}
         </button>
         <p className="text-xs text-muted-foreground text-center">Your submission will be reviewed by an admin before going live in the game</p>
 

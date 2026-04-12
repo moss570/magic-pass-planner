@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const SLIDES = [
   {
     icon: "🏰",
-    color: "#F5C842",
+    color: "#F0B429",
     title: "Welcome to Magic Pass Plus!",
     subtitle: "Your complete Disney World command center",
     body: "Plan smarter, save more, and enjoy every minute. Here's how to get the most out of Magic Pass Plus.",
@@ -115,7 +115,7 @@ export default function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
         <div className="px-6 pb-8">
           <button onClick={next} disabled={completing}
             className="w-full py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-98"
-            style={{ background: current.color, color: "#080E1E" }}>
+            style={{ background: current.color, color: "#070b15" }}>
             {completing ? "Getting started..." : isLast ? "🚀 Let's Go!" : <>Next <ChevronRight className="w-5 h-5" /></>}
           </button>
           {!isLast && (

@@ -12,7 +12,7 @@ interface FeatureTipProps {
   accent?: string;       // color
 }
 
-export function FeatureTip({ id, title, body, position = "bottom", showOnce = true, accent = "#F5C842" }: FeatureTipProps) {
+export function FeatureTip({ id, title, body, position = "bottom", showOnce = true, accent = "#F0B429" }: FeatureTipProps) {
   const { session } = useAuth();
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -75,7 +75,7 @@ export function FeatureTip({ id, title, body, position = "bottom", showOnce = tr
 }
 
 // Inline contextual tip bar (for empty states or first visit)
-export function TipBar({ icon, title, body, cta, onCta, accent = "#F5C842" }: {
+export function TipBar({ icon, title, body, cta, onCta, accent = "#F0B429" }: {
   icon: string; title: string; body: string; cta?: string; onCta?: () => void; accent?: string;
 }) {
   const [dismissed, setDismissed] = useState(false);
