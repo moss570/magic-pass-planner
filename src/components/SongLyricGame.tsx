@@ -49,9 +49,10 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
   if (gameOver) {
     return (
       <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
-      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-20 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" />
-      </div>
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-20 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" />
+        </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
           className="text-center p-8 rounded-xl bg-black/40 border border-yellow-500/30 max-w-md w-full">
           <ConfettiEffect trigger={score >= 200} />
@@ -66,7 +67,8 @@ export default function SongLyricGame({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
-      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
+      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" />
         <div className="absolute bottom-20 right-1/4 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-orange-400" />
       </div>

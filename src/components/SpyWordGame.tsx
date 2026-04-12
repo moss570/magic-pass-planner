@@ -35,7 +35,8 @@ export default function SpyWordGame({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
-      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
+      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-cyan-500" />
         <div className="absolute bottom-20 right-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-blue-400" />
       </div>
