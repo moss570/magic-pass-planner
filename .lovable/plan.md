@@ -1,62 +1,45 @@
 
 
-## Master User Management Screen for Admin Console
+## Add "Pause" Functionality to All Alert Types
 
-### Summary
-Add a new "Users" tab/page to the Admin Console that provides a searchable, sortable table of all users with key metrics, plus actions to manage their accounts.
+### Problem
+The FAQ promises users can pause alerts, but no pause button or status exists anywhere in the alert system.
 
-### What the Admin Will See
+### What needs to happen
 
-A full-width data table with these columns:
-- **User** (email, name, avatar)
-- **Membership Tier** (plan_name from subscriptions)
-- **Status** (active, trialing, canceled, none)
-- **Billing Interval** (monthly/annual/one_time)
-- **Lifetime Revenue** (computed from Stripe invoices paid, or estimated from subscription history)
-- **Last Active** (updated_at from users_profile or last subscription activity)
-- **Active Alerts** (count of dining + event + hotel + airfare alerts in "watching" status)
-- **Actions**: Upgrade/Downgrade dropdown, Delete Account button, View Errors button
+1. **Add `paused` status** to all alert types (Dining, Event, Hotel, Airfare) — update the status union type in each alert page and the edge functions that process them.
 
-**Search**: Filter by email, name, or plan name
-**Sort**: Click column headers to sort by any column
-**Filters**: Dropdown chips for tier and status
+2. **Add Pause/Resume button** to each alert card on:
+   - `src/pages/DiningAlerts.tsx`
+   - `src/pages/EventAlerts.tsx`
+   - `src/pages/HotelAlerts.tsx`
+   - `src/pages/AirfareTracker.tsx`
 
-### Actions per User
+3. **Edge function updates** — each alert's polling/check edge function must skip alerts with `status = 'paused'`:
+   - `supabase/functions/dining-availability-check/index.ts`
+   - `supabase/functions/event-availability-check/index.ts`
+   - `supabase/functions/hotel-price-check/index.ts`
+   - `supabase/functions/airfare-price-check/index.ts`
 
-1. **Upgrade/Downgrade** -- A select dropdown showing all plan tiers. On change, calls an edge function that updates the `subscriptions` table directly (admin override, not Stripe-driven). For Stripe-managed subs, updates the Stripe subscription via the existing `update_subscription` tool pattern.
+4. **Exclude paused from active count** — update `useAlertLimitGuard` and the counting logic in each page so `paused` alerts don't count toward the limit (matching what the FAQ promises).
 
-2. **Delete All Data** -- Calls an edge function (`admin-user-manage`) that cascades deletes across: `dining_alerts`, `event_alerts`, `hotel_alerts`, `airfare_alerts`, `ap_hotel_alerts`, `ap_merch_alerts`, `saved_trips`, `trip_versions`, `social_posts`, `messages`, `game_sessions`, `reservations_inbox`, `gift_card_alerts`, `users_profile`, and `subscriptions`. Requires confirmation dialog.
+5. **Database migration** — if alert status is stored as an enum, add `paused` to it. If stored as text, no migration needed.
 
-3. **View Errors** -- Opens a drawer/modal that queries `dining_notifications` and `event_notifications` for that user where `delivery_status = 'failed'`, plus any edge function logs if available.
+6. **UI behavior**: Pause button (⏸) on watching/found alerts. Resume button (▶) on paused alerts. Paused cards get a muted/dimmed visual treatment.
 
-### Files
+### Files to create/edit
+- **Edit**: `src/pages/DiningAlerts.tsx` — add pause/resume button, add `paused` to status type, exclude from active count
+- **Edit**: `src/pages/EventAlerts.tsx` — same
+- **Edit**: `src/pages/HotelAlerts.tsx` — same
+- **Edit**: `src/pages/AirfareTracker.tsx` — same
+- **Edit**: `supabase/functions/dining-availability-check/index.ts` — skip paused
+- **Edit**: `supabase/functions/event-availability-check/index.ts` — skip paused
+- **Edit**: `supabase/functions/hotel-price-check/index.ts` — skip paused
+- **Edit**: `supabase/functions/airfare-price-check/index.ts` — skip paused
+- **Migration** (if needed): Add `paused` to any status enum columns
 
-1. **New edge function**: `supabase/functions/admin-user-manage/index.ts`
-   - Actions: `list-users`, `delete-user-data`, `update-tier`, `user-errors`
-   - `list-users`: Joins `users_profile` with `subscriptions` and counts alerts across all alert tables
-   - `delete-user-data`: Cascading delete from all user-owned tables
-   - `update-tier`: Upserts `subscriptions` row with new plan_name/status
-   - `user-errors`: Queries failed notifications for the user
-   - Admin-only auth check (same email list)
-
-2. **New component**: `src/components/admin/UserManager.tsx`
-   - Renders the searchable/sortable table
-   - Upgrade/downgrade select per row
-   - Delete confirmation dialog (AlertDialog)
-   - Error viewer drawer
-
-3. **New page**: `src/pages/admin/UserManager.tsx`
-   - Wrapper with admin auth guard, renders `UserManager` component
-
-4. **Edit**: `src/App.tsx` -- Add route `/admin/users`
-5. **Edit**: `src/pages/Admin.tsx` -- Add "👥 Users" nav link in header
-
-### Technical Details
-
-- The edge function uses `SUPABASE_SERVICE_ROLE_KEY` to query across all users (bypassing RLS)
-- Alert counts use `COUNT(*)` with `status = 'watching'` across dining_alerts, event_alerts, hotel_alerts, airfare_alerts
-- Lifetime revenue is estimated from subscription duration and plan price (exact Stripe revenue would require API calls per user which is too slow for a list view)
-- Last active date uses `users_profile.created_at` as baseline, with `subscriptions.updated_at` as a proxy for recent activity
-- Delete action does NOT delete the auth.users row (that requires Supabase dashboard); it only purges application data
-- Pagination: initial load of 100 users, with "Load More" button
+### Technical notes
+- Pause/resume is a simple PATCH to the existing alert edge function, setting `status = 'paused'` or `status = 'watching'`
+- Active count filters: `alerts.filter(a => a.status === 'watching').length` (already excludes paused)
+- Paused alerts appear in a "Paused" tab or grouped under the existing tabs with a visual indicator
 
