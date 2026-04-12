@@ -224,7 +224,7 @@ function ResultsView({
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
   onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
-  lodging, startDate, endDate, adults, children,
+  lodging, startDate, endDate, adults, children, mode,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -258,6 +258,7 @@ function ResultsView({
   endDate?: string;
   adults?: number;
   children?: number;
+  mode?: string;
 }) {
   const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
@@ -368,8 +369,8 @@ function ResultsView({
         )}
       </div>
 
-      {/* Off-site hotel suggestions */}
-      {!resortStay && lodging !== 'disney-resort' && (
+      {/* Off-site hotel suggestions — hide for day trips */}
+      {!resortStay && lodging !== 'disney-resort' && mode !== 'day-trip' && (
         <HotelSuggestions
           lodging={lodging || ''}
           startDate={startDate || ''}
@@ -897,6 +898,7 @@ function TripPlannerWizard() {
           endDate={draft.endDate}
           adults={draft.adults}
           children={draft.children}
+          mode={draft.mode}
         />
       </DashboardLayout>
     );
