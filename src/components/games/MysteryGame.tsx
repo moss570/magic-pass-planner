@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Search, MapPin, MessageCircle, Vote, Lightbulb, Trophy, Clock, Users, ChevronRight, Star, Eye, BookOpen, AlertTriangle } from "lucide-react";
 import ConfettiEffect from "@/components/ConfettiEffect";
 
@@ -129,7 +130,9 @@ interface Props {
   playerName?: string;
 }
 
-export default function MysteryGame({ onClose, duration = "all_day", playerName = "Detective" }: Props) {
+export default function MysteryGame({ onClose, duration: initialDuration = "all_day", playerName = "Detective" }: Props) {
+  const [duration, setDuration] = useState(initialDuration);
+  const [role, setRole] = useState<"lead_detective" | "evidence_analyst" | "suspect_expert">("lead_detective");
   const [mystery, setMystery] = useState<MysteryData | null>(null);
   const [phase, setPhase] = useState<"loading" | "intro" | "act1" | "act2" | "act3" | "act4" | "voting" | "results">("loading");
   const [currentAct, setCurrentAct] = useState(1);
@@ -148,12 +151,38 @@ export default function MysteryGame({ onClose, duration = "all_day", playerName 
   const [startTime] = useState(Date.now());
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // ─── Initialize ──────────────────────────────────────────
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState("");
+
+  // ─── Initialize — Try GPT-4, fallback to static ─────────
   useEffect(() => {
-    // Use fallback mystery (GPT-4 generation happens on server in multiplayer mode)
-    setMystery(FALLBACK_MYSTERY);
-    setPhase("intro");
-  }, []);
+    const generateMystery = async () => {
+      setGenerating(true);
+      setGenError("");
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-mystery", {
+          body: { duration },
+        });
+
+        if (error) throw error;
+        if (data?.mystery) {
+          setMystery(data.mystery);
+          setPhase("intro");
+          return;
+        }
+        throw new Error("No mystery data returned");
+      } catch (err: any) {
+        console.error("GPT-4 mystery generation failed, using fallback:", err);
+        setGenError("Using pre-written mystery (AI generation unavailable)");
+        setMystery(FALLBACK_MYSTERY);
+        setPhase("intro");
+      } finally {
+        setGenerating(false);
+      }
+    };
+
+    generateMystery();
+  }, [duration]);
 
   // ─── Reveal Clue ─────────────────────────────────────────
   const revealClue = (clueId: string) => {
@@ -230,7 +259,22 @@ export default function MysteryGame({ onClose, duration = "all_day", playerName 
     }
   };
 
-  if (!mystery) return <div className="min-h-screen bg-[#060a14] flex items-center justify-center"><p className="text-white/50">Loading mystery...</p></div>;
+  if (!mystery || generating) return (
+    <div className="min-h-screen bg-[#060a14] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center max-w-sm">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+          className="text-6xl mb-6 inline-block">🔮</motion.div>
+        <h2 className="text-2xl font-black text-white mb-2">Generating Your Mystery...</h2>
+        <p className="text-white/40 text-sm mb-4">AI is crafting a unique case just for you. This takes 15-30 seconds.</p>
+        <div className="w-48 h-1.5 bg-white/10 rounded-full mx-auto overflow-hidden">
+          <motion.div className="h-full bg-gradient-to-r from-amber-500 to-red-500 rounded-full"
+            animate={{ x: ["-100%", "100%"] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} />
+        </div>
+        {genError && <p className="text-amber-400 text-xs mt-4">{genError}</p>}
+        <button onClick={onClose} className="mt-6 text-white/30 text-sm hover:text-white">← Cancel</button>
+      </motion.div>
+    </div>
+  );
 
   // ─── INTRO SCREEN ────────────────────────────────────────
   if (phase === "intro") {
