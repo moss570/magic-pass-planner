@@ -15,11 +15,16 @@ import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Link, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { PLANS, type PlanId } from "@/lib/stripe";
+
+const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrbmVsaHJtZ3NwdXp0ZWhldHBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzcyNzgsImV4cCI6MjA5MDgxMzI3OH0.vjT4Iun32HsCfoO7nVnfzLBnJy-Lye6N9ZryBbWuAjo";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -51,7 +56,19 @@ const Settings = () => {
   const [savingAccount, setSavingAccount] = useState(false);
   const [savingDisney, setSavingDisney] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const { subscription } = useSubscription();
+  const { subscription, planId, planName, billingInterval, periodEnd, subscribed, refresh: refreshSubscription } = useSubscription();
+
+  // Cancel subscription dialog state
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showFinalCancel, setShowFinalCancel] = useState(false);
+  const [cancellingSubscription, setCancellingSubscription] = useState(false);
+
+  // Delete account dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // Manage billing loading
+  const [loadingBilling, setLoadingBilling] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -150,6 +167,103 @@ const Settings = () => {
     }
   };
 
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${session?.access_token}`,
+    "x-client-authorization": `Bearer ${session?.access_token}`,
+    "apikey": SUPABASE_ANON_KEY,
+  });
+
+  const handleManageBilling = async () => {
+    if (!session) return;
+    setLoadingBilling(true);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/customer-portal`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.open(data.url, "_blank");
+      } else {
+        toast.error(data.error || "Could not open billing portal");
+      }
+    } catch {
+      toast.error("Failed to open billing portal");
+    } finally {
+      setLoadingBilling(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!session) return;
+    setCancellingSubscription(true);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/cancel-subscription`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Subscription cancelled. You'll keep access until the end of your billing period.");
+        setShowFinalCancel(false);
+        setShowCancelDialog(false);
+        refreshSubscription();
+      } else {
+        toast.error(data.error || "Cancellation failed");
+      }
+    } catch {
+      toast.error("Cancellation failed — please try again");
+    } finally {
+      setCancellingSubscription(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!session) return;
+    setDeletingAccount(true);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/delete-account`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Account deleted. We're sorry to see you go.");
+        await supabase.auth.signOut();
+        navigate("/");
+      } else {
+        toast.error(data.error || "Account deletion failed");
+      }
+    } catch {
+      toast.error("Account deletion failed — please try again");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
+  const handleRequestExport = async () => {
+    if (!user) return;
+    const { data: profile } = await supabase.from("users_profile").select("*").eq("id", user.id).single();
+    const { data: trips } = await supabase.from("saved_trips").select("*").eq("user_id", user.id);
+    const exportData = { profile, trips, exported_at: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `magic-pass-data-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Data export downloaded!");
+  };
+
+  // Get current plan display info
+  const currentPlan = PLANS[planId];
+  const planDisplayName = currentPlan?.displayName || planName || "Free";
+
   return (
     <DashboardLayout title="⚙️ Settings" subtitle="Manage your account, subscription, and notification preferences">
       {/* Section 1: My Account */}
@@ -226,7 +340,7 @@ const Settings = () => {
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           {(() => {
-            if (!subscription?.subscribed) {
+            if (!subscribed) {
               return (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <p className="text-sm text-muted-foreground">No active plan · Free trial available</p>
@@ -236,72 +350,145 @@ const Settings = () => {
                 </div>
               );
             }
-            const status = subscription.status;
-            const trialEnd = subscription.trial_end ? new Date(subscription.trial_end) : null;
-            const periodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
+            const status = subscription?.status;
+            const trialEnd = subscription?.trial_end ? new Date(subscription.trial_end) : null;
+            const pEnd = periodEnd ? new Date(periodEnd) : null;
             const daysLeft = trialEnd ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86400000)) : 0;
 
             return (
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <span className="inline-flex items-center gap-1.5 bg-primary/15 text-primary text-xs font-semibold px-3 py-1.5 rounded-full w-fit">
-                    <Castle className="w-3 h-3" /> {subscription.plan_name || "Magic Pass Plan"}
+                    <Castle className="w-3 h-3" /> {planDisplayName}
                   </span>
                   <div>
+                    {billingInterval && (
+                      <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full mr-2">
+                        {billingInterval === 'annual' ? 'Annual' : billingInterval === 'monthly' ? 'Monthly' : 'One-Time'}
+                      </span>
+                    )}
                     {status === "trialing" && (
-                      <p className="text-xs text-green-400 font-medium">🟢 Free trial · {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining</p>
+                      <p className="text-xs text-green-400 font-medium mt-1">🟢 Free trial · {daysLeft} day{daysLeft !== 1 ? "s" : ""} remaining</p>
                     )}
-                    {status === "active" && periodEnd && (
-                      <p className="text-sm text-foreground font-medium">🟢 Active · Next billing: {periodEnd.toLocaleDateString()}</p>
+                    {status === "active" && pEnd && (
+                      <p className="text-sm text-foreground font-medium mt-1">🟢 Active · Next billing: {pEnd.toLocaleDateString()}</p>
                     )}
-                    {status === "canceled" && periodEnd && (
-                      <p className="text-sm text-destructive font-medium">Canceled · Access until {periodEnd.toLocaleDateString()}</p>
+                    {status === "canceled" && pEnd && (
+                      <p className="text-sm text-destructive font-medium mt-1">Canceled · Access until {pEnd.toLocaleDateString()}</p>
                     )}
                   </div>
                 </div>
               </>
             );
           })()}
+
+          {/* Action buttons */}
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button className="text-xs">⬆️ Upgrade to AP+ Plan</Button>
-            <Button variant="outline" className="text-xs border-muted text-muted-foreground hover:text-foreground">Manage Billing →</Button>
+            <Link to="/pricing">
+              <Button className="text-xs">⬆️ Upgrade / Change Plan</Button>
+            </Link>
+            {subscribed && (
+              <Button
+                variant="outline"
+                className="text-xs border-muted text-muted-foreground hover:text-foreground"
+                onClick={handleManageBilling}
+                disabled={loadingBilling}
+              >
+                {loadingBilling ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : null}
+                Manage Billing →
+              </Button>
+            )}
           </div>
-          <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 overflow-x-auto max-w-full">
-            <table className="w-full text-xs min-w-[400px]">
-              <thead>
-                <tr className="border-b border-primary/10">
-                  <th className="text-left p-3 text-muted-foreground font-medium">Feature</th>
-                  <th className="p-3 text-primary font-semibold text-center">Magic Pass<br/><span className="font-normal text-muted-foreground">(Current)</span></th>
-                  <th className="p-3 text-secondary font-semibold text-center">AP Command Center+</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Dining Alerts", "✅", "✅"],
-                  ["Gift Card Tracker", "✅", "✅"],
-                  ["Live Park Mode", "✅", "✅"],
-                  ["AP Blockout Calendar", "❌", "✅"],
-                  ["AP Discount Database", "❌", "✅"],
-                  ["Discount Stacking Calculator", "❌", "✅"],
-                  ["AP Hotel Deal Alerts", "❌", "✅"],
-                  ["AP Merch Drop Alerts", "❌", "✅"],
-                ].map(([feature, current, plus]) => (
-                  <tr key={feature} className="border-b border-primary/5">
-                    <td className="p-3 text-foreground">{feature}</td>
-                    <td className="p-3 text-center">{current}</td>
-                    <td className="p-3 text-center">{plus}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
-            <p className="text-sm font-semibold text-destructive">Cancel Subscription</p>
-            <p className="text-xs text-muted-foreground">You can cancel anytime. You'll keep access until the end of your billing period.</p>
-            <Button variant="outline" size="sm" className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs">Cancel Subscription</Button>
-          </div>
+
+          {/* Cancel Subscription */}
+          {subscribed && subscription?.status !== "canceled" && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-2">
+              <p className="text-sm font-semibold text-destructive">Cancel Subscription</p>
+              <p className="text-xs text-muted-foreground">You can cancel anytime. You'll keep access until the end of your billing period. Your account and data will be preserved.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs"
+                onClick={() => setShowCancelDialog(true)}
+              >
+                Cancel Subscription
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Cancel Subscription Dialog — Step 1: Offer downgrade */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Before you go…</DialogTitle>
+            <DialogDescription>
+              Would you consider switching to a more affordable plan instead of cancelling completely?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {planId !== 'magic_pass_planner' && planId !== 'free' && (
+              <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                <p className="text-sm font-semibold text-foreground">Magic Pass Planner — ${PLANS.magic_pass_planner.monthlyPrice}/mo</p>
+                <p className="text-xs text-muted-foreground mt-1">Keep Dining Alerts, Trip Planner, Gift Card Tracker, and Live Park Mode at a lower price.</p>
+                <Link to="/pricing">
+                  <Button size="sm" className="mt-2 text-xs" onClick={() => setShowCancelDialog(false)}>
+                    Switch to This Plan →
+                  </Button>
+                </Link>
+              </div>
+            )}
+            {planId !== 'ninety_day_planner' && planId !== 'free' && (
+              <div className="p-3 rounded-lg border border-primary/20 bg-primary/5">
+                <p className="text-sm font-semibold text-foreground">90 Day Magic Pass Planner — ${PLANS.ninety_day_planner.oneTimePrice} one-time</p>
+                <p className="text-xs text-muted-foreground mt-1">One-time purchase, no recurring charges. Perfect for a single trip.</p>
+                <Link to="/pricing">
+                  <Button size="sm" variant="outline" className="mt-2 text-xs border-primary/30" onClick={() => setShowCancelDialog(false)}>
+                    View Plans →
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => setShowCancelDialog(false)}>
+              Never mind, keep my plan
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
+              onClick={() => { setShowCancelDialog(false); setShowFinalCancel(true); }}
+            >
+              I still want to cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Subscription Dialog — Step 2: Final confirmation */}
+      <AlertDialog open={showFinalCancel} onOpenChange={setShowFinalCancel}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Cancellation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your subscription will remain active until the end of your current billing period. After that, you'll lose access to premium features but your account and data will be kept.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Keep My Subscription</AlertDialogCancel>
+            <AlertDialogAction
+              className="text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleCancelSubscription}
+              disabled={cancellingSubscription}
+            >
+              {cancellingSubscription ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : null}
+              Yes, Cancel Subscription
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Section 3: My Disney Profile */}
       <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
@@ -400,16 +587,13 @@ const Settings = () => {
             <div className="space-y-3">
               <p className="text-xs font-semibold text-primary uppercase tracking-wider">Delivery Methods</p>
               {([
-                ["push", "Push Notifications", true],
-                ["email", "Email Alerts", true],
-                ["sms", "SMS Text Alerts", false],
-                ["weekly", "Weekly Summary Email", true],
-              ] as const).map(([key, label, enabled]) => (
+                ["push", "Push Notifications"],
+                ["email", "Email Alerts"],
+                ["sms", "SMS Text Alerts"],
+                ["weekly", "Weekly Summary Email"],
+              ] as const).map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-foreground">{label}</span>
-                    {key === "sms" && !delivery.sms && <span className="text-[9px] bg-primary/15 text-primary font-semibold px-1.5 py-0.5 rounded-full">Upgrade to enable</span>}
-                  </div>
+                  <span className="text-xs text-foreground">{label}</span>
                   <Switch checked={delivery[key as keyof typeof delivery]} onCheckedChange={(v) => setDelivery(prev => ({ ...prev, [key]: v }))} />
                 </div>
               ))}
@@ -448,16 +632,19 @@ const Settings = () => {
 
       <TripProfilesSection userId={user?.id} navigate={navigate} />
 
-      {/* Section 6: Referral Program */}
-      <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden">
+      {/* Section 6: Referral Program — Coming Soon */}
+      <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden relative">
+        <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-lg">
+          <span className="bg-primary/15 text-primary text-sm font-bold px-4 py-2 rounded-full">🚀 Coming Soon</span>
+        </div>
         <CardHeader className="p-4 md:p-6">
           <CardTitle className="text-base md:text-lg">🎁 Refer a Friend — Earn Free Months</CardTitle>
           <CardDescription>Every friend who subscribes earns you 1 free month. They get their first month for $1.</CardDescription>
         </CardHeader>
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-4">
           <div className="flex flex-col sm:flex-row gap-2">
-            <Input readOnly value="magicpassplus.com/ref/brandon-moss-x7k2" className="bg-background/50 border-primary/20 text-sm flex-1 font-mono" />
-            <Button size="sm" className="text-xs shrink-0"><Copy className="w-3.5 h-3.5 mr-1" /> Copy Link</Button>
+            <Input readOnly value="magicpassplus.com/ref/your-code" className="bg-background/50 border-primary/20 text-sm flex-1 font-mono" />
+            <Button size="sm" className="text-xs shrink-0" disabled><Copy className="w-3.5 h-3.5 mr-1" /> Copy Link</Button>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="rounded-lg border border-primary/15 bg-[var(--muted)]/60 p-3">
@@ -473,35 +660,6 @@ const Settings = () => {
               <p className="text-lg font-bold text-foreground">$0.00</p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { icon: Mail, label: "Email" },
-              { icon: MessageSquare, label: "SMS" },
-              { icon: Twitter, label: "Twitter/X" },
-              { icon: Facebook, label: "Facebook" },
-              { icon: ClipboardCopy, label: "Copy" },
-            ].map(s => (
-              <Button key={s.label} variant="outline" size="sm" className="border-primary/20 text-muted-foreground hover:text-foreground text-xs gap-1.5">
-                <s.icon className="w-3.5 h-3.5" /> {s.label}
-              </Button>
-            ))}
-          </div>
-          <p className="text-[10px] text-muted-foreground italic">Share in Disney AP Facebook groups for the fastest results.</p>
-        </CardContent>
-      </Card>
-
-            {/* Disney Account Connect */}
-      <Card className="border-primary/20 bg-card/80 overflow-hidden">
-        <CardHeader className="p-4 md:p-6">
-          <CardTitle className="text-base md:text-lg flex items-center gap-2">
-            🏰 Disney Account
-          </CardTitle>
-          <CardDescription className="text-xs md:text-sm">
-            Connect your Disney account to enable real-time dining reservation alerts
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6 pt-0">
-          <DisneyConnectSection />
         </CardContent>
       </Card>
 
@@ -513,21 +671,56 @@ const Settings = () => {
         <CardContent className="p-4 md:p-6 pt-0 md:pt-0 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-primary/10">
             <span className="text-sm text-foreground">Download My Data</span>
-            <Button variant="outline" size="sm" className="border-muted text-muted-foreground hover:text-foreground text-xs w-fit">Request Export</Button>
+            <Button variant="outline" size="sm" className="border-muted text-muted-foreground hover:text-foreground text-xs w-fit" onClick={handleRequestExport}>
+              Request Export
+            </Button>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-primary/10">
             <div>
               <span className="text-sm text-foreground">Delete My Account</span>
-              <span className="text-xs text-muted-foreground ml-2">(This cannot be undone)</span>
+              <span className="text-xs text-muted-foreground ml-2">(This permanently removes all data and cannot be undone)</span>
             </div>
-            <Button variant="outline" size="sm" className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs w-fit">Delete Account</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 text-xs w-fit"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              Delete Account
+            </Button>
           </div>
+          <p className="text-[10px] text-muted-foreground">
+            <strong>Cancel Subscription</strong> stops billing but keeps your account and data. <strong>Delete Account</strong> permanently removes everything.
+          </p>
           <div className="flex flex-wrap items-center gap-4 py-2">
-            <button className="text-xs text-primary hover:underline">Privacy Policy → View →</button>
-            <button className="text-xs text-primary hover:underline">Terms of Service → View →</button>
+            <Link to="/privacy-policy" className="text-xs text-primary hover:underline">Privacy Policy →</Link>
+            <Link to="/terms" className="text-xs text-primary hover:underline">Terms of Service →</Link>
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Account Confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Your Account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete your account, all saved trips, alerts, profile data, and subscription. This action cannot be undone. If you just want to stop billing, use "Cancel Subscription" instead.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Keep My Account</AlertDialogCancel>
+            <AlertDialogAction
+              className="text-xs bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+            >
+              {deletingAccount ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : null}
+              Yes, Delete Everything
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
@@ -684,176 +877,5 @@ function TripProfilesSection({ userId, navigate }: { userId?: string; navigate: 
     </Card>
   );
 }
-
-// Disney Account Connect Component
-function DisneyConnectSection() {
-  const { session } = useAuth();
-  const toastFn = (opts: { title: string; description?: string; variant?: string }) => toast(opts.title, { description: opts.description });
-  const [connected, setConnected] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState(false);
-
-  const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
-  const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
-
-  const getHeaders = () => ({
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${session?.access_token}`,
-    "x-client-authorization": `Bearer ${session?.access_token}`,
-    "apikey": SUPABASE_ANON,
-  });
-
-  useEffect(() => {
-    if (!session) return;
-    fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=status`, { headers: getHeaders() })
-      .then(r => r.json())
-      .then(d => setConnected(d.connected || false))
-      .catch(() => setConnected(false))
-      .finally(() => setLoading(false));
-  }, [session]);
-
-  const [manualToken, setManualToken] = useState("");
-  const [showTokenInstructions, setShowTokenInstructions] = useState(false);
-
-  const handleConnect = async () => {
-    if (!manualToken.trim()) {
-      setShowTokenInstructions(true);
-      return;
-    }
-    setConnecting(true);
-    try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=save`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({ access_token: manualToken.trim() }),
-      });
-      const data = await resp.json();
-      if (data.success) {
-        setConnected(true);
-        setManualToken("");
-        setShowTokenInstructions(false);
-        toastFn({
-          title: "✅ Disney account connected!",
-          description: "Real-time dining alerts are now active.",
-        });
-      } else {
-        throw new Error(data.error || "Token rejected");
-      }
-    } catch (err) {
-      toastFn({ title: "Connection failed", description: err instanceof Error ? err.message : "Please try again", variant: "destructive" });
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  const handleDisconnect = async () => {
-    await fetch(`${SUPABASE_URL}/functions/v1/disney-auth?action=disconnect`, {
-      method: "POST", headers: getHeaders(),
-    });
-    setConnected(false);
-    toastFn({ title: "Disney account disconnected" });
-  };
-
-  if (loading) return <div className="h-8 bg-muted/20 rounded animate-pulse" />;
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between p-4 rounded-xl border border-white/10" style={{ background: "var(--muted)" }}>
-        <div>
-          <p className="text-sm font-semibold text-foreground">
-            {connected ? "✅ Disney Account Connected" : "⚠️ Not Connected"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {connected 
-              ? "Real-time dining alerts active — checking every 60 seconds" 
-              : "Connect to enable automatic dining reservation detection"}
-          </p>
-        </div>
-        <div className={`w-3 h-3 rounded-full ${connected ? "bg-green-400" : "bg-yellow-400"}`} />
-      </div>
-
-      {!connected ? (
-        <div className="space-y-3">
-          {!showTokenInstructions ? (
-            <>
-              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-xs text-foreground font-semibold mb-1">Enable real-time dining alerts:</p>
-                <p className="text-xs text-muted-foreground">Connect your Disney account to enable 60-second availability checking. Your Disney password is never stored.</p>
-              </div>
-              <button
-                onClick={handleConnect}
-                disabled={connecting}
-                className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60"
-                style={{ background: "#F0B429", color: "#070b15" }}
-              >
-                🏰 Connect Disney Account
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="p-4 rounded-xl border border-primary/20 bg-primary/5">
-                <p className="text-xs font-bold text-foreground mb-2">📋 How to get your Disney token (2 min):</p>
-                <ol className="text-xs text-muted-foreground space-y-2 list-decimal list-inside leading-relaxed">
-                  <li>Open <a href="https://disneyworld.disney.go.com/dine-res/availability/" target="_blank" rel="noopener noreferrer" className="text-primary underline">disneyworld.disney.go.com/dine-res/availability/</a> and log in</li>
-                  <li>Press <code className="bg-white/10 px-1 rounded">F12</code> → click <strong>Network</strong> tab</li>
-                  <li>Type <code className="bg-white/10 px-1 rounded">get-client-token</code> in the filter box</li>
-                  <li>Change party size on the Disney page to trigger a request</li>
-                  <li>Click the <code className="bg-white/10 px-1 rounded">get-client-token</code> entry → click <strong>Response</strong></li>
-                  <li>Copy the value after <code className="bg-white/10 px-1 rounded">"access_token":</code></li>
-                  <li>Paste it below and click Save</li>
-                </ol>
-                <p className="text-xs text-yellow-500 mt-2">⚠️ Token expires in 30 min — you'll reconnect periodically</p>
-                <p className="text-xs text-muted-foreground mt-2">🔒 <strong>Privacy:</strong> Only a temporary session token is stored. Never your Disney password. You authorize Magic Pass Plus to check availability on your behalf using your own Disney session. This is similar to how services like Stakeout, MouseDining, and MouseWatcher operate. Magic Pass Plus is not affiliated with Disney.</p>
-              </div>
-              <textarea
-                value={manualToken}
-                onChange={e => setManualToken(e.target.value)}
-                placeholder="Paste your Disney access_token here..."
-                rows={3}
-                className="w-full px-3 py-2.5 rounded-xl border border-white/10 text-xs text-foreground font-mono focus:outline-none focus:border-primary/40 resize-none"
-                style={{ background: "var(--muted)" }}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => { setShowTokenInstructions(false); setManualToken(""); }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-white/10 text-muted-foreground hover:border-white/20"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConnect}
-                  disabled={connecting || !manualToken.trim()}
-                  className="flex-1 py-2.5 rounded-xl font-bold text-sm disabled:opacity-50"
-                  style={{ background: "#F0B429", color: "#070b15" }}
-                >
-                  {connecting ? "Verifying..." : "✅ Save Token"}
-                </button>
-              </div>
-            </>
-          )}
-          <p className="text-xs text-muted-foreground text-center">
-            Your Disney password is never stored — only a temporary session token
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <div className="p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-            <p className="text-xs text-green-400">
-              🍽️ Dining alerts are now checking in real-time. You'll be notified the instant a reservation opens.
-            </p>
-          </div>
-          <button
-            onClick={handleDisconnect}
-            className="text-xs text-red-400 hover:text-red-300 transition-colors"
-          >
-            Disconnect Disney account
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
 
 export default Settings;
