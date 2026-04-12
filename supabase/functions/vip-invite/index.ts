@@ -125,6 +125,19 @@ serve(async (req) => {
 
       const accountType = inviteType === "beta_tester" ? "beta_tester" : "vip";
 
+      // Check if already active — skip re-sending email
+      const { data: existingVip } = await supabase
+        .from("vip_accounts")
+        .select("status")
+        .eq("email", email.toLowerCase().trim())
+        .single();
+
+      if (existingVip?.status === "active") {
+        return new Response(JSON.stringify({ success: true, skipped: true, reason: "Already active" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+        });
+      }
+
       // Generate invite token
       const inviteToken = crypto.randomUUID().replace(/-/g, "");
 
