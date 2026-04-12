@@ -106,7 +106,7 @@ export default function BingoGame({ onClose }: { onClose: () => void }) {
   const lastCol = lastCalled ? COLS[ranges.findIndex(([min, max]) => lastCalled >= min && lastCalled <= max)] : "";
 
   return (
-    <div className="min-h-screen bg-cover bg-center" style={backgroundImage: `url(/game-backgrounds/bg-bingo.jpg`} p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-10 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-emerald-500" />

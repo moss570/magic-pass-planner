@@ -167,7 +167,7 @@ export default function MysteryCaseGame({ onClose }: { onClose: () => void }) {
 
   if (paused) {
     return (
-      <div className="min-h-screen bg-cover bg-center" style={backgroundImage: `url(/game-backgrounds/bg-mystery-case.jpg`} p-4 flex items-center justify-center relative overflow-hidden"><><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none"><div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /></div>
+      <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden"><><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none"><div className="absolute top-1/4 left-1/3 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /></div>
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="text-center p-8 rounded-2xl bg-black/50 border border-yellow-500/20 max-w-md w-full">
           <Pause className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
@@ -205,7 +205,7 @@ export default function MysteryCaseGame({ onClose }: { onClose: () => void }) {
   const clue = clues[currentClue];
 
   return (
-    <div className="min-h-screen bg-cover bg-center" style={backgroundImage: `url(/game-backgrounds/bg-mystery-case.jpg`} p-4 relative overflow-hidden"><><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none"><div className="absolute top-20 right-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /><div className="absolute bottom-20 left-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-yellow-400" /></div>
+    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden"><><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none"><div className="absolute top-20 right-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-amber-500" /><div className="absolute bottom-20 left-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-yellow-400" /></div>
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
