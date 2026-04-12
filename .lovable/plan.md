@@ -1,47 +1,50 @@
 
 
-## Fix Trip Compare Blank Screen
+## Beta Tester Bulk Import & Mass Invite
 
-### Root Cause
-The `TripCompare` page fetches versions via a raw `fetch()` call to the `trips` edge function, manually passing `session?.access_token` in headers. This approach is fragile — if the session isn't ready when the effect fires, or if the edge function has deployment issues, the page stays stuck on the loading spinner (appearing as a blank screen). Edge function logs show zero `list-versions` requests, confirming calls never reach the function.
+### Current State
+You currently have a VIP invite system in the Admin dashboard that sends invites **one at a time** — enter an email, first name, last name, reason, and click "Send VIP Invite." The backend edge function (`vip-invite`) handles creating the record and sending a branded email via Brevo.
 
-### Fix
-Replace the edge function fetch with a direct Supabase client query — the same pattern used successfully in `MyTrips.tsx`. The `trip_versions` table already has RLS policies allowing users to read their own versions, so no edge function is needed.
+### What You Need
+A way to import a CSV of names/emails and send beta tester invites to all of them in one action.
 
-### Changes to `src/pages/TripCompare.tsx`
+### Important Note on Email Sending
+Your current invite emails go through **Brevo** (not Lovable's transactional email system). Since these are one-time admin-initiated invites to specific people you have a relationship with, this is fine. The bulk import will use the same `vip-invite` edge function, calling it once per person. Brevo handles the actual delivery.
 
-1. **Remove** the raw `fetch()` calls to the edge function and the `SUPABASE_URL`/`SUPABASE_ANON` constants
-2. **Import** `supabase` from `@/integrations/supabase/client`
-3. **Replace the versions fetch** with:
-   ```ts
-   const { data } = await supabase
-     .from("trip_versions")
-     .select("*")
-     .eq("trip_id", tripId)
-     .eq("user_id", user.id)
-     .order("version_number", { ascending: true });
-   setVersions(data || []);
-   ```
-4. **Replace the "choose version" handler** with a direct Supabase update:
-   ```ts
-   // Deactivate all versions for this trip
-   await supabase.from("trip_versions")
-     .update({ is_active: false })
-     .eq("trip_id", tripId).eq("user_id", user.id);
-   // Activate selected version
-   await supabase.from("trip_versions")
-     .update({ is_active: true })
-     .eq("id", versionId).eq("user_id", user.id);
-   ```
-5. **Switch** from `useAuth().session` to `useAuth().user` since we only need the user ID
-6. **Update** the "Back" button to navigate to `/my-trips` instead of `/trip-planner`
+### Plan
 
-### Why This Works
-- The Supabase JS client handles auth tokens automatically — no manual header management
-- RLS on `trip_versions` already restricts access to `user_id = auth.uid()`
-- Eliminates the edge function as a point of failure
-- Matches the pattern used successfully throughout the app (MyTrips, DashboardLayout, etc.)
+#### 1. Add CSV Import UI to Admin Dashboard (`src/pages/Admin.tsx`)
+- Add a "Bulk Import Beta Testers" section below the existing VIP invite form
+- File upload input accepting `.csv` files
+- Client-side CSV parser (no library needed — simple `split` on lines/commas)
+- Expected columns: `email, first_name, last_name` (header row required)
+- Preview table showing parsed rows before sending
+- "Send All Invites" button with progress indicator
+- Type selector: VIP Free Forever vs Beta Tester (1 year)
+
+#### 2. Add Batch Processing Logic (`src/pages/Admin.tsx`)
+- On "Send All Invites", loop through rows sequentially (not parallel — avoid rate limiting Brevo)
+- Call the existing `vip-invite?action=invite` endpoint for each row with `type: "beta_tester"`
+- Show per-row status: pending / sending / sent / failed
+- Display summary when complete: "142 sent, 3 failed"
+- Allow re-sending failed ones
+
+#### 3. Update Edge Function for Batch Friendliness (`supabase/functions/vip-invite/index.ts`)
+- Add a small optimization: skip re-sending email if status is already "active" (idempotent upsert already handles DB side)
+- No other changes needed — the existing function handles one invite at a time, which is the correct pattern for deliverability
+
+### CSV Format Expected
+```text
+email,first_name,last_name
+jane@example.com,Jane,Smith
+bob@example.com,Bob,Jones
+```
 
 ### Files Changed
-- `src/pages/TripCompare.tsx` — replace edge function calls with direct Supabase queries
+- `src/pages/Admin.tsx` — CSV upload UI, preview table, batch send logic
+- `supabase/functions/vip-invite/index.ts` — minor idempotency improvement
+
+### What This Does NOT Do
+- It does not use a marketing email service — each invite goes through the existing Brevo transactional send, one at a time
+- It does not send all emails simultaneously — sequential processing protects your sender reputation
 
