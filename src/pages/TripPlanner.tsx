@@ -483,7 +483,9 @@ export default function TripPlanner() {
 function TripPlannerWizard() {
   const { session, user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
   const userId = user?.id || 'anon';
+  const editTripId = (location.state as any)?.tripId as string | undefined;
 
   // Mode selection state — null means user hasn't chosen yet
   const [modeSelected, setModeSelected] = useState<boolean>(false);
@@ -500,7 +502,7 @@ function TripPlannerWizard() {
   const [budgetBreakdown, setBudgetBreakdown] = useState<Record<string, number> | null>(null);
   const [generated, setGenerated] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [savedTripId, setSavedTripId] = useState<string | null>(null);
+  const [savedTripId, setSavedTripId] = useState<string | null>(editTripId || null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [ticketInfo, setTicketInfo] = useState<any>(null);
@@ -509,6 +511,7 @@ function TripPlannerWizard() {
   const [hotelNightlyBudget, setHotelNightlyBudget] = useState<number | null>(null);
   const [tripCoverage, setTripCoverage] = useState<any>(null);
   const [nonParkSuggestions, setNonParkSuggestions] = useState<any[]>([]);
+  const [hydrating, setHydrating] = useState(!!editTripId);
 
   // Version state
   const [versions, setVersions] = useState<TripVersion[]>([]);
