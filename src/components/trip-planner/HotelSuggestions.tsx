@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Hotel, MapPin, Star, ChevronDown, ChevronUp, ExternalLink, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isFeatureEnabled } from "@/lib/featureFlags";
+import { CURATED_HOTELS } from "@/lib/curatedHotels";
 
 interface HotelCategory {
   label: string;
@@ -13,43 +14,29 @@ interface HotelCategory {
     distanceMiles: number;
     amenities: string[];
     bestFor: string;
-    bookingUrl?: string;
   }[];
 }
 
-const CURATED_HOTELS: HotelCategory[] = [
+const HOTEL_CATEGORIES: HotelCategory[] = [
   {
     label: "Budget-Friendly",
     emoji: "💰",
     description: "Great value hotels under $120/night",
-    hotels: [
-      { name: "Rosen Inn at Pointe Orlando", priceRange: "$80-110", distanceMiles: 8, amenities: ["Pool", "Shuttle", "Free Parking"], bestFor: "Families on a budget" },
-      { name: "Holiday Inn Resort Orlando Suites", priceRange: "$95-130", distanceMiles: 7, amenities: ["Water Park", "Kids Eat Free", "Shuttle"], bestFor: "Families with young kids" },
-      { name: "Avanti International Resort", priceRange: "$75-100", distanceMiles: 9, amenities: ["Pool", "Kitchenette", "Free Parking"], bestFor: "Extended stays" },
-    ],
+    hotels: CURATED_HOTELS.filter(h => h.category === "Budget-Friendly"),
   },
   {
     label: "Family Suites",
     emoji: "👨‍👩‍👧‍👦",
     description: "Room for the whole crew with kitchens",
-    hotels: [
-      { name: "Floridays Resort Orlando", priceRange: "$140-200", distanceMiles: 5, amenities: ["Full Kitchen", "2BR Suites", "Pool", "Free Parking"], bestFor: "Cooking meals to save money" },
-      { name: "Marriott's Harbour Lake", priceRange: "$160-250", distanceMiles: 4, amenities: ["Full Kitchen", "Water Park", "Mini Golf"], bestFor: "Resort feel without Disney prices" },
-      { name: "Drury Plaza Hotel Orlando", priceRange: "$130-180", distanceMiles: 6, amenities: ["Free Breakfast", "Evening Reception", "Pool"], bestFor: "Free meals included" },
-    ],
+    hotels: CURATED_HOTELS.filter(h => h.category === "Family Suites"),
   },
   {
     label: "Close to Parks",
     emoji: "🏰",
     description: "5 minutes or less from Disney gates",
-    hotels: [
-      { name: "Wyndham Garden Lake Buena Vista", priceRange: "$100-150", distanceMiles: 1.5, amenities: ["Shuttle", "Pool", "Walk to Disney Springs"], bestFor: "Closest off-site option" },
-      { name: "Hilton Orlando Buena Vista Palace", priceRange: "$150-220", distanceMiles: 1, amenities: ["Shuttle", "Spa", "Character Breakfast"], bestFor: "Extra Magic Hours eligible" },
-      { name: "B Resort & Spa (Disney Springs)", priceRange: "$130-190", distanceMiles: 0.5, amenities: ["Walk to Disney Springs", "Pool", "Spa"], bestFor: "Walk to Disney Springs dining" },
-    ],
+    hotels: CURATED_HOTELS.filter(h => h.category === "Close to Parks"),
   },
 ];
-
 interface Props {
   lodging: string;
   startDate: string;
@@ -82,7 +69,7 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
       </div>
 
       <div className="divide-y divide-border">
-        {CURATED_HOTELS.map(category => {
+        {HOTEL_CATEGORIES.map(category => {
           const isExpanded = expandedCategory === category.label;
           return (
             <div key={category.label}>
@@ -141,7 +128,18 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
                       <div className="flex gap-2 mt-2">
                         {isFeatureEnabled("hotelAlerts") && (
                           <button
-                            onClick={() => navigate("/hotel-alerts")}
+                            onClick={() => {
+                              const curatedMatch = CURATED_HOTELS.find(c => c.name === hotel.name);
+                              const params = new URLSearchParams({
+                                hotel: hotel.name,
+                                checkIn: startDate || "",
+                                checkOut: endDate || "",
+                                adults: String(adults),
+                                children: String(children),
+                                targetPrice: String(curatedMatch?.defaultTargetPrice || ""),
+                              });
+                              navigate(`/hotel-alerts?${params.toString()}`);
+                            }}
                             className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg border border-primary/40 text-primary font-semibold hover:bg-primary/10 transition-colors"
                           >
                             <Bell className="w-3 h-3" /> Track Price

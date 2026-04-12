@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Hotel, Plus, Eye, CheckCircle2, Clock, TrendingDown, TrendingUp, X, Search, DollarSign, Pause, Play } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ import { toast } from "sonner";
 import { getGenericBookingUrl } from "@/lib/affiliate";
 import { useSubscription } from "@/hooks/useSubscription";
 import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
+import { CURATED_HOTELS } from "@/lib/curatedHotels";
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
@@ -60,12 +62,14 @@ function PriceSparkline({ history }: { history: { date: string; price: number }[
 
 export default function HotelAlerts() {
   const { session } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [alerts, setAlerts] = useState<HotelAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [showBooked, setShowBooked] = useState<string | null>(null);
   const [confirmNum, setConfirmNum] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Create form state
   const [hotelName, setHotelName] = useState("");
@@ -74,6 +78,26 @@ export default function HotelAlerts() {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [targetPrice, setTargetPrice] = useState("");
+
+  // Auto-open create form from URL params (e.g. from Trip Planner "Track Price")
+  useEffect(() => {
+    const hotel = searchParams.get("hotel");
+    if (hotel) {
+      setHotelName(hotel);
+      setCheckIn(searchParams.get("checkIn") || "");
+      setCheckOut(searchParams.get("checkOut") || "");
+      setAdults(Number(searchParams.get("adults")) || 2);
+      setChildren(Number(searchParams.get("children")) || 0);
+      setTargetPrice(searchParams.get("targetPrice") || "");
+      setShowCreate(true);
+      // Clear params so refreshing doesn't re-open
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const filteredSuggestions = hotelName.trim().length > 0
+    ? CURATED_HOTELS.filter(h => h.name.toLowerCase().includes(hotelName.toLowerCase()))
+    : CURATED_HOTELS;
 
   const getHeaders = useCallback(() => ({
     "Content-Type": "application/json",
@@ -271,7 +295,33 @@ export default function HotelAlerts() {
                 <h2 className="text-sm font-bold text-foreground">New Hotel Alert</h2>
                 <button onClick={() => setShowCreate(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
               </div>
-              <input value={hotelName} onChange={e => setHotelName(e.target.value)} placeholder="Hotel name" className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground" />
+              <div className="relative">
+                <input
+                  value={hotelName}
+                  onChange={e => { setHotelName(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  placeholder="Hotel name — type to search"
+                  className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground"
+                />
+                {showSuggestions && filteredSuggestions.length > 0 && (
+                  <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredSuggestions.map(h => (
+                      <button
+                        key={h.name}
+                        onClick={() => {
+                          setHotelName(h.name);
+                          if (!targetPrice) setTargetPrice(String(h.defaultTargetPrice));
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-muted/50 transition-colors border-b border-border last:border-0"
+                      >
+                        <p className="text-xs font-semibold text-foreground">{h.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{h.priceRange}/night · {h.distanceMiles}mi · {h.category}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="text-xs text-muted-foreground">Check-in</label><input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
                 <div><label className="text-xs text-muted-foreground">Check-out</label><input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
