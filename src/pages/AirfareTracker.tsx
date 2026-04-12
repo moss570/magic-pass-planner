@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plane, Plus, CheckCircle2, Clock, TrendingDown, TrendingUp, X } from "lucide-react";
+import { Plane, Plus, CheckCircle2, Clock, TrendingDown, TrendingUp, X, Pause, Play } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -9,9 +9,10 @@ import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBan
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
-type AlertStatus = "watching" | "found" | "booked" | "expired" | "cancelled";
+type AlertStatus = "watching" | "found" | "booked" | "expired" | "cancelled" | "paused";
 const TABS: { label: string; status: AlertStatus[] }[] = [
   { label: "Watching", status: ["watching"] },
+  { label: "Paused", status: ["paused"] },
   { label: "Found", status: ["found"] },
   { label: "Booked", status: ["booked"] },
   { label: "History", status: ["expired", "cancelled"] },
@@ -118,6 +119,16 @@ export default function AirfareTracker() {
     fetchAlerts();
   };
 
+  const pauseResumeAlert = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "paused" ? "watching" : "paused";
+    await fetch(`${SUPABASE_URL}/functions/v1/airfare-alerts`, {
+      method: "PATCH", headers: getHeaders(),
+      body: JSON.stringify({ id, status: newStatus }),
+    });
+    toast.success(newStatus === "paused" ? "Alert paused" : "Alert resumed");
+    fetchAlerts();
+  };
+
   const markBooked = async (id: string) => {
     await fetch(`${SUPABASE_URL}/functions/v1/airfare-alerts`, {
       method: "PATCH", headers: getHeaders(),
@@ -174,7 +185,7 @@ export default function AirfareTracker() {
               const delta = alert.current_price != null ? alert.current_price - alert.target_price : null;
               const deltaColor = delta != null ? (delta <= 0 ? "text-green-400 bg-green-500/15" : "text-red-400 bg-red-500/15") : "";
               return (
-                <div key={alert.id} className={`rounded-xl border p-4 ${alert.status === "found" ? "border-green-500/40 bg-green-500/5" : "border-border bg-card"}`}>
+                <div key={alert.id} className={`rounded-xl border p-4 ${alert.status === "found" ? "border-green-500/40 bg-green-500/5" : "border-border bg-card"} ${alert.status === "paused" ? "opacity-60" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-bold text-foreground">{alert.origin} → {alert.destination}</p>
@@ -219,11 +230,16 @@ export default function AirfareTracker() {
                         Book Now →
                       </a>
                     )}
-                    {(alert.status === "watching" || alert.status === "found") && (
+                    {(alert.status === "watching" || alert.status === "found" || alert.status === "paused") && (
                       <>
-                        <button onClick={() => setShowBooked(alert.id)} className="px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                          <CheckCircle2 className="w-3 h-3 inline mr-1" />Mark Booked
+                        <button onClick={() => pauseResumeAlert(alert.id, alert.status)} className="px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                          {alert.status === "paused" ? <><Play className="w-3 h-3 inline mr-1" />Resume</> : <><Pause className="w-3 h-3 inline mr-1" />Pause</>}
                         </button>
+                        {alert.status !== "paused" && (
+                          <button onClick={() => setShowBooked(alert.id)} className="px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
+                            <CheckCircle2 className="w-3 h-3 inline mr-1" />Mark Booked
+                          </button>
+                        )}
                         <button onClick={() => cancelAlert(alert.id)} className="px-3 py-2 rounded-lg border border-destructive/30 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors">
                           <X className="w-3 h-3 inline mr-1" />Cancel
                         </button>

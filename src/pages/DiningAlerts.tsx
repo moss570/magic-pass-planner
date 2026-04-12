@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus } from "lucide-react";
+import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus, Pause, Play } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -198,6 +198,23 @@ export default function DiningAlerts() {
     }
   };
 
+  const handlePauseResume = async (alertId: string, currentStatus: string, name: string) => {
+    if (!session) return;
+    const newStatus = currentStatus === "paused" ? "watching" : "paused";
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/dining-alerts?action=update_status`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ alert_id: alertId, status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      toast({ title: newStatus === "paused" ? "⏸ Alert paused" : "▶ Alert resumed", description: name });
+      loadAlerts();
+    } catch {
+      toast({ title: "Failed to update alert", variant: "destructive" });
+    }
+  };
+
   const getStatusBadge = (alert: DiningAlert) => {
     switch (alert.status) {
       case "watching":
@@ -214,6 +231,13 @@ export default function DiningAlerts() {
             AVAILABLE — Book Now!
           </span>
         );
+      case "paused":
+        return (
+          <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-muted/30 text-muted-foreground">
+            <Pause className="w-3 h-3" />
+            Paused
+          </span>
+        );
       case "booked":
         return <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/15 text-blue-400">✅ Booked</span>;
       case "expired":
@@ -225,12 +249,13 @@ export default function DiningAlerts() {
     }
   };
 
-  const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found");
+  const activeAlerts = alerts.filter(a => a.status === "watching" || a.status === "found" || a.status === "paused");
   const pastAlerts = alerts.filter(a => a.status === "booked" || a.status === "expired" || a.status === "cancelled");
+  const countForLimit = alerts.filter(a => a.status === "watching" || a.status === "found").length;
 
   const { access } = useSubscription();
   const diningLimit = access.diningAlerts;
-  const { canAddAlert } = useAlertLimitGuard(diningLimit, activeAlerts.length);
+  const { canAddAlert } = useAlertLimitGuard(diningLimit, countForLimit);
 
   return (
     <DashboardLayout
@@ -239,7 +264,7 @@ export default function DiningAlerts() {
     >
       <div className="space-y-6">
 
-        <AlertLimitBanner limit={diningLimit} currentCount={activeAlerts.length} alertTypeName="Dining Alerts" />
+        <AlertLimitBanner limit={diningLimit} currentCount={countForLimit} alertTypeName="Dining Alerts" />
 
         {/* ── SET A NEW ALERT ─────────────────────────────────── */}
         <div className="rounded-xl border p-5 md:p-6" style={{ background: "var(--card)", borderColor: "rgba(245,200,66,0.3)", borderTopWidth: 3, borderTopColor: "#F0B429" }}>
@@ -425,7 +450,7 @@ export default function DiningAlerts() {
           ) : (
             <div className="space-y-3">
               {activeAlerts.map(alert => (
-                <div key={alert.id} className="rounded-xl p-4 md:p-5 border" style={{ background: "var(--card)", borderColor: alert.status === "found" ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.08)" }}>
+                <div key={alert.id} className={`rounded-xl p-4 md:p-5 border ${alert.status === "paused" ? "opacity-60" : ""}`} style={{ background: "var(--card)", borderColor: alert.status === "found" ? "rgba(16,185,129,0.4)" : "rgba(255,255,255,0.08)" }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -451,6 +476,15 @@ export default function DiningAlerts() {
                         context={`${alert.restaurant?.location || "Disney World"}`}
                         size="inline"
                       />
+                      {(alert.status === "watching" || alert.status === "found" || alert.status === "paused") && (
+                        <button
+                          onClick={() => handlePauseResume(alert.id, alert.status, alert.restaurant?.name)}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          title={alert.status === "paused" ? "Resume alert" : "Pause alert"}
+                        >
+                          {alert.status === "paused" ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                        </button>
+                      )}
                       <button
                         onClick={() => handleCancelAlert(alert.id, alert.restaurant?.name)}
                         className="text-xs text-muted-foreground hover:text-destructive transition-colors"
