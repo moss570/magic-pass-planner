@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CompassButton from "@/components/CompassButton";
 import PassingPointsAccordion from "./PassingPointsAccordion";
@@ -7,6 +7,12 @@ import StoppingHereModal from "./StoppingHereModal";
 import AddBlockModal from "./AddBlockModal";
 import NudgeBanner from "./NudgeBanner";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ItineraryItem {
   time: string;
