@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus, Pause, Play } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
