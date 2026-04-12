@@ -148,19 +148,31 @@ export default function HotelAlerts() {
   };
 
   const cancelAlert = async (id: string) => {
-    await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts?id=${id}`, { method: "DELETE", headers: getHeaders() });
-    toast.success("Alert cancelled");
-    fetchAlerts();
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts?id=${id}`, { method: "DELETE", headers: getHeaders() });
+      if (!resp.ok) throw new Error(await resp.text());
+      toast.success("Alert cancelled");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Cancel failed:", err);
+      toast.error("Failed to cancel alert");
+    }
   };
 
   const pauseResumeAlert = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "paused" ? "watching" : "paused";
-    await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts`, {
-      method: "PATCH", headers: getHeaders(),
-      body: JSON.stringify({ id, status: newStatus }),
-    });
-    toast.success(newStatus === "paused" ? "Alert paused" : "Alert resumed");
-    fetchAlerts();
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts`, {
+        method: "PATCH", headers: getHeaders(),
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (!resp.ok) throw new Error(await resp.text());
+      toast.success(newStatus === "paused" ? "Alert paused" : "Alert resumed");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Pause/resume failed:", err);
+      toast.error("Failed to update alert");
+    }
   };
 
   const markBooked = async (id: string) => {
