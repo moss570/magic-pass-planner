@@ -15,6 +15,8 @@ import SpyWordGame from "@/components/SpyWordGame";
 import PicturePerfectGame from "@/components/PicturePerfectGame";
 import MysteryCaseGame from "@/components/MysteryCaseGame";
 import GameLauncher from "@/components/GameLauncher";
+import Match3Game from "@/components/games/Match3Game";
+import PokerGame from "@/components/games/PokerGame";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -86,6 +88,10 @@ const gameParamMap: { [key: string]: string } = {
   "haaaa": "haaaa",
   "line-mind": "linemind",
   "mystery-case": "mystery-case",
+  "match3": "match3",
+  "poker": "poker",
+  "spit": "spit",
+  "mystery-adventure": "mystery-adventure",
 };
 
 
@@ -101,6 +107,10 @@ const GAME_META: { [key: string]: { name: string; emoji: string; gradient: strin
   "haaaa": { name: "HAAAA!", emoji: "😂", gradient: "bg-gradient-to-br from-teal-400 to-emerald-500" },
   "linemind": { name: "Line Mind", emoji: "🧠", gradient: "bg-gradient-to-br from-violet-500 to-fuchsia-500" },
   "mystery-case": { name: "Mystery Case", emoji: "🔍", gradient: "bg-gradient-to-br from-amber-500 to-orange-600" },
+  "match3": { name: "Theme Park Match-3", emoji: "🎪", gradient: "bg-gradient-to-br from-yellow-500 to-pink-500" },
+  "poker": { name: "Poker Night", emoji: "🃏", gradient: "bg-gradient-to-br from-green-500 to-emerald-600" },
+  "spit": { name: "Spit!", emoji: "⚡", gradient: "bg-gradient-to-br from-cyan-400 to-purple-600" },
+  "mystery-adventure": { name: "Mystery at Adventure World", emoji: "🔍", gradient: "bg-gradient-to-br from-amber-600 to-purple-800" },
 };
 
 export default function LineGames() {
@@ -182,6 +192,14 @@ export default function LineGames() {
 
   if (activeGame === "mystery-case") {
     return <MysteryCaseGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} />;
+  }
+
+  if (activeGame === "match3") {
+    return <Match3Game onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} playerName="Player" />;
+  }
+
+  if (activeGame === "poker") {
+    return <PokerGame onClose={() => { setActiveGame(null); setLaunchingGame(null); navigate("/games"); }} playerName="Player" />;
   }
 
   return (
