@@ -157,6 +157,20 @@ export default function EventAlerts() {
         title: "🎪 Event alert created!",
         description: `Watching ${selectedEvent.event_name} for ${format(date, "MMM d, yyyy")}${data.alert?.priority_launch ? " — Midnight Launch mode active!" : ""}`,
       });
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session.user.id,
+          alert_type: "event",
+          alert_details: {
+            name: selectedEvent.event_name,
+            date: format(date, "MMM d, yyyy"),
+            extra: `Party of ${partySize}`,
+          },
+        },
+      }).catch(() => {});
+
       setSelectedEvent(null);
       setDate(undefined);
       setSearchQuery("");

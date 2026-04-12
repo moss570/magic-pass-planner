@@ -170,6 +170,20 @@ export default function DiningAlerts() {
       if (!res.ok) throw new Error(data.error || "Failed to create alert");
 
       toast({ title: "🔔 Alert created!", description: `Watching ${selectedRestaurant.name} for ${format(date, "MMM d, yyyy")}` });
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session.user.id,
+          alert_type: "dining",
+          alert_details: {
+            name: selectedRestaurant.name,
+            date: format(date, "MMM d, yyyy"),
+            extra: `Party of ${partySize} · ${selectedMeals.join(", ")}`,
+          },
+        },
+      }).catch(() => {});
+
       setSelectedRestaurant(null);
       setDate(undefined);
       setSearchQuery("");

@@ -107,6 +107,20 @@ export default function AirfareTracker() {
       });
       if (!resp.ok) throw new Error();
       toast.success("Airfare alert created!");
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session!.user.id,
+          alert_type: "airfare",
+          alert_details: {
+            name: `${origin} → ${destination}`,
+            date: `${departDate} → ${returnDate}`,
+            extra: `${adults} adults${children > 0 ? `, ${children} children` : ""} · ${cabinClass} · Target: ≤$${targetPrice}`,
+          },
+        },
+      }).catch(() => {});
+
       setShowCreate(false);
       setOrigin(""); setDepartDate(""); setReturnDate(""); setTargetPrice("");
       fetchAlerts();

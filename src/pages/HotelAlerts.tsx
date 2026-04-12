@@ -103,6 +103,20 @@ export default function HotelAlerts() {
       });
       if (!resp.ok) throw new Error();
       toast.success("Hotel alert created!");
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session!.user.id,
+          alert_type: "hotel",
+          alert_details: {
+            name: hotelName,
+            date: `${checkIn} → ${checkOut}`,
+            extra: `${adults} adults${children > 0 ? `, ${children} children` : ""} · Target: ≤$${targetPrice}/night`,
+          },
+        },
+      }).catch(() => {});
+
       setShowCreate(false);
       setHotelName(""); setCheckIn(""); setCheckOut(""); setTargetPrice("");
       fetchAlerts();
