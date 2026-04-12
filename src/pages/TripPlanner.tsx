@@ -957,7 +957,7 @@ function TripPlannerWizard() {
           children={draft.children}
           mode={draft.mode}
           tripName={draft.tripName}
-          versionLabel={activeVersionName || 'v1'}
+          versionLabel={versions.find(v => v.id === activeVersionId)?.name || 'v1'}
         />
       </DashboardLayout>
     );
