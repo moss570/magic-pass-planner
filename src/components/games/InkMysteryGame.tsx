@@ -6,8 +6,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, BookOpen, Volume2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Volume2, MapPin, Navigation, Wifi, WifiOff } from "lucide-react";
 import { Story } from "inkjs";
+import { GPSWatcher, ParkZone, PARK_ZONES } from "@/lib/gpsTracker";
 
 // Load compiled Ink JSON story
 
@@ -40,6 +41,14 @@ export default function InkMysteryGame({ onClose }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [autoScroll, setAutoScroll] = useState(true);
+  
+  // GPS State
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState<"off" | "searching" | "in_zone" | "error">("off");
+  const [currentZone, setCurrentZone] = useState<ParkZone | null>(null);
+  const [gpsClues, setGpsClues] = useState<{ zone: string; clue: string }[]>([]);
+  const [showGpsPanel, setShowGpsPanel] = useState(false);
+  const gpsWatcher = useRef<GPSWatcher | null>(null);
 
   // Initialize story from compiled JSON
   useEffect(() => {
@@ -58,6 +67,51 @@ export default function InkMysteryGame({ onClose }: Props) {
       }
     };
     loadStory();
+  }, []);
+
+  // GPS Watcher
+  const toggleGps = () => {
+    if (gpsEnabled) {
+      gpsWatcher.current?.stop();
+      setGpsEnabled(false);
+      setGpsStatus("off");
+      setCurrentZone(null);
+    } else {
+      const watcher = new GPSWatcher(
+        (zone) => {
+          setGpsStatus("in_zone");
+          setCurrentZone(zone);
+          // Add GPS bonus clue
+          setGpsClues(prev => {
+            if (prev.find(c => c.zone === zone.id)) return prev;
+            return [...prev, { zone: zone.id, clue: zone.clueBonus }];
+          });
+          // Add to story paragraphs
+          setParagraphs(prev => [
+            ...prev,
+            `📍 <b>GPS CLUE UNLOCKED!</b> You're near <b>${zone.name}</b>!`,
+            `🔎 ${zone.clueBonus}`
+          ]);
+        },
+        () => {
+          setGpsStatus("searching");
+          setCurrentZone(null);
+        },
+        (msg) => {
+          setGpsStatus("error");
+          console.error("GPS:", msg);
+        }
+      );
+      watcher.start();
+      gpsWatcher.current = watcher;
+      setGpsEnabled(true);
+      setGpsStatus("searching");
+    }
+  };
+
+  // Cleanup GPS on unmount
+  useEffect(() => {
+    return () => { gpsWatcher.current?.stop(); };
   }, []);
 
   // Auto-scroll to bottom
@@ -157,8 +211,52 @@ export default function InkMysteryGame({ onClose }: Props) {
           </div>
           <p className="text-[9px] text-white/25">Mystery at Adventure World</p>
         </div>
-        <div className="w-5" /> {/* Spacer */}
+        {/* GPS Toggle */}
+        <button onClick={toggleGps} className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold border ${
+          gpsStatus === "in_zone" ? "bg-green-500/20 border-green-500/30 text-green-400" :
+          gpsStatus === "searching" ? "bg-blue-500/20 border-blue-500/30 text-blue-400" :
+          gpsStatus === "error" ? "bg-red-500/20 border-red-500/30 text-red-400" :
+          "bg-white/5 border-white/10 text-white/30"
+        }`}>
+          {gpsEnabled ? <Navigation className="w-3 h-3" /> : <MapPin className="w-3 h-3" />}
+          {gpsStatus === "in_zone" ? "📍" : gpsStatus === "searching" ? "🔍" : "GPS"}
+        </button>
       </div>
+
+      {/* GPS Zone Alert */}
+      <AnimatePresence>
+        {currentZone && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="relative z-10 mx-3 mt-2 p-2.5 rounded-lg bg-green-500/15 border border-green-500/25">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-green-400 flex-shrink-0" />
+              <div>
+                <p className="text-green-400 text-xs font-bold">You're near {currentZone.name}!</p>
+                <p className="text-white/50 text-[10px]">{currentZone.type === "ride_line" ? "🎢 Ride Queue" : currentZone.type === "restaurant" ? "🍽️ Restaurant" : "🛍️ Shop"} — Bonus clue available</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* GPS Clues Collected */}
+      {gpsClues.length > 0 && (
+        <div className="relative z-10 mx-3 mt-1">
+          <button onClick={() => setShowGpsPanel(!showGpsPanel)}
+            className="text-[10px] text-green-400/60 hover:text-green-400">
+            📍 {gpsClues.length} GPS clue{gpsClues.length > 1 ? "s" : ""} found {showGpsPanel ? "▲" : "▼"}
+          </button>
+          {showGpsPanel && (
+            <div className="mt-1 space-y-1">
+              {gpsClues.map((gc, i) => (
+                <div key={i} className="p-2 rounded-lg bg-green-500/10 border border-green-500/15 text-white/60 text-[10px]">
+                  📍 {gc.clue}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Story Content */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 relative z-10">
