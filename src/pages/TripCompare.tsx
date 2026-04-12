@@ -28,7 +28,7 @@ export default function TripCompare() {
           .eq("user_id", user.id)
           .order("version_number", { ascending: true });
         if (error) throw error;
-        setVersions(data || []);
+        setVersions((data as unknown as TripVersion[]) || []);
       } catch {
         toast({ title: "Failed to load versions", variant: "destructive" });
       } finally {
