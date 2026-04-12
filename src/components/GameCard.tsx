@@ -10,11 +10,12 @@ interface GameCardProps {
   gradient: string;
   glowColor: string;
   imageUrl?: string;
+  badge?: string;
   onClick: () => void;
   delay?: number;
 }
 
-export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, imageUrl, onClick, delay = 0 }: GameCardProps) {
+export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, imageUrl, badge, onClick, delay = 0 }: GameCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, rotateX: 15 }}
@@ -61,6 +62,15 @@ export default function GameCard({ emoji, name, description, players, time, grad
               alt={name}
               className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
             />
+          )}
+
+          {/* Badge */}
+          {badge && (
+            <div className="absolute top-3 right-3 z-20">
+              <span className="px-2 py-0.5 bg-gradient-to-r from-green-500 to-emerald-500 text-black text-[10px] font-black rounded-full uppercase tracking-wider">
+                {badge}
+              </span>
+            </div>
           )}
 
           {/* Content */}

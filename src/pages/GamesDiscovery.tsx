@@ -105,6 +105,43 @@ const games = [
     imageUrl: "/game-cards/mystery-case.png",
     path: "/ride-line-quest?game=mystery-case",
   },
+  // ─── NEW MULTIPLAYER GAMES (Phaser + Colyseus) ─────────
+  {
+    id: "match3", name: "Theme Park Match-3", emoji: "🎪",
+    description: "Match theme park items in this multiplayer puzzle! First to 500 wins!",
+    players: "2-4", time: "5-10 min",
+    gradient: "bg-gradient-to-br from-yellow-500 via-pink-500 to-red-500",
+    glowColor: "#FF6B6B",
+    path: "/ride-line-quest?game=match3",
+    badge: "MULTIPLAYER",
+  },
+  {
+    id: "poker", name: "Poker Night", emoji: "🃏",
+    description: "Texas Hold'em with bluff tracking & shame photos!",
+    players: "2-10", time: "10-15 min",
+    gradient: "bg-gradient-to-br from-green-500 via-emerald-600 to-teal-600",
+    glowColor: "#10B981",
+    path: "/ride-line-quest?game=poker",
+    badge: "MULTIPLAYER",
+  },
+  {
+    id: "spit", name: "Spit!", emoji: "⚡",
+    description: "Lightning-fast card shedding — first to empty wins!",
+    players: "2-4", time: "3-5 min",
+    gradient: "bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600",
+    glowColor: "#06B6D4",
+    path: "/ride-line-quest?game=spit",
+    badge: "MULTIPLAYER",
+  },
+  {
+    id: "mystery-adventure", name: "Mystery at Adventure World", emoji: "🔍",
+    description: "3-4 hour cooperative detective mystery with GPS clues! Solve it with friends!",
+    players: "1-8", time: "3-4 hrs",
+    gradient: "bg-gradient-to-br from-amber-600 via-red-700 to-purple-800",
+    glowColor: "#DC2626",
+    path: "/ride-line-quest?game=mystery-adventure",
+    badge: "MULTIPLAYER",
+  },
 ];
 
 const GamesDiscovery = () => {
@@ -187,6 +224,8 @@ const GamesDiscovery = () => {
               time={game.time}
               gradient={game.gradient}
               glowColor={game.glowColor}
+              imageUrl={(game as any).imageUrl}
+              badge={(game as any).badge}
               onClick={() => session ? navigate(game.path) : navigate("/signup")}
               delay={idx * 0.06}
             />
