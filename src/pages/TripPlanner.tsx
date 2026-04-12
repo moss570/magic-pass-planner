@@ -8,6 +8,7 @@ import {
 import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import ItineraryCard from "@/components/trip-planner/ItineraryCard";
+import HotelSuggestions from "@/components/trip-planner/HotelSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
@@ -223,6 +224,7 @@ function ResultsView({
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
   onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
+  lodging, startDate, endDate, adults, children,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -251,6 +253,11 @@ function ResultsView({
   supabaseUrl: string;
   walkingSpeedKmh: number;
   tripId?: string | null;
+  lodging?: string;
+  startDate?: string;
+  endDate?: string;
+  adults?: number;
+  children?: number;
 }) {
   const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
@@ -360,6 +367,17 @@ function ResultsView({
           </div>
         )}
       </div>
+
+      {/* Off-site hotel suggestions */}
+      {!resortStay && lodging !== 'disney-resort' && (
+        <HotelSuggestions
+          lodging={lodging || ''}
+          startDate={startDate || ''}
+          endDate={endDate || ''}
+          adults={adults || 2}
+          children={children || 0}
+        />
+      )}
 
       {plans.map((plan, i) => (
         useEnhancedCards ? (
@@ -874,6 +892,11 @@ function TripPlannerWizard() {
           supabaseUrl={SUPABASE_URL}
           walkingSpeedKmh={draft.walkingSpeedKmh}
           tripId={savedTripId}
+          lodging={draft.lodging}
+          startDate={draft.startDate}
+          endDate={draft.endDate}
+          adults={draft.adults}
+          children={draft.children}
         />
       </DashboardLayout>
     );

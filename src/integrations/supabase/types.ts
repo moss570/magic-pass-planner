@@ -3060,6 +3060,80 @@ export type Database = {
           },
         ]
       }
+      trip_activity_log: {
+        Row: {
+          activity_type: string | null
+          actual_ride_minutes: number | null
+          actual_wait_minutes: number | null
+          arrived_at: string | null
+          created_at: string
+          day_index: number
+          day_status: string
+          departed_at: string | null
+          id: string
+          land: string | null
+          location: string
+          notes: string | null
+          park: string | null
+          planned_ride_minutes: number | null
+          planned_start_time: string | null
+          planned_wait_minutes: number | null
+          trip_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string | null
+          actual_ride_minutes?: number | null
+          actual_wait_minutes?: number | null
+          arrived_at?: string | null
+          created_at?: string
+          day_index?: number
+          day_status?: string
+          departed_at?: string | null
+          id?: string
+          land?: string | null
+          location: string
+          notes?: string | null
+          park?: string | null
+          planned_ride_minutes?: number | null
+          planned_start_time?: string | null
+          planned_wait_minutes?: number | null
+          trip_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string | null
+          actual_ride_minutes?: number | null
+          actual_wait_minutes?: number | null
+          arrived_at?: string | null
+          created_at?: string
+          day_index?: number
+          day_status?: string
+          departed_at?: string | null
+          id?: string
+          land?: string | null
+          location?: string
+          notes?: string | null
+          park?: string | null
+          planned_ride_minutes?: number | null
+          planned_start_time?: string | null
+          planned_wait_minutes?: number | null
+          trip_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_activity_log_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "saved_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trip_expenses: {
         Row: {
           amount: number
