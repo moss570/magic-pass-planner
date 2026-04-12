@@ -610,13 +610,57 @@ function TripPlannerWizard() {
     } catch {}
   };
 
-  // Check for existing draft on mount
+  // Check for existing draft on mount (skip if editing a saved trip)
   useEffect(() => {
+    if (editTripId) return;
     const existing = loadDraft(userId);
     if (existing) {
       setShowResumeBanner(true);
     }
-  }, [userId]);
+  }, [userId, editTripId]);
+
+  // Hydrate from saved trip when editing
+  useEffect(() => {
+    if (!editTripId) return;
+    const hydrate = async () => {
+      try {
+        const { data, error } = await (await import("@/integrations/supabase/client")).supabase
+          .from("saved_trips")
+          .select("*")
+          .eq("id", editTripId)
+          .single();
+        if (error || !data) {
+          toast({ title: "Could not load trip", variant: "destructive" });
+          setHydrating(false);
+          return;
+        }
+        const inferredMode: TripMode = data.start_date === data.end_date ? 'day-trip' : 'vacation';
+        setDraft(prev => ({
+          ...prev,
+          mode: inferredMode,
+          tripName: data.name || '',
+          startDate: data.start_date || '',
+          endDate: data.end_date || '',
+          budget: data.budget || (inferredMode === 'day-trip' ? 500 : 6500),
+          adults: data.adults ?? 2,
+          children: data.children ?? 0,
+          ages: data.ages || '',
+          selectedParks: data.parks || [],
+          llOption: data.ll_option || 'multi',
+          ridePreference: data.ride_preference || 'mix',
+          specialNotes: data.special_notes || '',
+        }));
+        setSavedTripId(data.id);
+        setModeSelected(true);
+        setShowResumeBanner(false);
+      } catch {
+        toast({ title: "Could not load trip", variant: "destructive" });
+      } finally {
+        setHydrating(false);
+      }
+    };
+    hydrate();
+  }, [editTripId]);
 
   // Handle prefill from Best Days to Go or other sources
   useEffect(() => {
