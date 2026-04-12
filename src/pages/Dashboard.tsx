@@ -252,8 +252,14 @@ const Dashboard = () => {
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
                   📅 Your Trip Itinerary
+                  {mostRecentTrip?.name && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      — {mostRecentTrip.name}
+                      {activeVersion ? ` (${activeVersion.name || `v${activeVersion.version_number}`})` : ""}
+                    </span>
+                  )}
                 </h3>
-                <Link to="/trip-planner" className="text-xs text-primary hover:underline">
+                <Link to="/my-trips" className="text-xs text-primary hover:underline">
                   {mostRecentTrip ? "Full plan →" : "Create one →"}
                 </Link>
               </div>
