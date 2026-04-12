@@ -79,9 +79,14 @@ export default function AddMemberForm({ tripId, onMemberAdded }: Props) {
     return (
       <button
         onClick={() => setShowForm(true)}
-        className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+        className="w-full py-3 px-4 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors text-left space-y-1"
       >
-        <UserPlus className="w-3.5 h-3.5" /> Add Person
+        <div className="flex items-center gap-2 text-sm font-bold text-primary">
+          <UserPlus className="w-4 h-4" /> Invite Friend to Plan This Trip
+        </div>
+        <p className="text-xs text-muted-foreground leading-snug">
+          Your friend will be able to receive alerts, follow budget, participate in polls and other features depending on which subscription tier they have.
+        </p>
       </button>
     );
   }

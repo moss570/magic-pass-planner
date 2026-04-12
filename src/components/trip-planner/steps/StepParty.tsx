@@ -69,11 +69,7 @@ export default function StepParty({ draft, onChange, onContinue, onBack, tripId 
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Travel Party Members</label>
-          <AddMemberForm tripId={tripId || null} onMemberAdded={handleMemberAdded} />
-        </div>
-        <p className="text-xs text-muted-foreground mb-2">Travel party members must be adults with their own account. Add children in the party size count above.</p>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">Travel Party Members</label>
         {draft.tripMembers.length > 0 && (
           <div className="space-y-1.5 mb-3">
             {draft.tripMembers.map((m, i) => (
@@ -89,6 +85,7 @@ export default function StepParty({ draft, onChange, onContinue, onBack, tripId 
             ))}
           </div>
         )}
+        <AddMemberForm tripId={tripId || null} onMemberAdded={handleMemberAdded} />
       </div>
 
       <div className="flex gap-3">
