@@ -28,7 +28,7 @@ export const MAGIC_KINGDOM: Record<string, ParkLocation> = {
   "Tomorrowland Speedway":           { x:78, y:85, land:"Tomorrowland", rideTime:5, category:"ride", thrillLevel:1, avgWait:{low:15,moderate:30,high:45}, llAvailable:false, tips:"Cars on a track, popular with kids" },
   "Astro Orbiter":                   { x:83, y:65, land:"Tomorrowland", rideTime:3, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:25,high:40}, llAvailable:false, tips:"Go in evening for great views" },
   "Walt Disney's Carousel of Progress":{ x:80,y:75,land:"Tomorrowland",rideTime:21,category:"show",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Great A/C break, classic show" },
-  "Tomorrowland Terrace":            { x:70,y:60,land:"Tomorrowland",category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Quick service, castle views" },
+  "Tomorrowland Terrace":            { x:70,y:60,land:"Tomorrowland",category:"dining",thrillLevel:1,avgWait:{low:5,moderate:10,high:15},llAvailable:false,tips:"Quick service, castle views", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Fantasyland
   "Seven Dwarfs Mine Train":         { x:55, y:80, land:"Fantasyland", rideTime:3, category:"ride", thrillLevel:3, avgWait:{low:35,moderate:70,high:110}, llAvailable:true, tips:"Most popular family coaster. Book LL after TRON." },
   "Peter Pan's Flight":              { x:45, y:75, land:"Fantasyland", rideTime:3, category:"ride", thrillLevel:2, avgWait:{low:40,moderate:75,high:110}, llAvailable:true, tips:"Gentle ride but always long waits" },
@@ -38,17 +38,17 @@ export const MAGIC_KINGDOM: Record<string, ParkLocation> = {
   "The Barnstormer":                 { x:46, y:86, land:"Fantasyland", rideTime:2, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:35}, llAvailable:false, tips:"Mini coaster for first-time riders" },
   "Mad Tea Party":                   { x:52, y:75, land:"Fantasyland", rideTime:2, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:30}, llAvailable:false, tips:"Teacups" },
   "Mickey's PhilharMagic":           { x:47, y:73, land:"Fantasyland", rideTime:12, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:20}, llAvailable:false, tips:"4D movie, great A/C" },
-  "Be Our Guest Restaurant":         { x:43, y:78, land:"Fantasyland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required — most iconic dining in MK" },
-  "Pinocchio Village Haus":          { x:42, y:80, land:"Fantasyland", rideTime:30, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS, overlooks Small World" },
+  "Be Our Guest Restaurant":         { x:43, y:78, land:"Fantasyland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required — most iconic dining in MK", diningType:"table-service", servesMeals:["lunch","dinner"] },
+  "Pinocchio Village Haus":          { x:42, y:80, land:"Fantasyland", rideTime:30, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"QS, overlooks Small World", diningType:"quick-service", servesMeals:["lunch","dinner"] },
   // Liberty Square
   "Haunted Mansion":                 { x:32, y:70, land:"Liberty Square", rideTime:9, category:"ride", thrillLevel:2, avgWait:{low:15,moderate:30,high:55}, llAvailable:true, tips:"Best in evening for atmosphere" },
-  "Columbia Harbour House":          { x:33, y:68, land:"Liberty Square", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in MK. Second floor has castle views." },
-  "Liberty Tree Tavern":             { x:35, y:65, land:"Liberty Square", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Colonial American." },
+  "Columbia Harbour House":          { x:33, y:68, land:"Liberty Square", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Best QS in MK. Second floor has castle views.", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Liberty Tree Tavern":             { x:35, y:65, land:"Liberty Square", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Colonial American.", diningType:"table-service", servesMeals:["lunch","dinner"] },
   // Frontierland
   "Big Thunder Mountain Railroad":   { x:22, y:70, land:"Frontierland", rideTime:4, category:"ride", thrillLevel:3, avgWait:{low:20,moderate:40,high:70}, llAvailable:true, tips:"Wildest ride in wilderness. Great fireworks views." },
   "Tiana's Bayou Adventure":         { x:20, y:65, land:"Frontierland", rideTime:11, category:"ride", thrillLevel:3, avgWait:{low:25,moderate:50,high:90}, llAvailable:true, tips:"New and popular. Book LL when available." },
-  "Pecos Bill Tall Tale Inn & Cafe": { x:25, y:65, land:"Frontierland", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Largest QS in MK, good for groups" },
-  "Golden Oak Outpost":              { x:22, y:68, land:"Frontierland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"Waffle fries, fast" },
+  "Pecos Bill Tall Tale Inn & Cafe": { x:25, y:65, land:"Frontierland", rideTime:20, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"Largest QS in MK, good for groups", diningType:"quick-service", servesMeals:["lunch","dinner"] },
+  "Golden Oak Outpost":              { x:22, y:68, land:"Frontierland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:12}, llAvailable:false, tips:"Waffle fries, fast", diningType:"snack", servesMeals:[] },
   // Adventureland
   "Pirates of the Caribbean":        { x:18, y:58, land:"Adventureland", rideTime:9, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:40}, llAvailable:false, tips:"Classic ride. Go after 3 PM for short waits." },
   "Jungle Cruise":                   { x:15, y:55, land:"Adventureland", rideTime:10, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:25,high:50}, llAvailable:true, tips:"Best jokes in WDW. Morning or evening." },
