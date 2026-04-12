@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -121,6 +121,14 @@ export default function Admin() {
   const [vipReason, setVipReason] = useState("");
   const [vipNotes, setVipNotes] = useState("");
   const [sendingInvite, setSendingInvite] = useState(false);
+
+  // Bulk import state
+  type BulkRow = { email: string; first_name: string; last_name: string; status: "pending" | "sending" | "sent" | "failed" | "skipped"; error?: string };
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>([]);
+  const [bulkType, setBulkType] = useState<"beta_tester" | "vip">("beta_tester");
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
+  const bulkFileRef = useRef<HTMLInputElement>(null);
 
   // Access control
   useEffect(() => {
