@@ -648,6 +648,7 @@ function TripPlannerWizard() {
     if (existing) {
       setDraft(existing);
       setStep(existing.currentStep || 0);
+      setModeSelected(true);
     }
     setShowResumeBanner(false);
   };
