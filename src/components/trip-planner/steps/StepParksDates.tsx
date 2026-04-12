@@ -21,7 +21,6 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
     onChange({ selectedParks: next });
   };
 
-  // Compute trip days
   const tripDays = useMemo(() => {
     if (!draft.startDate) return [];
     const start = new Date(draft.startDate + "T12:00:00");
@@ -35,21 +34,48 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
     return days;
   }, [draft.startDate, draft.endDate]);
 
-  // Ensure assignments match trip days
-  const assignments = useMemo(() => {
-    const map = new Map(draft.parkDayAssignments.map(a => [a.date, a.parkId]));
-    return tripDays.map(date => ({
-      date,
-      parkId: map.get(date) ?? (draft.selectedParks[0] || null),
-    }));
+  // Migrate from old parkId to parkIds format & ensure assignments match trip days
+  const assignments: ParkDayAssignment[] = useMemo(() => {
+    const map = new Map(draft.parkDayAssignments.map(a => [a.date, a]));
+    return tripDays.map(date => {
+      const existing = map.get(date);
+      if (existing) {
+        // Migrate legacy: if parkIds is missing, derive from parkId
+        const parkIds = existing.parkIds?.length
+          ? existing.parkIds
+          : existing.parkId
+            ? [existing.parkId]
+            : [];
+        return { date, parkId: parkIds[0] ?? null, parkIds };
+      }
+      const defaultPark = draft.selectedParks[0] || null;
+      return { date, parkId: defaultPark, parkIds: defaultPark ? [defaultPark] : [] };
+    });
   }, [tripDays, draft.parkDayAssignments, draft.selectedParks]);
 
-  const setDayPark = (date: string, parkId: string | null) => {
-    const next = assignments.map(a => a.date === date ? { ...a, parkId } : a);
+  const toggleDayPark = (date: string, park: string) => {
+    const next = assignments.map(a => {
+      if (a.date !== date) return a;
+      const currentParks = [...a.parkIds];
+      const idx = currentParks.indexOf(park);
+      if (idx >= 0) {
+        currentParks.splice(idx, 1);
+      } else if (currentParks.length < 3) {
+        currentParks.push(park);
+      }
+      return { date, parkId: currentParks[0] ?? null, parkIds: currentParks };
+    });
     onChange({ parkDayAssignments: next });
   };
 
-  const nonParkDayCount = assignments.filter(a => a.parkId === null).length;
+  const setNonParkDay = (date: string) => {
+    const next = assignments.map(a =>
+      a.date === date ? { date, parkId: null, parkIds: [] } : a
+    );
+    onChange({ parkDayAssignments: next });
+  };
+
+  const nonParkDayCount = assignments.filter(a => a.parkIds.length === 0).length;
   const canContinue = draft.selectedParks.length > 0 && tripDays.length > 0;
 
   return (
@@ -70,22 +96,35 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
             Day-by-Day Park Assignment
+            <span className="ml-2 text-muted-foreground font-normal normal-case">(up to 3 parks per day)</span>
           </label>
           <div className="space-y-2">
             {assignments.map((a, i) => {
               const dayLabel = new Date(a.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+              const isNonPark = a.parkIds.length === 0;
               return (
                 <div key={a.date} className="rounded-lg bg-muted border border-border p-3">
                   <p className="text-xs font-semibold text-foreground mb-2">Day {i + 1} — {dayLabel}</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {draft.selectedParks.map(park => (
-                      <button key={park} onClick={() => setDayPark(a.date, park)}
-                        className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${a.parkId === park ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/40"}`}>
-                        {park}
-                      </button>
-                    ))}
-                    <button onClick={() => setDayPark(a.date, null)}
-                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${a.parkId === null ? "bg-secondary text-secondary-foreground border-secondary" : "border-border text-muted-foreground hover:border-secondary/40"}`}>
+                    {draft.selectedParks.map(park => {
+                      const selected = a.parkIds.includes(park);
+                      const atLimit = !selected && a.parkIds.length >= 3;
+                      return (
+                        <button key={park} onClick={() => toggleDayPark(a.date, park)}
+                          disabled={atLimit}
+                          className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${
+                            selected
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : atLimit
+                                ? "border-border text-muted-foreground/40 cursor-not-allowed"
+                                : "border-border text-muted-foreground hover:border-primary/40"
+                          }`}>
+                          {park}
+                        </button>
+                      );
+                    })}
+                    <button onClick={() => setNonParkDay(a.date)}
+                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${isNonPark ? "bg-secondary text-secondary-foreground border-secondary" : "border-border text-muted-foreground hover:border-secondary/40"}`}>
                       🏖️ Non-Park
                     </button>
                   </div>
