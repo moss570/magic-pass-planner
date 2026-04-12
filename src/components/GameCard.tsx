@@ -9,11 +9,12 @@ interface GameCardProps {
   time: string;
   gradient: string;
   glowColor: string;
+  imageUrl?: string;
   onClick: () => void;
   delay?: number;
 }
 
-export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, onClick, delay = 0 }: GameCardProps) {
+export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, imageUrl, onClick, delay = 0 }: GameCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, rotateX: 15 }}
@@ -43,6 +44,15 @@ export default function GameCard({ emoji, name, description, players, time, grad
             <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full blur-2xl"
               style={{ background: glowColor }} />
           </div>
+
+          {/* Card Image */}
+          {imageUrl && (
+            <img 
+              src={imageUrl} 
+              alt={name}
+              className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+            />
+          )}
 
           {/* Content */}
           <div className="relative z-10">

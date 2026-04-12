@@ -60,8 +60,8 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
 
   if (showResult) {
     return (
-      <div className="min-h-screen bg-[#060a14] p-4 flex items-center justify-center relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="min-h-screen bg-cover bg-center" style={backgroundImage: `url(/game-backgrounds/bg-would-you-rather.jpg`} p-4 flex items-center justify-center relative overflow-hidden">
+      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-blue-500" />
       </div>
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
@@ -77,8 +77,8 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
   }
 
   return (
-    <div className="min-h-screen bg-[#060a14] p-4 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
+    <div className="min-h-screen bg-cover bg-center" style={backgroundImage: `url(/game-backgrounds/bg-would-you-rather.jpg`} p-4 relative overflow-hidden">
+      <><div className="absolute inset-0 bg-black/60 pointer-events-none" /><div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/4 w-72 h-72 rounded-full blur-[100px] opacity-20 bg-blue-500" />
         <div className="absolute bottom-1/4 right-1/3 w-64 h-64 rounded-full blur-[100px] opacity-15 bg-indigo-400" />
       </div>

@@ -12,6 +12,7 @@ const games = [
     players: "2-10", time: "15 min",
     gradient: "bg-gradient-to-br from-red-500 via-orange-500 to-yellow-500",
     glowColor: "#FF6B6B",
+    imageUrl: "/game-cards/trivia.png",
     path: "/ride-line-quest?game=trivia",
   },
   {
@@ -20,6 +21,7 @@ const games = [
     players: "2-10", time: "20 min",
     gradient: "bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500",
     glowColor: "#06D6A0",
+    imageUrl: "/game-cards/bingo.png",
     path: "/ride-line-quest?game=bingo",
   },
   {
@@ -28,6 +30,7 @@ const games = [
     players: "2-10", time: "15 min",
     gradient: "bg-gradient-to-br from-purple-500 via-violet-500 to-fuchsia-500",
     glowColor: "#9D84B7",
+    imageUrl: "/game-cards/who-did-it.png",
     path: "/ride-line-quest?game=who-did-it",
   },
   {
@@ -36,6 +39,7 @@ const games = [
     players: "2-10", time: "10 min",
     gradient: "bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500",
     glowColor: "#4361EE",
+    imageUrl: "/game-cards/would-you-rather.png",
     path: "/ride-line-quest?game=would-you-rather",
   },
   {
@@ -44,6 +48,7 @@ const games = [
     players: "2-10", time: "15 min",
     gradient: "bg-gradient-to-br from-pink-500 via-rose-500 to-red-500",
     glowColor: "#FF006E",
+    imageUrl: "/game-cards/picture-perfect.png",
     path: "/ride-line-quest?game=picture-perfect",
   },
   {
@@ -52,6 +57,7 @@ const games = [
     players: "2-10", time: "12 min",
     gradient: "bg-gradient-to-br from-amber-400 via-orange-500 to-red-500",
     glowColor: "#FB8500",
+    imageUrl: "/game-cards/song-lyric.png",
     path: "/ride-line-quest?game=song-lyric",
   },
   {
@@ -60,6 +66,7 @@ const games = [
     players: "1-10", time: "10 min",
     gradient: "bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500",
     glowColor: "#2D6A4F",
+    imageUrl: "/game-cards/geography.png",
     path: "/ride-line-quest?game=geography",
   },
   {
@@ -68,6 +75,7 @@ const games = [
     players: "4-10", time: "15 min",
     gradient: "bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600",
     glowColor: "#00B4DB",
+    imageUrl: "/game-cards/spy-word.png",
     path: "/ride-line-quest?game=spy-word",
   },
   {
@@ -76,6 +84,7 @@ const games = [
     players: "2-10", time: "12 min",
     gradient: "bg-gradient-to-br from-teal-400 via-green-500 to-emerald-500",
     glowColor: "#06D6A0",
+    imageUrl: "/game-cards/haaaa.png",
     path: "/ride-line-quest?game=haaaa",
   },
   {
@@ -92,6 +101,7 @@ const games = [
     players: "1", time: "All day",
     gradient: "bg-gradient-to-br from-yellow-500 via-amber-500 to-orange-600",
     glowColor: "#F59E0B",
+    imageUrl: "/game-cards/mystery-case.png",
     path: "/ride-line-quest?game=mystery-case",
   },
 ];

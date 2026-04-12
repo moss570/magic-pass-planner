@@ -77,9 +77,28 @@ export default function GameLauncher({ gameType, gameName, gameEmoji, gradient, 
           <ArrowLeft className="w-5 h-5" /> Back to Games
         </button>
 
-        {/* Game info */}
+        {/* Game info with characters */}
         <div className="text-center mb-8">
-          <motion.div className="text-6xl mb-3" animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 3 }}>
+          {/* Characters */}
+          <div className="flex justify-center gap-4 mb-6 h-32">
+            <motion.img 
+              src="/game-characters/character-happy-tourist-1.png"
+              alt="Player 1"
+              className="h-full w-auto rounded-lg shadow-lg"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 3 }}
+            />
+            <motion.img 
+              src="/game-characters/character-happy-tourist-2.png"
+              alt="Player 2"
+              className="h-full w-auto rounded-lg shadow-lg"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ repeat: Infinity, duration: 3, delay: 0.2 }}
+            />
+          </div>
+          
+          {/* Game emoji */}
+          <motion.div className="text-5xl mb-2" animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 3 }}>
             {gameEmoji}
           </motion.div>
           <h1 className="text-3xl font-black text-white mb-1">{gameName}</h1>
