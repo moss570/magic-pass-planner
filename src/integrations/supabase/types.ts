@@ -2953,6 +2953,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tier_access_overrides: {
+        Row: {
+          feature_key: string
+          id: string
+          plan_id: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          feature_key: string
+          id?: string
+          plan_id: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          feature_key?: string
+          id?: string
+          plan_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       travel_party_invites: {
         Row: {
           accepted_at: string | null

@@ -1,4 +1,5 @@
 import type { PlanId } from './stripe';
+import { supabase } from '@/integrations/supabase/client';
 
 export type AlertLimit = number | 'unlimited' | 'links_only' | 'none';
 
@@ -279,11 +280,58 @@ export const PLAN_ACCESS: Record<PlanId, PlanAccess> = {
   },
 };
 
+// --- Override cache ---
+let _overrideCache: Map<string, any> | null = null;
+let _overridePromise: Promise<void> | null = null;
+
+function overrideKey(feature: string, plan: string) {
+  return `${feature}::${plan}`;
+}
+
+async function _loadOverrides() {
+  try {
+    const { data } = await supabase.from("tier_access_overrides").select("feature_key, plan_id, value");
+    const map = new Map<string, any>();
+    if (data) {
+      for (const row of data) {
+        map.set(overrideKey(row.feature_key, row.plan_id), row.value);
+      }
+    }
+    _overrideCache = map;
+  } catch {
+    _overrideCache = new Map();
+  }
+}
+
+export function ensureOverridesLoaded(): Promise<void> {
+  if (_overrideCache) return Promise.resolve();
+  if (!_overridePromise) {
+    _overridePromise = _loadOverrides().finally(() => { _overridePromise = null; });
+  }
+  return _overridePromise;
+}
+
+export function refreshTierOverrides() {
+  _overrideCache = null;
+  _overridePromise = null;
+  ensureOverridesLoaded();
+}
+
+// Eagerly start loading
+ensureOverridesLoaded();
+
 export function getFeatureAccess<K extends keyof PlanAccess>(
   planId: PlanId | null | undefined,
   feature: K
 ): PlanAccess[K] {
   const plan = planId ?? 'free';
+  // Check override cache (sync — best effort)
+  if (_overrideCache) {
+    const k = overrideKey(feature, plan);
+    if (_overrideCache.has(k)) {
+      return _overrideCache.get(k) as PlanAccess[K];
+    }
+  }
   return PLAN_ACCESS[plan][feature];
 }
 

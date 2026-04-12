@@ -47,6 +47,7 @@ import TripInvite from "./pages/TripInvite";
 import TripCompare from "./pages/TripCompare";
 import AffiliateNetworks from "./pages/admin/AffiliateNetworks";
 import ParkContent from "./pages/admin/ParkContent";
+import TierAccess from "./pages/admin/TierAccess";
 import AttractionPriorities from "./pages/AttractionPriorities";
 import CharacterMeets from "./pages/CharacterMeets";
 import ShowFireworksPriorities from "./pages/ShowFireworksPriorities";
@@ -104,6 +105,7 @@ const App = () => (
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
+            <Route path="/admin/tier-access" element={<ProtectedRoute><TierAccess /></ProtectedRoute>} />
             <Route path="/attraction-priorities" element={<ProtectedRoute><AttractionPriorities /></ProtectedRoute>} />
             <Route path="/character-meets" element={<ProtectedRoute><CharacterMeets /></ProtectedRoute>} />
             <Route path="/shows-fireworks" element={<ProtectedRoute><ShowFireworksPriorities /></ProtectedRoute>} />
