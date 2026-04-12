@@ -979,6 +979,17 @@ function TripPlannerWizard() {
   const totalSteps = isDayTrip ? 5 : 8;
   const isReviewStep = isDayTrip ? step === 4 : step === 7;
 
+  // Loading state when hydrating a saved trip
+  if (hydrating) {
+    return (
+      <DashboardLayout title="🗺️ Trip Planner" subtitle="Loading your trip…">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-12 justify-center">
+          <span className="animate-spin">⏳</span> Loading trip…
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   // Mode selection screen
   if (!modeSelected && !showResumeBanner) {
     return (
