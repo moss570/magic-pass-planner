@@ -17,6 +17,7 @@ export interface MustDoPreference {
 export interface ParkDayAssignment {
   date: string;
   parkId: string | null; // null = non-park day
+  parkIds: string[]; // up to 3 parks per day
 }
 
 export interface TripDraft {
