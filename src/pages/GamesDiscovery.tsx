@@ -93,6 +93,7 @@ const games = [
     players: "2-10", time: "10 min",
     gradient: "bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500",
     glowColor: "#7C3AED",
+    imageUrl: "/game-cards/linemind.png",
     path: "/ride-line-quest?game=line-mind",
   },
   {

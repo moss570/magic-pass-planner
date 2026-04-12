@@ -37,6 +37,15 @@ export default function GameCard({ emoji, name, description, players, time, grad
       <div className={`relative overflow-hidden rounded-2xl ${gradient} p-[2px]`}>
         <div className="relative bg-[#0a0e1a]/90 backdrop-blur-sm rounded-[14px] p-5 h-full overflow-hidden">
           
+          {/* Card Image */}
+          {imageUrl && (
+            <img 
+              src={imageUrl} 
+              alt={name}
+              className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-300"
+            />
+          )}
+
           {/* Animated background pattern */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl"
