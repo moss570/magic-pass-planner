@@ -1,62 +1,114 @@
 
 
-## Settings Page Audit and Updates
+## Two Trip Planner Modes + User Defaults + Smart Best-Days Integration
 
-### Issues Found
+### Summary
+Add a **Day Trip Itinerary** mode alongside the existing **Vacation Planner**, create a **Trip Planner Defaults** section in Settings, and upgrade the Best Days to Go widget to support multi-park same-day selections that auto-detect Park Hopper itineraries.
 
-1. **My Subscription section** — outdated tier names ("Magic Pass", "AP Command Center+"), non-functional buttons (Upgrade, Manage Billing, Cancel Subscription are all dead buttons with no onClick handlers), feature comparison table uses old 2-tier model instead of current 6-tier model.
+---
 
-2. **SMS "Upgrade to enable"** — hardcoded to show when SMS is off, regardless of plan. Not tied to any tier check. Should be removed since SMS is available to all tiers (it just requires a phone number).
+### 1. Trip Planner Mode Selection
 
-3. **Walking Speed Calibrator** — gated behind `isFeatureEnabled("budgetUpgrades")` feature flag. Need to verify if that flag is enabled.
+When a user opens `/trip-planner`, they see a mode picker before the wizard:
 
-4. **Refer a Friend** — entirely static/mockup. Referral link is hardcoded ("brandon-moss-x7k2"), sharing buttons have no onClick handlers, stats are hardcoded to 0. No referral backend exists. Free months via Stripe would require modifying the subscription's `billing_cycle_anchor` or adding trial days via the Stripe API.
+```text
+┌─────────────────────────────────────┐
+│  🏰 Vacation Planner                │
+│  Multi-day trips with hotels,       │
+│  transportation & full budget       │
+├─────────────────────────────────────┤
+│  ☀️ Day Trip Itinerary              │
+│  Single-day park visit — no hotel,  │
+│  no airfare, streamlined budget     │
+└─────────────────────────────────────┘
+```
 
-5. **Disney Account section** — needs to be removed entirely per your request.
+**Day Trip mode differences:**
+- `endDate` is locked to `startDate` (single day)
+- Budget slider: $100–$2,000 (default $500)
+- Skips Step 5 (Transport & Lodging) entirely
+- Ticket question becomes: "Do you have tickets/AP?" — if AP, skip ticket cost
+- No hotel recommendations in results
+- No airfare considerations
+- Streamlined 5-step wizard: Basics → Party → Park(s) → Must-Dos → Review
 
-6. **Data & Privacy** — "Request Export" and "Delete Account" buttons have no onClick handlers. Privacy Policy and Terms of Service links are `<button>` elements with no routing.
+**Files:**
+- **`src/lib/tripDraft.ts`** — add `mode: 'vacation' | 'day-trip'` and `hasAnnualPass: boolean` to `TripDraft`; adjust `getDefaultDraft()`
+- **`src/components/trip-planner/Stepper.tsx`** — accept mode prop, show 5 or 7 steps
+- **`src/components/trip-planner/steps/StepBasics.tsx`** — conditionally hide end date and adjust budget range for day-trip mode
+- **`src/pages/TripPlanner.tsx`** — add mode picker screen before wizard; conditionally skip transport step; pass mode to `generateItinerary` payload
+- **`src/components/trip-planner/steps/StepLightningLaneTickets.tsx`** — show "I have an Annual Pass" toggle; if AP, hide ticket pricing
 
-7. **Cancel Subscription** — button has no handler. Needs a downgrade prompt before full cancellation.
+---
 
-### Plan
+### 2. Trip Planner Defaults in Settings
 
-#### 1. Rebuild "My Subscription" section
-- Show the user's actual plan name from `useSubscription()` (already available)
-- Replace the 2-column feature table with a contextual upgrade prompt showing the next tier up and its key benefits
-- **Upgrade button**: Link to `/pricing` page (where checkout already works)
-- **Manage Billing button**: Call the existing `customer-portal` edge function (if it exists) or Stripe Customer Portal via a new edge function
-- **Cancel Subscription button**: Open a confirmation dialog that first offers a downgrade (shows cheaper plan options), and only on second confirmation calls Stripe to cancel
+Add a new card in Settings: **"Trip Planner Defaults"** — saves to `users_profile` so the wizard auto-populates:
 
-#### 2. Remove SMS "Upgrade to enable" badge
-- Remove the conditional badge on the SMS toggle — SMS availability is not tier-gated
+- **Default mode**: Vacation / Day Trip
+- **Annual Pass holder**: Yes/No (+ tier select if Yes)
+- **Home park**: dropdown (already exists in Settings as `homePark`)
+- **Default party size**: adults + children
+- **Default ride preference**: thrill / family / little / mix
+- **Walking speed**: already exists
+- **Lightning Lane preference**: multi / individual / none
 
-#### 3. Check Walking Speed feature flag
-- Verify `budgetUpgrades` flag state; if disabled, enable it or remove the gate
+These defaults pre-fill the wizard draft via `getDefaultDraft()` which will read from the user's profile.
 
-#### 4. Refer a Friend — mark as "Coming Soon" or remove
-- Since there's no referral backend, no referral tracking table, and no Stripe integration for free months, this section should either be hidden or show a "Coming Soon" state. Building the full referral system (unique codes, tracking table, Stripe subscription modification) is a separate project.
+**Files:**
+- **`src/pages/Settings.tsx`** — add "Trip Planner Defaults" card with form fields
+- **`src/lib/tripDraft.ts`** — `getDefaultDraft()` accepts optional user preferences object to pre-fill
+- **Database migration** — add columns to `users_profile`: `default_trip_mode`, `default_party_adults`, `default_party_children`, `default_ride_preference`, `default_ll_option`
 
-#### 5. Remove Disney Account section
-- Delete the `DisneyConnectSection` component and the card that renders it
+---
 
-#### 6. Wire up Data & Privacy
-- **Request Export**: Trigger a toast confirming the request has been submitted (or generate a JSON export of the user's profile data)
-- **Delete Account**: Open a confirmation dialog, then call `supabase.auth.admin.deleteUser()` via an edge function, sign out, and redirect to the home page. Explain the difference from Cancel Subscription (cancel keeps the account but stops billing; delete removes all data permanently).
-- **Privacy Policy / Terms links**: Change from `<button>` to `<Link to="/privacy-policy">` and `<Link to="/terms">`
+### 3. Best Days to Go → Day Trip Integration
 
-#### 7. Cancel vs Delete distinction
-- Cancel Subscription: Stops billing at period end, keeps account and data
-- Delete Account: Permanently removes all user data and auth record
+Currently the widget only allows selecting one park at a time. Upgrade it to:
 
-### Files to edit
-- **`src/pages/Settings.tsx`** — all changes above (rebuild subscription section, remove Disney Account, wire up buttons, fix links, add cancel/downgrade dialog)
-- **`src/lib/featureFlags.ts`** — verify/enable `budgetUpgrades` flag
-- Possibly **create edge function** `customer-portal` if it doesn't exist, for Manage Billing
-- Possibly **create edge function** for account deletion
+- Allow selecting **multiple parks per date** (multi-select chips)
+- When user selects 2–3 parks on the **same day**, auto-set `parkHopper: true`
+- "Send to Trip Planner" opens Day Trip mode with:
+  - Date pre-filled
+  - Parks pre-filled
+  - Park Hopper auto-enabled if multiple parks on same day
+  - AP status pre-filled from user defaults
+  - Budget auto-set to day-trip default
 
-### Technical notes
-- Stripe cancellation: use `stripe.subscriptions.update(subId, { cancel_at_period_end: true })` via edge function
-- Stripe downgrade: redirect to `/pricing` where checkout handles plan changes
-- Account deletion edge function: uses service role to delete from `users_profile`, `saved_trips`, alerts tables, then `supabase.auth.admin.deleteUser()`
-- Referral system deferred — no backend exists and building one (unique codes, tracking, Stripe billing date modification) is out of scope for this update
+**Files:**
+- **`src/components/ap/BestDaysWidget.tsx`** — change from single park selector to allowing multi-park selection per date; update `handleSendToPlanner` to pass `mode=day-trip`, multiple parks, and park hopper flag
+- **`src/components/ap/ParkSelectorChips.tsx`** — support multi-select mode (new `multiSelect` prop)
+- **`src/pages/TripPlanner.tsx`** — extend prefill logic to read `mode`, `parkHopper`, and multiple parks from URL params
+
+---
+
+### 4. Edge Function Update
+
+- **`supabase/functions/ai-trip-planner/index.ts`** — accept `mode: 'day-trip' | 'vacation'` and `hasAnnualPass: boolean` in the input; when day-trip mode, skip hotel/airfare budget calculations and set `resortStay: false`
+
+---
+
+### Technical Details
+
+**New `TripDraft` fields:**
+```typescript
+mode: 'vacation' | 'day-trip';
+hasAnnualPass: boolean;
+```
+
+**New `users_profile` columns (migration):**
+```sql
+ALTER TABLE users_profile
+  ADD COLUMN IF NOT EXISTS default_trip_mode text DEFAULT 'vacation',
+  ADD COLUMN IF NOT EXISTS default_party_adults integer DEFAULT 2,
+  ADD COLUMN IF NOT EXISTS default_party_children integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS default_ride_preference text DEFAULT 'mix',
+  ADD COLUMN IF NOT EXISTS default_ll_option text DEFAULT 'multi';
+```
+
+The existing `ap_pass_tier` column on `users_profile` already tracks whether the user has an AP — if it's not "None", the app knows they have an annual pass and can skip ticket pricing.
+
+**Wizard step mapping:**
+- Vacation: Basics → Party → Parks & Dates → Must-Dos → Transport → Lightning Lane → Review (7 steps)
+- Day Trip: Basics → Party → Park(s) → Must-Dos → Review (5 steps, skips Transport and merges LL into Review)
 
