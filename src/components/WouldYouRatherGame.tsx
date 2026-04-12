@@ -53,7 +53,7 @@ export default function WouldYouRatherGame({ onClose }: { onClose: () => void })
         setQIdx(i => i + 1);
       } else {
         setShowResult(true);
-        saveHighScore("would-you-rather", s + pts, "normal", true);
+        saveHighScore("would-you-rather", score + pts, "normal", true);
       }
     }, 2000);
   };

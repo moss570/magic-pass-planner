@@ -68,7 +68,7 @@ export default function GameCard({ emoji, name, description, players, time, grad
             {/* Play button */}
             <motion.div 
               className={`w-full py-2.5 rounded-xl text-center font-bold text-sm tracking-wide text-white/90 ${gradient}`}
-              whileHover={{ brightness: 1.2 }}
+              whileHover={{ filter: "brightness(1.2)" }}
             >
               PLAY NOW →
             </motion.div>
