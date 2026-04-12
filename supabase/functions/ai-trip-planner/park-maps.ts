@@ -53,7 +53,7 @@ export const MAGIC_KINGDOM: Record<string, ParkLocation> = {
   "Pirates of the Caribbean":        { x:18, y:58, land:"Adventureland", rideTime:9, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:20,high:40}, llAvailable:false, tips:"Classic ride. Go after 3 PM for short waits." },
   "Jungle Cruise":                   { x:15, y:55, land:"Adventureland", rideTime:10, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:25,high:50}, llAvailable:true, tips:"Best jokes in WDW. Morning or evening." },
   "Walt Disney's Enchanted Tiki Room":{ x:13, y:52, land:"Adventureland", rideTime:12, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Classic show, great A/C" },
-  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! Only in MK." },
+  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! Only in MK.", diningType:"snack", servesMeals:[] },
   // Landmarks
   "Main Street Hub":                 { x:50, y:48, land:"Main Street U.S.A.", category:"landmark", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Best fireworks position. Arrive 8:45 PM." },
 };
