@@ -1,114 +1,51 @@
 
 
-## Two Trip Planner Modes + User Defaults + Smart Best-Days Integration
+## Fix User Management Tiers, VIP Visibility, and Add Beta Tester Support
 
-### Summary
-Add a **Day Trip Itinerary** mode alongside the existing **Vacation Planner**, create a **Trip Planner Defaults** section in Settings, and upgrade the Best Days to Go widget to support multi-park same-day selections that auto-detect Park Hopper itineraries.
+### Problems Found
 
----
+1. **Outdated tier names** in UserManager dropdown — still shows "Pre-Trip Planner", "Magic Pass", "AP Command Center", "AP Command Center PLUS" instead of the current 6-tier model.
+2. **Andi Davidoff-Moss IS a VIP** in the `vip_accounts` table (status: "invited"), but her `user_id` is not linked (null), and she has no subscription record. The UserManager doesn't show VIP status at all.
+3. **VIP invite function** creates subscriptions with `plan_name: "Magic Pass"` (legacy name) instead of `magic_pass_plus` — which is what VIP Free Forever should map to (full access).
+4. **Beta testers need** — you want to grant 1-year free access without requiring a credit card. The VIP system is close but needs a "beta_tester" variant with a 1-year expiration instead of "free forever".
 
-### 1. Trip Planner Mode Selection
+### Plan
 
-When a user opens `/trip-planner`, they see a mode picker before the wizard:
+#### 1. Update PLAN_OPTIONS in UserManager (lines 21-28)
+Replace with current tier names matching `src/lib/stripe.ts`:
+- No Plan, Free (7 Day Trial), 90 Day Magic Pass Planner, 90 Day Magic Pass Friend, Magic Pass Planner, Magic Pass Plus, Founders Pass, VIP Free Forever
 
-```text
-┌─────────────────────────────────────┐
-│  🏰 Vacation Planner                │
-│  Multi-day trips with hotels,       │
-│  transportation & full budget       │
-├─────────────────────────────────────┤
-│  ☀️ Day Trip Itinerary              │
-│  Single-day park visit — no hotel,  │
-│  no airfare, streamlined budget     │
-└─────────────────────────────────────┘
-```
+#### 2. Show VIP badge in UserManager
+- In the `admin-user-manage` edge function's `list-users` action, also query `vip_accounts` for matching user IDs and include `is_vip: true/false` and `vip_status` in the response.
+- In the UserManager UI, show a gold "VIP" badge next to users who are VIP accounts. If a user is VIP, the tier dropdown should show "VIP Free Forever" and be non-editable (or warn before changing).
 
-**Day Trip mode differences:**
-- `endDate` is locked to `startDate` (single day)
-- Budget slider: $100–$2,000 (default $500)
-- Skips Step 5 (Transport & Lodging) entirely
-- Ticket question becomes: "Do you have tickets/AP?" — if AP, skip ticket cost
-- No hotel recommendations in results
-- No airfare considerations
-- Streamlined 5-step wizard: Basics → Party → Park(s) → Must-Dos → Review
+#### 3. Fix Andi's VIP record
+- Link her `vip_accounts` record to her `users_profile` ID (`ad8a8cd8-3481-40f8-88ac-5de003518b48`)
+- Create a subscription record for her: `plan_name: 'magic_pass_plus'`, `status: 'active'`, `stripe_subscription_id: 'vip_ad8a8cd8...'`, `current_period_end: '2099-12-31'`
 
-**Files:**
-- **`src/lib/tripDraft.ts`** — add `mode: 'vacation' | 'day-trip'` and `hasAnnualPass: boolean` to `TripDraft`; adjust `getDefaultDraft()`
-- **`src/components/trip-planner/Stepper.tsx`** — accept mode prop, show 5 or 7 steps
-- **`src/components/trip-planner/steps/StepBasics.tsx`** — conditionally hide end date and adjust budget range for day-trip mode
-- **`src/pages/TripPlanner.tsx`** — add mode picker screen before wizard; conditionally skip transport step; pass mode to `generateItinerary` payload
-- **`src/components/trip-planner/steps/StepLightningLaneTickets.tsx`** — show "I have an Annual Pass" toggle; if AP, hide ticket pricing
+#### 4. Fix VIP invite function
+- Change `plan_name: "Magic Pass"` to `plan_name: "magic_pass_plus"` in the invite flow so VIPs get the correct current tier.
 
----
+#### 5. Add Beta Tester system
+Best approach: extend the existing VIP invite system with a `type` field:
+- **VIP Free Forever**: `current_period_end = 2099-12-31` (existing behavior)
+- **Beta Tester (1 Year)**: `current_period_end = now + 1 year`
 
-### 2. Trip Planner Defaults in Settings
+Both types create a subscription record with `stripe_customer_id: 'vip_free_forever'` or `'beta_tester'` — no Stripe checkout needed, no credit card required. The user signs up normally via the invite link and gets a subscription record injected.
 
-Add a new card in Settings: **"Trip Planner Defaults"** — saves to `users_profile` so the wizard auto-populates:
+Changes:
+- Add a `type` column to `vip_accounts` (values: `'vip'`, `'beta_tester'`; default `'vip'`)
+- Update `vip-invite` edge function to accept `type` param and set expiration accordingly
+- Update the Admin VIP management UI to allow choosing VIP vs Beta Tester when inviting
+- In the UserManager, show "Beta Tester" badge for beta accounts
 
-- **Default mode**: Vacation / Day Trip
-- **Annual Pass holder**: Yes/No (+ tier select if Yes)
-- **Home park**: dropdown (already exists in Settings as `homePark`)
-- **Default party size**: adults + children
-- **Default ride preference**: thrill / family / little / mix
-- **Walking speed**: already exists
-- **Lightning Lane preference**: multi / individual / none
+#### 6. Fix existing bad subscription data
+- Update Lisa Simpson and Brandon Moss subscriptions from "AP Command Center" to the correct current plan names via data update.
 
-These defaults pre-fill the wizard draft via `getDefaultDraft()` which will read from the user's profile.
-
-**Files:**
-- **`src/pages/Settings.tsx`** — add "Trip Planner Defaults" card with form fields
-- **`src/lib/tripDraft.ts`** — `getDefaultDraft()` accepts optional user preferences object to pre-fill
-- **Database migration** — add columns to `users_profile`: `default_trip_mode`, `default_party_adults`, `default_party_children`, `default_ride_preference`, `default_ll_option`
-
----
-
-### 3. Best Days to Go → Day Trip Integration
-
-Currently the widget only allows selecting one park at a time. Upgrade it to:
-
-- Allow selecting **multiple parks per date** (multi-select chips)
-- When user selects 2–3 parks on the **same day**, auto-set `parkHopper: true`
-- "Send to Trip Planner" opens Day Trip mode with:
-  - Date pre-filled
-  - Parks pre-filled
-  - Park Hopper auto-enabled if multiple parks on same day
-  - AP status pre-filled from user defaults
-  - Budget auto-set to day-trip default
-
-**Files:**
-- **`src/components/ap/BestDaysWidget.tsx`** — change from single park selector to allowing multi-park selection per date; update `handleSendToPlanner` to pass `mode=day-trip`, multiple parks, and park hopper flag
-- **`src/components/ap/ParkSelectorChips.tsx`** — support multi-select mode (new `multiSelect` prop)
-- **`src/pages/TripPlanner.tsx`** — extend prefill logic to read `mode`, `parkHopper`, and multiple parks from URL params
-
----
-
-### 4. Edge Function Update
-
-- **`supabase/functions/ai-trip-planner/index.ts`** — accept `mode: 'day-trip' | 'vacation'` and `hasAnnualPass: boolean` in the input; when day-trip mode, skip hotel/airfare budget calculations and set `resortStay: false`
-
----
-
-### Technical Details
-
-**New `TripDraft` fields:**
-```typescript
-mode: 'vacation' | 'day-trip';
-hasAnnualPass: boolean;
-```
-
-**New `users_profile` columns (migration):**
-```sql
-ALTER TABLE users_profile
-  ADD COLUMN IF NOT EXISTS default_trip_mode text DEFAULT 'vacation',
-  ADD COLUMN IF NOT EXISTS default_party_adults integer DEFAULT 2,
-  ADD COLUMN IF NOT EXISTS default_party_children integer DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS default_ride_preference text DEFAULT 'mix',
-  ADD COLUMN IF NOT EXISTS default_ll_option text DEFAULT 'multi';
-```
-
-The existing `ap_pass_tier` column on `users_profile` already tracks whether the user has an AP — if it's not "None", the app knows they have an annual pass and can skip ticket pricing.
-
-**Wizard step mapping:**
-- Vacation: Basics → Party → Parks & Dates → Must-Dos → Transport → Lightning Lane → Review (7 steps)
-- Day Trip: Basics → Party → Park(s) → Must-Dos → Review (5 steps, skips Transport and merges LL into Review)
+### Files to edit
+- **`src/components/admin/UserManager.tsx`** — update PLAN_OPTIONS, add VIP/Beta badges, add VIP column to AdminUser interface
+- **`supabase/functions/admin-user-manage/index.ts`** — join `vip_accounts` in list-users response
+- **`supabase/functions/vip-invite/index.ts`** — fix plan_name from "Magic Pass" to "magic_pass_plus", add beta_tester type with 1-year expiration
+- **Database migration** — add `type` column to `vip_accounts`
+- **Data fixes** — update Andi's vip_accounts record, create her subscription, fix Lisa/Brandon plan names
 
