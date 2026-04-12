@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Castle, RefreshCw, Calendar, Users, Minus, Plus, Sparkles,
   ChevronDown, ChevronUp, MapPin, Clock, Utensils, Star, AlertTriangle,
