@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { Moon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Moon, ChevronDown, ChevronUp } from "lucide-react";
 import type { TripDraft, ParkDayAssignment } from "@/lib/tripDraft";
 
 const PARKS = [
