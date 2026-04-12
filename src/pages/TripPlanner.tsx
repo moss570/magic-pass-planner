@@ -368,8 +368,8 @@ function ResultsView({
         )}
       </div>
 
-      {/* Off-site hotel suggestions */}
-      {!resortStay && lodging !== 'disney-resort' && (
+      {/* Off-site hotel suggestions — hide for day trips */}
+      {!resortStay && lodging !== 'disney-resort' && draft.mode !== 'day-trip' && (
         <HotelSuggestions
           lodging={lodging || ''}
           startDate={startDate || ''}
