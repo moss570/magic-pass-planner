@@ -1,33 +1,43 @@
 
 
-## Fix Hotel Alert Creation from Trip Planner + Improve Create Modal
+## Fix My Trips: Summary Dialog, Edit Flow, and Version Access
 
-### Problem
-1. "Track Price" navigates to `/hotel-alerts` but doesn't pass the hotel name, dates, or party size — the alert isn't auto-created.
-2. The "New Alert" modal has a plain text input with no search functionality.
-3. Price checks use a stub function with random data — not real hotel pricing APIs.
+### What's Being Fixed
 
-### Plan
+1. **View Summary shows raw JSON error** — the itinerary is dumped as raw JSON text
+2. **Edit button resets to mode selection** — clicking Edit on a saved trip takes user back to "Vacation or Day Trip?" instead of loading the saved trip
+3. **No way to see or compare trip versions** — version count and compare link are missing
 
-#### 1. Pass hotel context via URL params (HotelSuggestions.tsx)
-- Change the "Track Price" button to navigate with query params: `/hotel-alerts?hotel=Rosen+Inn&checkIn=2026-07-01&checkOut=2026-07-05&adults=2&children=1`
-- Pass `startDate`, `endDate`, `adults`, `children` from the trip planner props plus the hotel name.
+---
 
-#### 2. Auto-open create form with pre-filled data (HotelAlerts.tsx)
-- On mount, read URL search params (`hotel`, `checkIn`, `checkOut`, `adults`, `children`)
-- If `hotel` param exists, pre-fill the create form fields and auto-open the modal (`setShowCreate(true)`)
-- Parse a reasonable default target price from the hotel's price range (e.g. low end of "$80-110" = $80), passed as an additional param
+### Changes
 
-#### 3. Add curated hotel suggestions to the create modal
-- Add a small suggestions list below the hotel name input showing the 9 curated hotels (same `CURATED_HOTELS` data, extracted to a shared file)
-- Typing filters the list; clicking a suggestion fills the name
-- This replaces a "search API" with a practical curated list — no external hotel search API is needed at this stage
+#### 1. Fix Summary Dialog — Human-Readable Itinerary (`src/pages/MyTrips.tsx`)
 
-#### 4. Note on pricing reality
-- The `hotel-price-check` edge function currently returns **simulated prices** (random ±15% variance). No real hotel pricing API is connected yet. This is by design per the project constraints — real pricing integration is a future milestone requiring third-party API keys (e.g., hotel booking aggregators). The alerts infrastructure (DB, notifications, sparklines) is fully functional and will work seamlessly once a real price source is wired in.
+- Add an `ItinerarySummary` component that parses the itinerary JSON (array of DayPlan objects with `date`, `park`, `parkEmoji`, `items[]`)
+- Render each day as a header (date + park) with activity rows (time + name + badge)
+- Graceful fallback: if structure doesn't match, show "Itinerary saved" instead of raw JSON
+- Replace the `<pre>` block with the new component
+
+#### 2. Fix Edit Flow — Load Saved Trip into Wizard (`src/pages/TripPlanner.tsx`)
+
+- Import `useLocation` from react-router-dom
+- In `TripPlannerWizard`, read `location.state?.tripId`
+- On mount, if `tripId` is present:
+  - Fetch the trip from `saved_trips` via Supabase client
+  - Populate draft: `tripName` (from `name`), `startDate`, `endDate`, `budget`, `adults`, `children`, `ages`, `selectedParks` (from `parks`), `llOption` (from `ll_option`), `ridePreference` (from `ride_preference`), `specialNotes` (from `special_notes`)
+  - Infer mode: if `start_date === end_date` → `day-trip`, else `vacation`
+  - Set `modeSelected = true` to skip mode picker
+  - Set `savedTripId` so saves update rather than create
+  - Skip the resume banner
+
+#### 3. Add Version Count + Compare Button (`src/pages/MyTrips.tsx`)
+
+- After loading trips, query `trip_versions` table grouped by `trip_id` to get version counts
+- Show a small badge on each trip card (e.g., "2 versions")
+- Add a "Compare" button linking to `/trip-compare` with `state: { tripId }` when version count >= 2
 
 ### Files Changed
-- `src/components/trip-planner/HotelSuggestions.tsx` — pass query params on "Track Price" click
-- `src/pages/HotelAlerts.tsx` — read URL params on mount, auto-open pre-filled create modal, add hotel suggestion filtering
-- `src/lib/curatedHotels.ts` (new) — extract shared hotel data for reuse
+- `src/pages/MyTrips.tsx` — formatted itinerary, version badges, compare button
+- `src/pages/TripPlanner.tsx` — read `location.state.tripId`, fetch and hydrate draft, skip mode selection
 
