@@ -13,6 +13,7 @@ async function sendVIPInviteEmail(params: {
   firstName: string;
   reason: string;
   inviteToken: string;
+  customHtml?: string;
 }): Promise<boolean> {
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   if (!brevoApiKey) {
@@ -22,8 +23,15 @@ async function sendVIPInviteEmail(params: {
 
   const signupUrl = `https://magicpassplus.com/signup?vip=${params.inviteToken}&email=${encodeURIComponent(params.toEmail)}`;
 
-  const html = `
-<!DOCTYPE html>
+  let html: string;
+
+  if (params.customHtml) {
+    // Use admin-provided template with placeholder substitution
+    html = params.customHtml
+      .replace(/\{\{first_name\}\}/g, params.firstName || "there")
+      .replace(/\{\{signup_url\}\}/g, signupUrl);
+  } else {
+    html = `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
   <div style="max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
@@ -63,6 +71,7 @@ async function sendVIPInviteEmail(params: {
   </div>
 </body>
 </html>`;
+  }
 
   try {
     const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -120,7 +129,7 @@ serve(async (req) => {
 
     // ── INVITE VIP ────────────────────────────────────────
     if (action === "invite" && req.method === "POST") {
-      const { email, first_name, last_name, reason, notes, type: inviteType } = await req.json();
+      const { email, first_name, last_name, reason, notes, type: inviteType, custom_html } = await req.json();
       if (!email) throw new Error("Email required");
 
       const accountType = inviteType === "beta_tester" ? "beta_tester" : "vip";
@@ -167,6 +176,7 @@ serve(async (req) => {
         firstName: first_name || "Disney Fan",
         reason: reason || "",
         inviteToken,
+        customHtml: custom_html,
       });
 
       // Calculate expiration based on type
