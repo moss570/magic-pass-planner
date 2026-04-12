@@ -26,7 +26,7 @@ const sections = [
     { q: "What is the Annual Passholder Command Center?", a: "Consolidates everything in one place: your blockout calendar, AP discount database, renewal alerts, hotel deal alerts exclusive to APs, and merchandise drop notifications." },
   ]},
   { title: "💳 Subscriptions & Billing", faqs: [
-    { q: "How do I upgrade my plan?", a: "Account → Subscription → Change Plan. Upgrades take effect immediately." },
+    { q: "How do I upgrade my plan?", a: "Settings → My Subscription → Change Plan. Upgrades take effect immediately." },
     { q: "How do I cancel?", a: "Account → Subscription → Cancel Subscription. You keep full access through the end of your current billing period. No partial refunds." },
     { q: "What happens to my data if I cancel?", a: "Your data stays intact for 90 days after cancellation. You can reactivate within that window. After 90 days it's permanently deleted." },
     { q: "I'm on a 90-day plan. What happens when it expires?", a: "All data — trip plans, itineraries, alerts, everything — is permanently and immediately deleted at expiration. Export anything you want to keep, or upgrade before it expires." },
