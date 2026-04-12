@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw, Upload } from "lucide-react";
+import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw, Upload, Eye, Code, RotateCcw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -130,6 +130,69 @@ export default function Admin() {
   const [bulkProgress, setBulkProgress] = useState(0);
   const bulkFileRef = useRef<HTMLInputElement>(null);
 
+  // Email template editor
+  const DEFAULT_EMAIL_TEMPLATE = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#080E1E,#0D1230);padding:32px;text-align:center;border-bottom:2px solid #F5C842;">
+      <p style="color:#F5C842;font-size:24px;font-weight:bold;margin:0;">🏰 Magic Pass Plus</p>
+      <p style="color:#9CA3AF;font-size:13px;margin:6px 0 0 0;">Your complete Disney vacation command center</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#F5C842;font-size:18px;font-weight:bold;margin:0 0 16px 0;">🎁 You've been invited!</p>
+      <p style="color:#F9FAFB;font-size:15px;margin:0 0 12px 0;">Hi {{first_name}},</p>
+      <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
+        You've been personally invited by Brandon to join Magic Pass Plus as a <strong style="color:#F5C842;">VIP Member — Free Forever</strong>. No credit card required, ever.
+      </p>
+      <div style="background:#0D1230;border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="color:#F5C842;font-size:13px;font-weight:bold;margin:0 0 8px 0;">YOUR VIP INCLUDES:</p>
+        <ul style="color:#F9FAFB;font-size:13px;margin:0;padding-left:20px;line-height:2;">
+          <li>AI Trip Planner & full itinerary builder</li>
+          <li>Live wait times & in-park optimizer</li>
+          <li>Disney Gift Card deal tracker</li>
+          <li>Dining reservation alerts</li>
+          <li>Annual Passholder Command Center</li>
+          <li>Fireworks ride timing calculator</li>
+          <li>Group coordinator & AP Meetup Beacon</li>
+          <li><strong style="color:#F5C842;">Free forever — no billing, ever</strong></li>
+        </ul>
+      </div>
+      <a href="{{signup_url}}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
+        🏰 Claim Your Free VIP Account →
+      </a>
+      <p style="color:#6B7280;font-size:12px;text-align:center;margin:0;">
+        This invitation is personal to you. Please don't share the link.
+      </p>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
+      <p style="color:#4B5563;font-size:11px;margin:0;">© 2026 Magic Pass Plus LLC · magicpassplus.com<br>Not affiliated with The Walt Disney Company</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  const [emailTemplate, setEmailTemplate] = useState(() => localStorage.getItem("vip_email_template") || DEFAULT_EMAIL_TEMPLATE);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [templatePreviewMode, setTemplatePreviewMode] = useState<"code" | "preview">("code");
+
+  const saveTemplate = () => {
+    localStorage.setItem("vip_email_template", emailTemplate);
+    toast({ title: "✅ Email template saved" });
+  };
+
+  const resetTemplate = () => {
+    setEmailTemplate(DEFAULT_EMAIL_TEMPLATE);
+    localStorage.removeItem("vip_email_template");
+    toast({ title: "Template reset to default" });
+  };
+
+  const previewHtml = useMemo(() => {
+    return emailTemplate
+      .replace(/\{\{first_name\}\}/g, "Jane")
+      .replace(/\{\{signup_url\}\}/g, "https://magicpassplus.com/signup?vip=demo123");
+  }, [emailTemplate]);
+
   // Access control
   useEffect(() => {
     if (!loading) {
@@ -239,7 +302,7 @@ export default function Admin() {
           "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: vipEmail, first_name: vipFirstName, last_name: vipLastName, reason: vipReason, notes: vipNotes }),
+        body: JSON.stringify({ email: vipEmail, first_name: vipFirstName, last_name: vipLastName, reason: vipReason, notes: vipNotes, custom_html: emailTemplate !== DEFAULT_EMAIL_TEMPLATE ? emailTemplate : undefined }),
       });
       const data = await resp.json();
       if (data.success) {
@@ -665,6 +728,7 @@ export default function Admin() {
                               last_name: row.last_name,
                               reason: bulkType === "beta_tester" ? "Beta tester invite" : "VIP invite",
                               type: bulkType,
+                              custom_html: emailTemplate !== DEFAULT_EMAIL_TEMPLATE ? emailTemplate : undefined,
                             }),
                           });
                           const data = await resp.json();
@@ -713,6 +777,70 @@ export default function Admin() {
                       </button>
                     </>
                   )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Email Template Editor */}
+          <div className="border-t border-white/10 pt-5 mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" /> Email Template Editor
+              </h3>
+              <button onClick={() => setShowTemplateEditor(!showTemplateEditor)}
+                className="text-xs text-primary hover:text-primary/80 underline">
+                {showTemplateEditor ? "Hide Editor" : "Edit Template"}
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Use <code className="text-primary">{"{{first_name}}"}</code> and <code className="text-primary">{"{{signup_url}}"}</code> as placeholders. Changes apply to all future invites.
+            </p>
+
+            {showTemplateEditor && (
+              <>
+                <div className="flex items-center gap-2 mb-3">
+                  <button onClick={() => setTemplatePreviewMode("code")}
+                    className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 border transition-colors ${templatePreviewMode === "code" ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:text-foreground"}`}>
+                    <Code className="w-3 h-3" /> HTML
+                  </button>
+                  <button onClick={() => setTemplatePreviewMode("preview")}
+                    className={`text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 border transition-colors ${templatePreviewMode === "preview" ? "border-primary/40 bg-primary/10 text-primary" : "border-white/10 text-muted-foreground hover:text-foreground"}`}>
+                    <Eye className="w-3 h-3" /> Preview
+                  </button>
+                  <div className="flex-1" />
+                  <button onClick={resetTemplate} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    <RotateCcw className="w-3 h-3" /> Reset to Default
+                  </button>
+                </div>
+
+                {templatePreviewMode === "code" ? (
+                  <textarea
+                    value={emailTemplate}
+                    onChange={e => setEmailTemplate(e.target.value)}
+                    rows={20}
+                    className="w-full px-4 py-3 rounded-lg bg-[var(--muted)] border border-white/10 text-xs text-foreground font-mono placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 resize-y"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <div className="rounded-lg border border-white/10 overflow-hidden bg-white" style={{ minHeight: 400 }}>
+                    <iframe
+                      srcDoc={previewHtml}
+                      className="w-full border-0"
+                      style={{ height: 500 }}
+                      title="Email Preview"
+                      sandbox=""
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 mt-3">
+                  <button onClick={saveTemplate}
+                    className="px-5 py-2 rounded-lg font-bold text-sm text-[var(--background)]"
+                    style={{ background: "#F0B429" }}>
+                    💾 Save Template
+                  </button>
+                  <span className="text-xs text-muted-foreground">Template is saved locally and sent with each invite</span>
                 </div>
               </>
             )}
