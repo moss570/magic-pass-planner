@@ -99,7 +99,7 @@ const PARK_LOCATIONS: Record<string, Array<{ name: string; type: "ride" | "resta
     { name: "Star Wars: Rise of the Resistance", type: "ride", area: "Galaxy's Edge" },
     { name: "Millennium Falcon: Smugglers Run", type: "ride", area: "Galaxy's Edge" },
     { name: "Slinky Dog Dash", type: "ride", area: "Toy Story Land" },
-    { name: "Rockin' Roller Coaster", type: "ride", area: "Sunset Boulevard" },
+    { name: "Mickey & Minnie's Runaway Railway", type: "ride", area: "Hollywood Boulevard" },
     { name: "Tower of Terror", type: "ride", area: "Sunset Boulevard" },
     { name: "Mickey & Minnie's Runaway Railway", type: "ride", area: "Hollywood Boulevard" },
     { name: "Sci-Fi Dine-In Theater", type: "restaurant", area: "Hollywood Boulevard" },

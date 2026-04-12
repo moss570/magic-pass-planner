@@ -15,7 +15,7 @@ const GAME_TYPES = [
 
 const MK_QUEUES = ["TRON Lightcycle / Run", "Space Mountain", "Seven Dwarfs Mine Train", "Big Thunder Mountain Railroad", "Haunted Mansion", "Pirates of the Caribbean", "Jungle Cruise", "Peter Pan's Flight", "Tiana's Bayou Adventure"];
 const EPCOT_QUEUES = ["Guardians of the Galaxy: Cosmic Rewind", "Test Track", "Frozen Ever After", "Remy's Ratatouille Adventure", "Soarin'"];
-const HS_QUEUES = ["Star Wars: Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Slinky Dog Dash", "Tower of Terror", "Rockin' Roller Coaster"];
+const HS_QUEUES = ["Star Wars: Rise of the Resistance", "Millennium Falcon: Smugglers Run", "Slinky Dog Dash", "Tower of Terror", "Mickey & Minnie's Runaway Railway"];
 const AK_QUEUES = ["Avatar Flight of Passage", "Na'vi River Journey", "Kilimanjaro Safaris", "Expedition Everest"];
 
 const QUEUE_MAP: Record<string, string[]> = {

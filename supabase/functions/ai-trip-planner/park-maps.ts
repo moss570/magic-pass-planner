@@ -100,7 +100,7 @@ export const HOLLYWOOD_STUDIOS: Record<string, ParkLocation> = {
   "Woody's Lunch Box":               { x:76, y:76, land:"Toy Story Land", rideTime:10, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:12,high:20}, llAvailable:false, tips:"QS. Pop Tart French Toast is a fan favorite." },
   // Sunset Boulevard
   "Tower of Terror":                 { x:85, y:55, land:"Sunset Boulevard", rideTime:5, category:"ride", thrillLevel:5, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Haunted elevator drops. Best thrill in HS. Morning." },
-  "Rockin' Roller Coaster":          { x:88, y:60, land:"Sunset Boulevard", rideTime:2, category:"ride", thrillLevel:5, avgWait:{low:25,moderate:55,high:90}, llAvailable:true, tips:"Launching coaster with Aerosmith. 0-60 in 2.8 sec." },
+  // Rock 'n' Roller Coaster — CLOSED (removed)
   "Beauty and the Beast - Live on Stage":{ x:82,y:52,land:"Sunset Boulevard",rideTime:30,category:"show",thrillLevel:1,avgWait:{low:15,moderate:20,high:25},llAvailable:false,tips:"Great stage show. Good afternoon break." },
   "Hollywood Brown Derby":           { x:50, y:20, land:"Hollywood Boulevard", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Fine dining, Cobb salad." },
   "Sci-Fi Dine-In Theater Restaurant":{ x:55, y:30, land:"Echo Lake", rideTime:60, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Drive-in movie atmosphere." },

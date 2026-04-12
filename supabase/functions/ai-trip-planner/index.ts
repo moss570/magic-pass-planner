@@ -122,7 +122,7 @@ function nearbyDining(location: string, park: string): string[] {
       "Millennium Falcon: Smugglers Run": {x:25,y:80,land:"Galaxy's Edge",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Pilot the Falcon. Pilot role gets best experience."},
       "Slinky Dog Dash": {x:75,y:75,land:"Toy Story Land",rideTime:3,category:"ride",thrillLevel:3,avgWait:{low:30,moderate:65,high:110},llAvailable:true,tips:"Best family coaster in HS. Book LL early."},
       "Tower of Terror": {x:85,y:55,land:"Sunset Boulevard",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Haunted elevator drops. Best thrill in HS."},
-      "Rock 'n' Roller Coaster (Closed - Muppets Retheme)": {x:88,y:60,land:"Sunset Boulevard",rideTime:2,category:"ride",thrillLevel:5,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"🚧 CLOSED: Being rethemed as Rock 'n' Roller Coaster Starring The Muppets. Reopening Summer 2026."},
+      // Rock 'n' Roller Coaster — CLOSED (removed)
       "Mickey & Minnie's Runaway Railway": {x:50,y:25,land:"Hollywood Boulevard",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:85},llAvailable:true,tips:"Book LL. Major upgrade ride."},
       "Toy Story Mania!": {x:78,y:72,land:"Toy Story Land",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:45,high:75},llAvailable:true,tips:"Interactive 4D shooter. Families love this."},
       "Sci-Fi Dine-In Theater Restaurant": {x:55,y:30,land:"Echo Lake",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Drive-in movie atmosphere."},
@@ -448,7 +448,7 @@ function planOptimalRoute(park: string, preference: string, crowdLevel: number, 
       "Millennium Falcon: Smugglers Run": {x:25,y:80,land:"Galaxy's Edge",rideTime:5,category:"ride",thrillLevel:3,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Pilot the Falcon. Pilot role gets best experience."},
       "Slinky Dog Dash": {x:75,y:75,land:"Toy Story Land",rideTime:3,category:"ride",thrillLevel:3,avgWait:{low:30,moderate:65,high:110},llAvailable:true,tips:"Best family coaster in HS. Book LL early."},
       "Tower of Terror": {x:85,y:55,land:"Sunset Boulevard",rideTime:5,category:"ride",thrillLevel:5,avgWait:{low:25,moderate:55,high:90},llAvailable:true,tips:"Haunted elevator drops. Best thrill in HS."},
-      "Rock 'n' Roller Coaster (Closed - Muppets Retheme)": {x:88,y:60,land:"Sunset Boulevard",rideTime:2,category:"ride",thrillLevel:5,avgWait:{low:0,moderate:0,high:0},llAvailable:false,tips:"🚧 CLOSED: Being rethemed as Rock 'n' Roller Coaster Starring The Muppets. Reopening Summer 2026."},
+      // Rock 'n' Roller Coaster — CLOSED (removed)
       "Mickey & Minnie's Runaway Railway": {x:50,y:25,land:"Hollywood Boulevard",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:25,moderate:55,high:85},llAvailable:true,tips:"Book LL. Major upgrade ride."},
       "Toy Story Mania!": {x:78,y:72,land:"Toy Story Land",rideTime:7,category:"ride",thrillLevel:2,avgWait:{low:20,moderate:45,high:75},llAvailable:true,tips:"Interactive 4D shooter. Families love this."},
       "Sci-Fi Dine-In Theater Restaurant": {x:55,y:30,land:"Echo Lake",rideTime:60,category:"dining",thrillLevel:1,avgWait:{low:5,moderate:5,high:5},llAvailable:false,tips:"Reservation required. Drive-in movie atmosphere."},

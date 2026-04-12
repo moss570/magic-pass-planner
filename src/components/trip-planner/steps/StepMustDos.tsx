@@ -121,8 +121,8 @@ function ParkMustDoPicker({
                 return (
                   <button key={s.id} onClick={() => onSelect(s.id, cycleState(state))}
                     className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors ${TRI_STYLES[state]}`}
-                    title={`${s.name} — ${s.duration_min} min`}>
-                    🎭 {s.name}
+                    title={`${s.name} — ${s.duration_min} min${s.is_nighttime ? ' · Nighttime show' : ''}`}>
+                    {s.is_nighttime ? '🌙' : '🎭'} {s.name}
                   </button>
                 );
               })}

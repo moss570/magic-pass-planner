@@ -571,6 +571,7 @@ export type Database = {
           height_req_in: number | null
           id: string
           image_url: string | null
+          is_open: boolean
           land: string
           lat: number | null
           ll_type: string | null
@@ -589,6 +590,7 @@ export type Database = {
           height_req_in?: number | null
           id?: string
           image_url?: string | null
+          is_open?: boolean
           land: string
           lat?: number | null
           ll_type?: string | null
@@ -607,6 +609,7 @@ export type Database = {
           height_req_in?: number | null
           id?: string
           image_url?: string | null
+          is_open?: boolean
           land?: string
           lat?: number | null
           ll_type?: string | null
@@ -2691,6 +2694,8 @@ export type Database = {
           created_at: string
           duration_min: number
           id: string
+          is_nighttime: boolean
+          is_open: boolean
           land: string
           location: string | null
           name: string
@@ -2702,6 +2707,8 @@ export type Database = {
           created_at?: string
           duration_min?: number
           id?: string
+          is_nighttime?: boolean
+          is_open?: boolean
           land: string
           location?: string | null
           name: string
@@ -2713,6 +2720,8 @@ export type Database = {
           created_at?: string
           duration_min?: number
           id?: string
+          is_nighttime?: boolean
+          is_open?: boolean
           land?: string
           location?: string | null
           name?: string

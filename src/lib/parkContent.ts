@@ -13,6 +13,7 @@ export interface AttractionRow {
   thrill_level: number | null;
   height_req_in: number | null;
   description: string | null;
+  is_open: boolean;
 }
 
 export interface ShowRow {
@@ -22,6 +23,8 @@ export interface ShowRow {
   land: string;
   duration_min: number;
   location: string | null;
+  is_open: boolean;
+  is_nighttime: boolean;
 }
 
 const attractionCache: Record<string, AttractionRow[]> = {};
@@ -32,8 +35,9 @@ export async function getAttractionsForPark(parkId: string): Promise<AttractionR
   
   const { data, error } = await supabase
     .from('attractions')
-    .select('id, park_id, name, land, has_lightning_lane, ll_type, avg_duration_min, ride_type, thrill_level, height_req_in, description')
+    .select('id, park_id, name, land, has_lightning_lane, ll_type, avg_duration_min, ride_type, thrill_level, height_req_in, description, is_open')
     .eq('park_id', parkId)
+    .eq('is_open', true)
     .order('land')
     .order('name');
   
@@ -47,8 +51,9 @@ export async function getShowsForPark(parkId: string): Promise<ShowRow[]> {
   
   const { data, error } = await supabase
     .from('shows')
-    .select('id, park_id, name, land, duration_min, location')
+    .select('id, park_id, name, land, duration_min, location, is_open, is_nighttime')
     .eq('park_id', parkId)
+    .eq('is_open', true)
     .order('land')
     .order('name');
   
