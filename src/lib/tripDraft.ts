@@ -106,6 +106,7 @@ export function getDefaultDraft(defaults?: TripPlannerDefaults): TripDraft {
     selectedParks: [],
     parkDayAssignments: [],
     mustDoAttractions: {},
+    mealPlanPreferences: { wantPoolBreak: false, dayMealPlans: [] },
     transportation: [],
     lodging: '',
     resortCategory: '',
