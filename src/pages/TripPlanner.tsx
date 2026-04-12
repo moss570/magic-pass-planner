@@ -225,6 +225,7 @@ function ResultsView({
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
   onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
   lodging, startDate, endDate, adults, children, mode,
+  tripName, versionLabel,
 }: {
   plans: DayPlan[];
   estimatedTotal: number | null;
@@ -259,6 +260,8 @@ function ResultsView({
   adults?: number;
   children?: number;
   mode?: string;
+  tripName?: string;
+  versionLabel?: string;
 }) {
   const useEnhancedCards = isFeatureEnabled('itineraryCardEnhancements');
   return (
@@ -267,7 +270,14 @@ function ResultsView({
       <div className="rounded-xl p-4 border border-primary/20 bg-primary/5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-foreground">Your {plans.length}-Day Adventure</h2>
+            <div>
+              {tripName && (
+                <p className="text-xs text-muted-foreground mb-0.5">
+                  {tripName}{versionLabel ? ` — ${versionLabel}` : ''}
+                </p>
+              )}
+              <h2 className="text-sm font-bold text-foreground">Your {plans.length}-Day Adventure</h2>
+            </div>
             {resortStay && <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">✨ Early Entry</span>}
             {parkHopper && <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/20 text-secondary font-semibold">🏃 Park Hopper</span>}
           </div>
@@ -946,6 +956,8 @@ function TripPlannerWizard() {
           adults={draft.adults}
           children={draft.children}
           mode={draft.mode}
+          tripName={draft.tripName}
+          versionLabel={versions.find(v => v.id === activeVersionId)?.name || 'v1'}
         />
       </DashboardLayout>
     );

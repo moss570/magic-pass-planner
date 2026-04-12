@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CompassButton from "@/components/CompassButton";
 import PassingPointsAccordion from "./PassingPointsAccordion";
@@ -7,6 +7,12 @@ import StoppingHereModal from "./StoppingHereModal";
 import AddBlockModal from "./AddBlockModal";
 import NudgeBanner from "./NudgeBanner";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ItineraryItem {
   time: string;
@@ -240,6 +246,57 @@ export default function ItineraryCard({
     setDismissedNudges(prev => [...prev, nudgeId]);
   };
 
+  const handleRemoveItem = async (itemIndex: number) => {
+    const updatedItems = plan.items.filter((_, i) => i !== itemIndex);
+    const updatedPlan = { ...plan, items: updatedItems };
+    onDayUpdated(dayIndex, updatedPlan);
+
+    const lockedBlocks = updatedItems
+      .map((item, i) => item.locked ? { itemIndex: i, startTime: item.time, durationMinutes: item.durationMinutes || 30, label: item.activity } : null)
+      .filter(Boolean);
+
+    const result = await recalculate(lockedBlocks as any[]);
+    if (result?.day) {
+      onDayUpdated(dayIndex, result.day);
+      toast({ title: "✅ Item removed and schedule updated" });
+    }
+  };
+
+  const getAlternatives = (item: ItineraryItem): string[] => {
+    const typeAlts: Record<string, string[]> = {
+      ride: ["Space Mountain", "Big Thunder Mountain", "Splash Mountain", "Pirates of the Caribbean", "Haunted Mansion", "Jungle Cruise", "Seven Dwarfs Mine Train", "Buzz Lightyear", "Tomorrowland Speedway"],
+      dining: ["Columbia Harbour House", "Cosmic Ray's", "Pecos Bill", "The Plaza Restaurant", "Skipper Canteen", "Liberty Tree Tavern", "Be Our Guest", "Casey's Corner"],
+      show: ["Carousel of Progress", "Country Bear Jamboree", "Enchanted Tiki Room", "Mickey's PhilharMagic", "Monsters Inc. Laugh Floor"],
+      snack: ["Aloha Isle", "Storybook Treats", "Sleepy Hollow", "Main Street Bakery"],
+    };
+    const alts = typeAlts[item.type] || typeAlts['ride'] || [];
+    return alts.filter(a => a !== item.activity).slice(0, 4);
+  };
+
+  const handleReplaceItem = async (itemIndex: number, newActivity: string) => {
+    const updatedItems = [...plan.items];
+    updatedItems[itemIndex] = {
+      ...updatedItems[itemIndex],
+      activity: newActivity,
+      tip: `Swapped to ${newActivity}`,
+    };
+    const updatedPlan = { ...plan, items: updatedItems };
+    onDayUpdated(dayIndex, updatedPlan);
+
+    const lockedBlocks = [{
+      itemIndex,
+      startTime: updatedItems[itemIndex].time,
+      durationMinutes: updatedItems[itemIndex].durationMinutes || 30,
+      label: newActivity,
+    }];
+
+    const result = await recalculate(lockedBlocks);
+    if (result?.day) {
+      onDayUpdated(dayIndex, result.day);
+      toast({ title: "✅ Item replaced and schedule updated" });
+    }
+  };
+
   return (
     <>
       <div className="rounded-xl border border-border overflow-hidden bg-card">
@@ -363,6 +420,40 @@ export default function ItineraryCard({
                         {item.location && (
                           <div className="mt-2">
                             <CompassButton destination={item.location} context={item.land || plan.park} size="inline" />
+                          </div>
+                        )}
+
+                        {/* Remove & Replace actions */}
+                        {!item.locked && !item.dropped && (
+                          <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/50">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-[10px] text-muted-foreground hover:text-destructive gap-1"
+                              onClick={() => handleRemoveItem(i)}
+                              disabled={recalcLoading}
+                            >
+                              <X className="w-3 h-3" /> Remove
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary gap-1"
+                                  disabled={recalcLoading}
+                                >
+                                  <RefreshCw className="w-3 h-3" /> Replace
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-56">
+                                {getAlternatives(item).map((alt) => (
+                                  <DropdownMenuItem key={alt} onClick={() => handleReplaceItem(i, alt)}>
+                                    {alt}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         )}
                       </div>
