@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw } from "lucide-react";
+import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, MessageSquare, Zap, Globe, AlertTriangle, CheckCircle, Clock, RefreshCw, Upload } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -121,6 +121,14 @@ export default function Admin() {
   const [vipReason, setVipReason] = useState("");
   const [vipNotes, setVipNotes] = useState("");
   const [sendingInvite, setSendingInvite] = useState(false);
+
+  // Bulk import state
+  type BulkRow = { email: string; first_name: string; last_name: string; status: "pending" | "sending" | "sent" | "failed" | "skipped"; error?: string };
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>([]);
+  const [bulkType, setBulkType] = useState<"beta_tester" | "vip">("beta_tester");
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState(0);
+  const bulkFileRef = useRef<HTMLInputElement>(null);
 
   // Access control
   useEffect(() => {
@@ -527,7 +535,189 @@ export default function Admin() {
             {sendingInvite ? "Sending..." : "🎁 Send VIP Invite"}
           </button>
 
-          {/* VIP List */}
+
+          {/* Bulk CSV Import */}
+          <div className="border-t border-white/10 pt-5 mb-5">
+            <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-primary" /> Bulk Import Beta Testers / VIPs
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">Upload a CSV with columns: <code className="text-primary">email, first_name, last_name</code> (header row required)</p>
+
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              <select value={bulkType} onChange={e => setBulkType(e.target.value as any)}
+                className="text-xs px-3 py-2 rounded-lg border border-white/10 bg-[var(--muted)] text-foreground">
+                <option value="beta_tester">Beta Tester (1 year)</option>
+                <option value="vip">VIP Free Forever</option>
+              </select>
+              <input
+                ref={bulkFileRef}
+                type="file"
+                accept=".csv"
+                className="text-xs text-muted-foreground file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary/20 file:text-primary hover:file:bg-primary/30"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const text = ev.target?.result as string;
+                    const lines = text.split(/\r?\n/).filter(l => l.trim());
+                    if (lines.length < 2) {
+                      toast({ title: "CSV must have a header row + at least 1 data row", variant: "destructive" });
+                      return;
+                    }
+                    const header = lines[0].toLowerCase().split(",").map(h => h.trim().replace(/"/g, ""));
+                    const emailIdx = header.indexOf("email");
+                    const fnIdx = header.indexOf("first_name");
+                    const lnIdx = header.indexOf("last_name");
+                    if (emailIdx === -1) {
+                      toast({ title: "CSV must have an 'email' column", variant: "destructive" });
+                      return;
+                    }
+                    const rows: BulkRow[] = [];
+                    for (let i = 1; i < lines.length; i++) {
+                      const cols = lines[i].split(",").map(c => c.trim().replace(/^"|"$/g, ""));
+                      const email = cols[emailIdx]?.toLowerCase().trim();
+                      if (!email || !email.includes("@")) continue;
+                      rows.push({
+                        email,
+                        first_name: fnIdx >= 0 ? cols[fnIdx] || "" : "",
+                        last_name: lnIdx >= 0 ? cols[lnIdx] || "" : "",
+                        status: "pending",
+                      });
+                    }
+                    setBulkRows(rows);
+                    setBulkProgress(0);
+                    toast({ title: `✅ Parsed ${rows.length} rows from CSV` });
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </div>
+
+            {bulkRows.length > 0 && (
+              <>
+                <div className="overflow-x-auto max-h-64 overflow-y-auto mb-3 rounded-lg border border-white/8">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-[var(--card)]">
+                      <tr className="border-b border-white/8">
+                        <th className="text-left px-3 py-2 text-primary">#</th>
+                        <th className="text-left px-3 py-2 text-primary">Email</th>
+                        <th className="text-left px-3 py-2 text-primary">First Name</th>
+                        <th className="text-left px-3 py-2 text-primary">Last Name</th>
+                        <th className="text-left px-3 py-2 text-primary">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bulkRows.map((row, i) => (
+                        <tr key={i} className="border-b border-white/5">
+                          <td className="px-3 py-1.5 text-muted-foreground">{i + 1}</td>
+                          <td className="px-3 py-1.5 text-foreground">{row.email}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{row.first_name}</td>
+                          <td className="px-3 py-1.5 text-muted-foreground">{row.last_name}</td>
+                          <td className="px-3 py-1.5">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                              row.status === "sent" ? "bg-green-500/20 text-green-400" :
+                              row.status === "failed" ? "bg-red-500/20 text-red-400" :
+                              row.status === "sending" ? "bg-blue-500/20 text-blue-400" :
+                              row.status === "skipped" ? "bg-gray-500/20 text-gray-400" :
+                              "bg-white/10 text-muted-foreground"
+                            }`}>
+                              {row.status}{row.error ? ` — ${row.error}` : ""}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {bulkSending && (
+                  <div className="mb-3">
+                    <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full bg-primary transition-all duration-300" style={{ width: `${(bulkProgress / bulkRows.length) * 100}%` }} />
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{bulkProgress} / {bulkRows.length} processed</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={async () => {
+                      setBulkSending(true);
+                      const token = (await supabase.auth.getSession()).data.session?.access_token;
+                      let sent = 0, failed = 0, skipped = 0;
+                      for (let i = 0; i < bulkRows.length; i++) {
+                        const row = bulkRows[i];
+                        if (row.status === "sent" || row.status === "skipped") { setBulkProgress(i + 1); continue; }
+                        setBulkRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: "sending" } : r));
+                        try {
+                          const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=invite`, {
+                            method: "POST",
+                            headers: {
+                              "Authorization": `Bearer ${token}`,
+                              "x-client-authorization": `Bearer ${token}`,
+                              "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+                              "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                              email: row.email,
+                              first_name: row.first_name,
+                              last_name: row.last_name,
+                              reason: bulkType === "beta_tester" ? "Beta tester invite" : "VIP invite",
+                              type: bulkType,
+                            }),
+                          });
+                          const data = await resp.json();
+                          if (data.success) {
+                            if (data.skipped) {
+                              setBulkRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: "skipped" } : r));
+                              skipped++;
+                            } else {
+                              setBulkRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: "sent" } : r));
+                              sent++;
+                            }
+                          } else {
+                            setBulkRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: "failed", error: data.error } : r));
+                            failed++;
+                          }
+                        } catch {
+                          setBulkRows(prev => prev.map((r, idx) => idx === i ? { ...r, status: "failed", error: "Network error" } : r));
+                          failed++;
+                        }
+                        setBulkProgress(i + 1);
+                        // Small delay between sends to avoid rate limiting
+                        if (i < bulkRows.length - 1) await new Promise(r => setTimeout(r, 500));
+                      }
+                      setBulkSending(false);
+                      toast({ title: `✅ Bulk import complete: ${sent} sent, ${skipped} skipped, ${failed} failed` });
+                      loadVips();
+                    }}
+                    disabled={bulkSending || bulkRows.length === 0}
+                    className="px-5 py-2.5 rounded-lg font-bold text-sm text-[var(--background)] disabled:opacity-50"
+                    style={{ background: "#F0B429" }}
+                  >
+                    {bulkSending ? `Sending ${bulkProgress}/${bulkRows.length}...` : `📧 Send ${bulkRows.length} ${bulkType === "beta_tester" ? "Beta" : "VIP"} Invites`}
+                  </button>
+                  {!bulkSending && (
+                    <>
+                      {bulkRows.some(r => r.status === "failed") && (
+                        <button
+                          onClick={() => setBulkRows(prev => prev.map(r => r.status === "failed" ? { ...r, status: "pending", error: undefined } : r))}
+                          className="text-xs text-yellow-400 hover:text-yellow-300 underline"
+                        >
+                          Retry failed ({bulkRows.filter(r => r.status === "failed").length})
+                        </button>
+                      )}
+                      <button onClick={() => { setBulkRows([]); if (bulkFileRef.current) bulkFileRef.current.value = ""; }} className="text-xs text-muted-foreground hover:text-foreground">
+                        Clear
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
           {vips.length === 0 ? (
             <p className="text-sm text-muted-foreground">No VIP accounts yet</p>
           ) : (
