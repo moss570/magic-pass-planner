@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus, Pause, Play } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -157,6 +158,20 @@ export default function EventAlerts() {
         title: "🎪 Event alert created!",
         description: `Watching ${selectedEvent.event_name} for ${format(date, "MMM d, yyyy")}${data.alert?.priority_launch ? " — Midnight Launch mode active!" : ""}`,
       });
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session.user.id,
+          alert_type: "event",
+          alert_details: {
+            name: selectedEvent.event_name,
+            date: format(date, "MMM d, yyyy"),
+            extra: `Party of ${partySize}`,
+          },
+        },
+      }).catch(() => {});
+
       setSelectedEvent(null);
       setDate(undefined);
       setSearchQuery("");

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Search, Bell, Mail, MessageSquare, X, ExternalLink, RefreshCw, Plus, Pause, Play } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -170,6 +171,20 @@ export default function DiningAlerts() {
       if (!res.ok) throw new Error(data.error || "Failed to create alert");
 
       toast({ title: "🔔 Alert created!", description: `Watching ${selectedRestaurant.name} for ${format(date, "MMM d, yyyy")}` });
+
+      // Fire-and-forget confirmation email
+      supabase.functions.invoke("send-alert-confirmation", {
+        body: {
+          user_id: session.user.id,
+          alert_type: "dining",
+          alert_details: {
+            name: selectedRestaurant.name,
+            date: format(date, "MMM d, yyyy"),
+            extra: `Party of ${partySize} · ${selectedMeals.join(", ")}`,
+          },
+        },
+      }).catch(() => {});
+
       setSelectedRestaurant(null);
       setDate(undefined);
       setSearchQuery("");
