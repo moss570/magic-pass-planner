@@ -265,8 +265,11 @@ function planUniversalRoute(park: string, parkLocs: Record<string, any>, prefere
     
     // Insert lunch around noon
     if (currentTime < 750 && currentTime + (rideInfo.avgWait[crowd] || 30) > 720 && !mealsServed.lunch) {
-      const nearbyQS = findNearbyDining(currentLocation, parkLocs, 3);
-      const lunchSpot = nearbyQS[0] || Object.keys(parkLocs).find(k => (parkLocs[k] as any).category === "dining") || "Park Restaurant";
+      const nearbyQS = findNearbyDining(currentLocation, parkLocs, 3, "lunch");
+      const lunchSpot = nearbyQS[0] || Object.keys(parkLocs).find(k => {
+        const info = parkLocs[k] as any;
+        return info.category === "dining" && info.diningType !== "snack";
+      }) || "Park Restaurant";
       const lunchWalk = universalWalkTime(currentLocation, lunchSpot, parkLocs);
       
       items.push({
@@ -286,16 +289,28 @@ function planUniversalRoute(park: string, parkLocs: Record<string, any>, prefere
       currentLocation = lunchSpot;
       mealsServed.lunch = true;
       
-      // Break for families
+      // Break for families — realistic pool break duration
       if (input.children > 0 && !isWater) {
+        const lodging = input.lodging || input.resortStay ? 'disney-resort' : 'off-property';
+        const wantPoolBreak = input.mealPlanPreferences?.wantPoolBreak !== false;
+        const breakDuration = wantPoolBreak
+          ? (lodging === 'disney-resort' ? 150 : 180)  // 2.5-3 hrs for hotel pool break
+          : 45;  // In-park rest (shaded spot / A/C show)
+        const breakLabel = wantPoolBreak
+          ? `Hotel pool break (transit + swim + change)`
+          : `In-park rest — find shade or an A/C show`;
+        const breakTip = wantPoolBreak
+          ? `1-3 PM peak crowds. Pool break includes ~20 min transit each way + changing + swimming. Return refreshed for evening.`
+          : `1-3 PM peak crowds. Find an air-conditioned show or shaded bench to recharge.`;
+        
         items.push({
-          startTime: currentTime, duration: 60, walkMinutes: 0, waitMinutes: 0,
-          activity: "Rest break / hotel pool time",
+          startTime: currentTime, duration: breakDuration, walkMinutes: 0, waitMinutes: 0,
+          activity: breakLabel,
           type: "break", badge: "Break",
-          tip: "1-3 PM peak crowds. Smart strategy: rest at hotel, return at 3 PM for shorter waits and better evening.",
+          tip: breakTip,
           priority: "recommended",
         });
-        currentTime += 60;
+        currentTime += breakDuration;
       }
     }
     
@@ -324,7 +339,7 @@ function planUniversalRoute(park: string, parkLocs: Record<string, any>, prefere
   
   // Dinner around 6 PM
   if (!mealsServed.dinner && !isWater) {
-    const nearbyDining = findNearbyDining(currentLocation, parkLocs, 2);
+    const nearbyDining = findNearbyDining(currentLocation, parkLocs, 2, "dinner");
     const dinnerSpot = nearbyDining[0] || "Park Restaurant";
     const dinnerWalk = universalWalkTime(currentLocation, dinnerSpot, parkLocs);
     
@@ -408,12 +423,20 @@ function universalWalkTime(from: string, to: string, parkLocs: Record<string, an
   };
 }
 
-function findNearbyDining(location: string, parkLocs: Record<string, any>, count: number): string[] {
+function findNearbyDining(location: string, parkLocs: Record<string, any>, count: number, mealType?: "breakfast" | "lunch" | "dinner"): string[] {
   const loc = parkLocs[location];
   if (!loc) return [];
   
   return Object.entries(parkLocs)
-    .filter(([name, info]) => (info as any).category === "dining" && name !== location)
+    .filter(([name, info]) => {
+      const i = info as any;
+      if (i.category !== "dining" || name === location) return false;
+      // Filter out snack stands for meal slots
+      if (mealType && i.diningType === "snack") return false;
+      // If servesMeals is defined, check it covers the requested meal
+      if (mealType && i.servesMeals && i.servesMeals.length > 0 && !i.servesMeals.includes(mealType)) return false;
+      return true;
+    })
     .map(([name, info]) => {
       const dx = ((info as any).x - loc.x) / 100 * 500;
       const dy = ((info as any).y - loc.y) / 100 * 500;
