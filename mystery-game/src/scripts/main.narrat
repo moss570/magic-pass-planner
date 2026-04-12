@@ -1,0 +1,485 @@
+// ═══════════════════════════════════════════════════════
+// Mystery at Adventure World — The Carousel Caper
+// A narrative detective game powered by Narrat
+// ═══════════════════════════════════════════════════════
+
+main:
+  set_screen "main_plaza"
+  talk narrator idle "Welcome, Detective. Adventure World needs your help."
+  talk narrator idle "The legendary Golden Horse — a 200-pound golden stallion worth $2 million — has vanished from the Grand Carousel overnight."
+  talk narrator idle "Park Director Teddy Pemberton has called you in. Five suspects. One missing horse. The clock is ticking."
+  jump choose_location
+
+// ═══════ LOCATION HUB ═══════
+choose_location:
+  set_screen "park_map"
+  talk narrator idle "Where would you like to investigate?"
+  choice:
+    "🎠 Grand Carousel (Crime Scene)":
+      jump carousel
+    "🔧 Maintenance Tunnels":
+      jump tunnels
+    "🏢 Wendy's Office":
+      jump wendys_office
+    "⚙️ Pete's Workshop":
+      jump petes_workshop
+    "🍳 Janet's Kitchen":
+      jump janets_kitchen
+    "🎪 Security Desk":
+      jump security_desk
+    "📦 Shipping Dock":
+      jump shipping_dock
+    "🕵️ Interrogate a Suspect":
+      jump choose_suspect
+    "📋 Review Evidence Board":
+      jump evidence_board
+    "🗳️ Make Accusation":
+      jump accusation
+
+// ═══════ LOCATIONS ═══════
+carousel:
+  set_screen "carousel"
+  talk narrator idle "The Grand Carousel stands silent. An empty pole marks where the Golden Horse once stood."
+  
+  if (not $carousel_glitter):
+    talk narrator idle "🔬 EVIDENCE: A trail of golden glitter leads from the empty pole toward the maintenance tunnels. It's flaking paint, not decorative."
+    set $carousel_glitter true
+    add_item "clue_glitter" 1
+    talk narrator idle "📌 Clue added to your Evidence Board!"
+  
+  if (not $carousel_bolt):
+    talk narrator idle "🔬 EVIDENCE: The security bolt was unscrewed professionally. This wasn't a smash-and-grab job."
+    set $carousel_bolt true
+    add_item "clue_bolt" 1
+    talk narrator idle "📌 Clue added to your Evidence Board!"
+  
+  if ($carousel_glitter && $carousel_bolt && not $carousel_witness):
+    talk narrator idle "You notice a maintenance worker nearby..."
+    talk worker idle "I wasn't here last night, but I heard something odd. Someone in a lab coat was seen near here around 11 PM."
+    set $carousel_witness true
+    add_item "clue_labcoat_witness" 1
+    talk narrator idle "👁️ Witness statement added!"
+  
+  if ($carousel_glitter && $carousel_bolt && $carousel_witness):
+    talk narrator idle "You've found everything at the carousel. The trail leads to the maintenance tunnels..."
+  
+  jump choose_location
+
+tunnels:
+  set_screen "tunnels"
+  talk narrator idle "Dark, damp maintenance tunnels stretch beneath Adventure World."
+  
+  if (not $tunnel_dolly):
+    talk narrator idle "🔬 EVIDENCE: A large dolly cart — rated for 300 pounds — is missing from its usual spot."
+    set $tunnel_dolly true
+    add_item "clue_dolly" 1
+    talk narrator idle "📌 Someone needed to move something heavy..."
+  
+  if ($carousel_witness && not $tunnel_two_people):
+    talk narrator idle "A night-shift worker approaches you..."
+    talk worker idle "I saw TWO people down here around midnight. Couldn't see faces — too dark."
+    set $tunnel_two_people true
+    add_item "clue_two_people" 1
+    talk narrator idle "👁️ TWO suspects working together? This changes things."
+  
+  jump choose_location
+
+wendys_office:
+  set_screen "office"
+  talk narrator idle "Widget Wendy's office is pristine. Miniature carousel horses line her desk."
+  
+  if (not $wendy_tablet):
+    talk narrator idle "Her tablet is unlocked on the desk..."
+    choice:
+      "Look at her search history":
+        talk narrator idle "💭 MOTIVE: Recent searches include 'international antique shipping' and 'golden horse value estimate.'"
+        set $wendy_tablet true
+        add_item "clue_wendy_searches" 1
+        talk narrator idle "📌 Why would the Head of Merchandise be researching antique values?"
+      "Leave it — respect her privacy":
+        talk narrator idle "You leave the tablet alone. A good detective might come back later..."
+  
+  if ($wendy_tablet && not $wendy_lights):
+    talk narrator idle "You check the office security camera footage..."
+    talk narrator idle "🔬 EVIDENCE: Wendy's office lights were OFF after 10 PM. She claims she was working late until 2 AM."
+    set $wendy_lights true
+    add_item "clue_wendy_lights_off" 1
+    talk narrator idle "📌 Her alibi just cracked."
+  
+  if ($twist_revealed && not $wendy_receipt):
+    talk narrator idle "Now that you know about the replica... you search deeper."
+    talk narrator idle "🔬 CRITICAL EVIDENCE: A receipt for custom horse sculpture supplies — ordered 3 WEEKS ago."
+    set $wendy_receipt true
+    add_item "clue_wendy_receipt" 1
+    talk narrator idle "📌 She planned this weeks in advance!"
+  
+  if ($twist_revealed && not $wendy_shipping):
+    talk narrator idle "In her locked drawer..."
+    talk narrator idle "🔬 CRITICAL EVIDENCE: A shipping receipt — 200-pound package sent overseas, dated TWO WEEKS AGO."
+    set $wendy_shipping true
+    add_item "clue_shipping_receipt" 1
+    talk narrator idle "📌 The real horse was shipped before last night's 'theft'!"
+  
+  jump choose_location
+
+petes_workshop:
+  set_screen "workshop"
+  talk narrator idle "Professor Peculiar Pete's workshop is a chaotic mess of inventions, gears, and blueprints."
+  
+  if (not $pete_log):
+    talk narrator idle "The workshop security log catches your eye..."
+    talk narrator idle "🔬 EVIDENCE: Pete exited at 9 PM and didn't return until 3 AM. That's a 6-hour gap."
+    set $pete_log true
+    add_item "clue_pete_workshop_log" 1
+    talk narrator idle "📌 Where was the 'inventor' for 6 hours?"
+  
+  if ($twist_revealed && not $pete_blueprints):
+    talk narrator idle "Among his blueprints, one stands out..."
+    talk narrator idle "🔬 EVIDENCE: Blueprints for a device that looks exactly like a carousel horse removal tool."
+    set $pete_blueprints true
+    add_item "clue_pete_blueprints" 1
+    talk narrator idle "📌 His 'invention' was actually a theft tool!"
+  
+  if ($twist_revealed && not $pete_payment):
+    talk narrator idle "You check Pete's financial records..."
+    talk narrator idle "💭 MOTIVE: $50,000 deposited from Wendy's personal account last month."
+    set $pete_payment true
+    add_item "clue_pete_paid" 1
+    talk narrator idle "📌 Wendy PAID Pete to help. They're working together!"
+  
+  jump choose_location
+
+janets_kitchen:
+  set_screen "kitchen"
+  talk narrator idle "Jolly Janet's kitchen smells of funnel cakes and suspicion."
+  
+  if (not $janet_alibi):
+    talk narrator idle "Kitchen staff are chatting..."
+    talk worker idle "Janet? She left at 8 PM. Said the sauce was done. Nobody saw her until morning."
+    set $janet_alibi true
+    add_item "clue_janet_left_early" 1
+    talk narrator idle "👁️ She claims she was here all night, but staff say otherwise."
+  
+  if (not $janet_recipe):
+    talk narrator idle "🔬 EVIDENCE: Janet's special sauce recipe card was found in the carousel control room. Odd place for a recipe."
+    set $janet_recipe true
+    add_item "clue_janet_recipe" 1
+    talk narrator idle "📌 A red herring? Or something more?"
+  
+  jump choose_location
+
+security_desk:
+  set_screen "security"
+  talk narrator idle "The security desk has banks of monitors — most showing normal footage."
+  
+  if (not $security_cameras):
+    talk narrator idle "🔬 EVIDENCE: The camera near the carousel was 'malfunctioning' between 10 PM and 2 AM. Someone manually disabled it."
+    set $security_cameras true
+    add_item "clue_cameras_disabled" 1
+    talk narrator idle "📌 Whoever did this had inside access."
+  
+  if ($wendy_lights && $pete_log && not $teddy_cameras):
+    talk narrator idle "Wait... the camera disable timestamp doesn't match the suspects' timelines."
+    talk narrator idle "🔬 EVIDENCE: Teddy disabled the cameras himself — he was sneaking midnight kitchen snacks!"
+    talk narrator idle "His wife monitors him via the park cameras. He's on a diet. 😄"
+    set $teddy_cameras true
+    add_item "clue_teddy_snacks" 1
+    talk narrator idle "📌 Mystery of the disabled cameras: SOLVED. It wasn't the thief!"
+  
+  jump choose_location
+
+shipping_dock:
+  set_screen "dock"
+  talk narrator idle "The shipping dock handles all package deliveries for Adventure World."
+  
+  if (not $dock_van):
+    talk narrator idle "📍 LOCATION: A mysterious van was in the employee parking lot at midnight. License plate partially obscured."
+    set $dock_van true
+    add_item "clue_van" 1
+    talk narrator idle "📌 Could be a lead... or could be nothing."
+  
+  if ($wendy_shipping && not $dock_manifest):
+    talk narrator idle "Knowing about the overseas shipment, you check the dock manifest..."
+    talk narrator idle "🔬 CRITICAL EVIDENCE: A 200-pound package was picked up by a private courier 2 weeks ago. Wendy signed for it."
+    set $dock_manifest true
+    add_item "clue_dock_manifest" 1
+    talk narrator idle "📌 The real horse left this dock two weeks ago."
+  
+  jump choose_location
+
+// ═══════ INTERROGATION ═══════
+choose_suspect:
+  talk narrator idle "Which suspect would you like to question?"
+  choice:
+    "🎠 Dizzy Dave — Carousel Operator":
+      jump interrogate_dave
+    "💼 Widget Wendy — Head of Merchandise":
+      jump interrogate_wendy
+    "⚙️ Professor Peculiar Pete — Park Engineer":
+      jump interrogate_pete
+    "🍳 Jolly Janet — Head Chef":
+      jump interrogate_janet
+    "🎩 Teddy Pemberton III — Park Director":
+      jump interrogate_teddy
+    "← Back to Map":
+      jump choose_location
+
+interrogate_dave:
+  set_screen "interrogation"
+  talk dave idle "I would NEVER hurt my babies! That horse is family!"
+  choice:
+    "Where were you last night?":
+      talk dave idle "I was at Sunset Lanes! Bowling! I bowled a 180!"
+      if ($janet_alibi):
+        talk narrator idle "(You recall: the bowling alley closes at 11 PM, not midnight...)"
+        choice:
+          "The bowling alley closes at 11 PM, Dave. Where were you after that?":
+            talk dave surprised "I... I went for a drive. I was upset about the replacement plans. I drove around the park."
+            talk narrator idle "📌 Dave's alibi has a gap, but his reaction seems genuine."
+          "Interesting. I'll note that.":
+            talk narrator idle "You let it go... for now."
+      
+    "Did you see anything suspicious?":
+      talk dave idle "Widget Wendy was measuring the horse last week! I thought it was for merchandise. Now I'm not so sure."
+      
+    "Tell me about the replacement plans.":
+      talk dave idle "They want to replace MY horse with some modern replica. After 20 years! That horse has a SOUL!"
+      talk narrator idle "(Dave seems passionate but genuinely distraught, not guilty...)"
+    
+    "← Back":
+      jump choose_suspect
+  
+  jump choose_suspect
+
+interrogate_wendy:
+  set_screen "interrogation"
+  talk wendy idle "A terrible loss for the brand. We'll need to order replacement merchandise immediately."
+  choice:
+    "Where were you last night?":
+      talk wendy idle "I was in my office until 2 AM working on inventory reports. Security cameras can confirm."
+      if ($wendy_lights):
+        choice:
+          "🔥 CONFRONT: Your office lights were OFF after 10 PM. You weren't there.":
+            talk wendy surprised "I... I was working in the dark. To save electricity. Budget cuts, you know."
+            talk narrator idle "📌 A very weak excuse. She's clearly lying."
+          "I see. That's quite late.":
+            talk narrator idle "You note her alibi without challenging it."
+      
+    "Why were you researching antique shipping?":
+      if ($wendy_tablet):
+        talk wendy surprised "That was... for a potential merchandise partnership. International collectors."
+        talk narrator idle "📌 Her explanation doesn't match the search terms."
+      else:
+        talk wendy idle "I'm afraid I don't know what you're referring to."
+    
+    "What do you think happened?":
+      talk wendy idle "Probably an inside job. Someone with access to the maintenance tunnels."
+      talk narrator idle "(She's deflecting toward others...)"
+    
+    "← Back":
+      jump choose_suspect
+  
+  jump choose_suspect
+
+interrogate_pete:
+  set_screen "interrogation"  
+  talk pete idle "Fascinating case! The engineering required to remove a 200-pound figure without triggering alarms... purely hypothetically, of course."
+  choice:
+    "Where were you last night?":
+      talk pete idle "I was calibrating my Whirligig 3000 in my workshop. Science never sleeps!"
+      if ($pete_log):
+        choice:
+          "🔥 CONFRONT: Your workshop log shows you LEFT at 9 PM and didn't return until 3 AM.":
+            talk pete surprised "Well, yes, I took a... an extended walk. For inspiration. Fresh air helps the creative process."
+            talk narrator idle "📌 A 6-hour 'walk'? Very suspicious."
+          "Must be fascinating work.":
+            talk narrator idle "You let it slide."
+    
+    "Tell me about your inventions.":
+      talk pete idle "I'm building something revolutionary! Can't share details yet. Patent pending, you understand."
+      if ($pete_blueprints):
+        choice:
+          "🔥 CONFRONT: Your blueprints show a carousel horse removal tool.":
+            talk pete surprised "That's... a coincidence! It's actually for... moving heavy equipment. General purpose!"
+            talk narrator idle "📌 He's sweating. The tool is specifically designed for carousel figures."
+          "Sounds exciting.":
+            talk narrator idle "You keep your knowledge hidden."
+    
+    "What do you think of Wendy?":
+      talk pete idle "Wendy? She's efficient. Very organized. Always planning something."
+      talk narrator idle "(Was that a nervous glance?)"
+    
+    "← Back":
+      jump choose_suspect
+  
+  jump choose_suspect
+
+interrogate_janet:
+  set_screen "interrogation"
+  talk janet idle "HA HA HA! Who would steal a HORSE? That's hilarious! ...wait, it's actually missing?"
+  choice:
+    "Where were you last night?":
+      talk janet idle "In my kitchen! Stirring my 14-hour special sauce! ALL night!"
+      if ($janet_alibi):
+        choice:
+          "🔥 CONFRONT: Your staff says you left at 8 PM.":
+            talk janet surprised "HA HA... well, I stepped out for a bit. But I came BACK! The sauce needed stirring!"
+            talk narrator idle "📌 Her alibi is shaky, but she doesn't seem like a master criminal."
+          "That's dedication.":
+            talk narrator idle "You let it go."
+    
+    "What about the restaurant expansion plans?":
+      talk janet idle "Oh, you heard about that? Yes, they might expand the restaurant into the carousel area. But I wouldn't STEAL for it! HA HA!"
+    
+    "← Back":
+      jump choose_suspect
+  
+  jump choose_suspect
+
+interrogate_teddy:
+  set_screen "interrogation"
+  talk teddy idle "This is a DISASTER! Do you know what this does to our stock price?!"
+  choice:
+    "Where were you last night?":
+      talk teddy idle "I was at the Mayor's Gala until 11 PM! 200 witnesses!"
+      talk narrator idle "(The gala actually ended at 9 PM...)"
+      if (>= (items_amount "clue_teddy_snacks") 1):
+        talk narrator idle "(You already know he disabled the cameras for his midnight snack run. Not the thief, just embarrassed.)"
+    
+    "You recently increased the horse's insurance.":
+      talk teddy surprised "A... a standard business decision! The horse appreciated in value! It would be irresponsible NOT to increase coverage!"
+      talk narrator idle "📌 Suspiciously defensive, but the insurance motive doesn't match the evidence pattern."
+    
+    "← Back":
+      jump choose_suspect
+  
+  jump choose_suspect
+
+// ═══════ PLOT TWIST (unlocks after enough evidence) ═══════
+// This triggers when player has found key evidence from Act 1 & 2
+
+// ═══════ EVIDENCE BOARD ═══════
+evidence_board:
+  set_screen "evidence_board"
+  talk narrator idle "📋 YOUR EVIDENCE BOARD:"
+  talk narrator idle "═══════════════════════"
+  
+  if (>= (items_amount "clue_glitter") 1):
+    talk narrator idle "🔬 Golden glitter trail from carousel to tunnels"
+  if (>= (items_amount "clue_bolt") 1):
+    talk narrator idle "🔬 Security bolt professionally unscrewed"
+  if (>= (items_amount "clue_cameras_disabled") 1):
+    talk narrator idle "🔬 Cameras disabled 10 PM - 2 AM"
+  if (>= (items_amount "clue_dolly") 1):
+    talk narrator idle "🔬 300-lb dolly cart missing"
+  if (>= (items_amount "clue_labcoat_witness") 1):
+    talk narrator idle "👁️ Someone in lab coat seen at 11 PM"
+  if (>= (items_amount "clue_two_people") 1):
+    talk narrator idle "👁️ TWO people in tunnels at midnight"
+  if (>= (items_amount "clue_wendy_searches") 1):
+    talk narrator idle "💭 Wendy searched 'antique shipping' and 'horse value'"
+  if (>= (items_amount "clue_wendy_lights_off") 1):
+    talk narrator idle "🔬 Wendy's office lights OFF after 10 PM"
+  if (>= (items_amount "clue_pete_workshop_log") 1):
+    talk narrator idle "🔬 Pete absent from workshop 9 PM - 3 AM"
+  if (>= (items_amount "clue_janet_left_early") 1):
+    talk narrator idle "👁️ Janet left kitchen at 8 PM"
+  if (>= (items_amount "clue_janet_recipe") 1):
+    talk narrator idle "🔬 Janet's recipe found at carousel (red herring?)"
+  if (>= (items_amount "clue_van") 1):
+    talk narrator idle "📍 Mysterious van at midnight"
+  if (>= (items_amount "clue_teddy_snacks") 1):
+    talk narrator idle "🔬 Teddy disabled cameras for midnight snacks 😄"
+  if (>= (items_amount "clue_wendy_receipt") 1):
+    talk narrator idle "🔬 Wendy ordered replica supplies 3 WEEKS ago"
+  if (>= (items_amount "clue_shipping_receipt") 1):
+    talk narrator idle "🔬 Wendy shipped 200-lb package overseas 2 WEEKS ago"
+  if (>= (items_amount "clue_pete_blueprints") 1):
+    talk narrator idle "🔬 Pete's blueprints = horse removal tool"
+  if (>= (items_amount "clue_pete_paid") 1):
+    talk narrator idle "💭 Wendy paid Pete $50,000"
+  if (>= (items_amount "clue_dock_manifest") 1):
+    talk narrator idle "🔬 Dock manifest confirms Wendy signed for shipment"
+  
+  talk narrator idle "═══════════════════════"
+  jump choose_location
+
+// ═══════ ACCUSATION ═══════
+accusation:
+  talk narrator idle "Are you ready to make your final accusation? This is permanent!"
+  choice:
+    "I'm ready — I know who did it":
+      jump final_accusation
+    "Not yet — I need more evidence":
+      jump choose_location
+
+final_accusation:
+  talk narrator idle "Who is the PRIMARY culprit?"
+  choice:
+    "Dizzy Dave — the Carousel Operator":
+      set $accused "dave"
+      jump pick_accomplice
+    "Widget Wendy — Head of Merchandise":
+      set $accused "wendy"
+      jump pick_accomplice
+    "Professor Peculiar Pete — Park Engineer":
+      set $accused "pete"
+      jump pick_accomplice
+    "Jolly Janet — Head Chef":
+      set $accused "janet"
+      jump pick_accomplice
+    "Teddy Pemberton — Park Director":
+      set $accused "teddy"
+      jump pick_accomplice
+
+pick_accomplice:
+  talk narrator idle "Did they have an accomplice?"
+  choice:
+    "Yes — Dizzy Dave":
+      set $accomplice "dave"
+      jump reveal_truth
+    "Yes — Widget Wendy":
+      set $accomplice "wendy"
+      jump reveal_truth
+    "Yes — Professor Pete":
+      set $accomplice "pete"
+      jump reveal_truth
+    "Yes — Jolly Janet":
+      set $accomplice "janet"
+      jump reveal_truth
+    "Yes — Teddy Pemberton":
+      set $accomplice "teddy"
+      jump reveal_truth
+    "No — they acted alone":
+      set $accomplice "none"
+      jump reveal_truth
+
+reveal_truth:
+  set_screen "reveal"
+  talk narrator idle "═══════════════════════"
+  talk narrator idle "THE TRUTH IS REVEALED..."
+  talk narrator idle "═══════════════════════"
+  
+  if (== $accused "wendy"):
+    talk narrator idle "✅ CORRECT! Widget Wendy Wu is the mastermind!"
+    if (== $accomplice "pete"):
+      talk narrator idle "✅ CORRECT! Professor Pete was her accomplice!"
+      talk narrator idle "🏆 PERFECT SCORE — You cracked the case completely!"
+    else:
+      talk narrator idle "❌ But you missed her accomplice — Professor Peculiar Pete helped with the engineering."
+      talk narrator idle "🥈 Close! You got the mastermind but missed the partner."
+  else:
+    talk narrator idle "❌ The real culprit was WIDGET WENDY WU, with help from PROFESSOR PECULIAR PETE."
+    talk narrator idle "🤔 Not quite — but you gave it your best shot!"
+  
+  talk narrator idle ""
+  talk narrator idle "📖 THE FULL STORY:"
+  talk narrator idle "Wendy's plan was almost perfect. She commissioned a replica of the Golden Horse THREE weeks ago. TWO weeks ago, she and Pete swapped the real horse for the copy under cover of night."
+  talk narrator idle "Pete's engineering expertise made the swap seamless. The real horse was shipped overseas to a private collector."
+  talk narrator idle "LAST NIGHT's 'theft' of the replica was staged by Pete to create a false timeline — making it look like the crime happened recently, not weeks ago."
+  talk narrator idle "As for Teddy's mysterious camera shutdown? He was just sneaking midnight snacks while hiding from his wife's diet surveillance! 😄"
+  talk narrator idle ""
+  talk narrator idle "Dizzy Dave sobbed with relief: 'I KNEW my horse didn't run away!'"
+  talk narrator idle "The Golden Horse was recovered from a shipping container in Miami."
+  talk narrator idle ""
+  talk narrator idle "🔍 Case Closed. Thanks for playing, Detective."

@@ -1,0 +1,118 @@
+gameTitle: "Mystery at Adventure World"
+saveFileName: "mystery-adventure-world"
+
+images:
+  park_map: "/images/locations/park_map.png"
+  carousel: "/images/locations/carousel.png"
+  tunnels: "/images/locations/tunnels.png"
+  office: "/images/locations/office.png"
+  workshop: "/images/locations/workshop.png"
+  kitchen: "/images/locations/kitchen.png"
+  security: "/images/locations/security.png"
+  dock: "/images/locations/dock.png"
+  interrogation: "/images/locations/interrogation.png"
+  evidence_board: "/images/locations/evidence_board.png"
+  reveal: "/images/locations/reveal.png"
+  main_plaza: "/images/locations/main_plaza.png"
+
+screens:
+  default:
+    background: park_map
+  park_map:
+    background: park_map
+  carousel:
+    background: carousel
+  tunnels:
+    background: tunnels
+  office:
+    background: office
+  workshop:
+    background: workshop
+  kitchen:
+    background: kitchen
+  security:
+    background: security
+  dock:
+    background: dock
+  interrogation:
+    background: interrogation
+  evidence_board:
+    background: evidence_board
+  reveal:
+    background: reveal
+  main_plaza:
+    background: main_plaza
+
+items:
+  clue_glitter:
+    name: "Golden Glitter Trail"
+    description: "Flaking golden paint leading from carousel to tunnels"
+    icon: "🔬"
+  clue_bolt:
+    name: "Professional Unscrewing"
+    description: "Security bolt removed with precision tools"
+    icon: "🔬"
+  clue_cameras_disabled:
+    name: "Disabled Cameras"
+    description: "Carousel camera manually shut off 10 PM - 2 AM"
+    icon: "🔬"
+  clue_dolly:
+    name: "Missing Dolly Cart"
+    description: "300-pound rated cart gone from maintenance"
+    icon: "🔬"
+  clue_labcoat_witness:
+    name: "Lab Coat Sighting"
+    description: "Someone in a lab coat seen at carousel at 11 PM"
+    icon: "👁️"
+  clue_two_people:
+    name: "Two Suspects"
+    description: "Two people seen in tunnels at midnight"
+    icon: "👁️"
+  clue_wendy_searches:
+    name: "Wendy's Searches"
+    description: "Tablet shows 'antique shipping' and 'horse value' searches"
+    icon: "💭"
+  clue_wendy_lights_off:
+    name: "Office Lights Off"
+    description: "Wendy's office dark after 10 PM — contradicts alibi"
+    icon: "🔬"
+  clue_pete_workshop_log:
+    name: "Pete's 6-Hour Gap"
+    description: "Workshop log: exit 9 PM, return 3 AM"
+    icon: "🔬"
+  clue_janet_left_early:
+    name: "Janet Left Early"
+    description: "Staff confirm Janet left kitchen at 8 PM"
+    icon: "👁️"
+  clue_janet_recipe:
+    name: "Misplaced Recipe"
+    description: "Janet's recipe found in carousel control room"
+    icon: "🔬"
+  clue_van:
+    name: "Mystery Van"
+    description: "Unidentified van in employee lot at midnight"
+    icon: "📍"
+  clue_teddy_snacks:
+    name: "Teddy's Secret"
+    description: "Teddy disabled cameras to sneak midnight snacks!"
+    icon: "😄"
+  clue_wendy_receipt:
+    name: "Replica Receipt"
+    description: "Wendy ordered horse sculpture supplies 3 weeks ago"
+    icon: "🔬"
+  clue_shipping_receipt:
+    name: "Overseas Shipment"
+    description: "200-lb package shipped overseas 2 weeks ago"
+    icon: "🔬"
+  clue_pete_blueprints:
+    name: "Removal Tool"
+    description: "Pete's blueprints show carousel horse removal device"
+    icon: "🔬"
+  clue_pete_paid:
+    name: "Pete's Payment"
+    description: "$50,000 from Wendy's account to Pete"
+    icon: "💭"
+  clue_dock_manifest:
+    name: "Dock Manifest"
+    description: "Wendy signed for 200-lb package pickup"
+    icon: "🔬"

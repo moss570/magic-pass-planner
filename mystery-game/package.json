@@ -1,0 +1,16 @@
+{
+  "name": "mystery-at-adventure-world",
+  "version": "1.0.0",
+  "description": "Award-winning detective mystery game powered by Narrat",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "narrat": "^3.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

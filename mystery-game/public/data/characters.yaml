@@ -1,0 +1,62 @@
+config:
+  imagesPath: "/images/characters/"
+
+characters:
+  narrator:
+    name: ""
+    color: "#FFFFFF"
+    sprites:
+      idle: narrator.png
+
+  dave:
+    name: "Dizzy Dave"
+    color: "#4ECDC4"
+    sprites:
+      idle: dave.png
+      surprised: dave_surprised.png
+    style:
+      color: "#4ECDC4"
+
+  wendy:
+    name: "Widget Wendy"
+    color: "#FF6B6B"
+    sprites:
+      idle: wendy.png
+      surprised: wendy_surprised.png
+    style:
+      color: "#FF6B6B"
+
+  pete:
+    name: "Prof. Pete"
+    color: "#B19CD9"
+    sprites:
+      idle: pete.png
+      surprised: pete_surprised.png
+    style:
+      color: "#B19CD9"
+
+  janet:
+    name: "Jolly Janet"
+    color: "#FFD93D"
+    sprites:
+      idle: janet.png
+      surprised: janet_surprised.png
+    style:
+      color: "#FFD93D"
+
+  teddy:
+    name: "Teddy P. III"
+    color: "#FF8C42"
+    sprites:
+      idle: teddy.png
+      surprised: teddy_surprised.png
+    style:
+      color: "#FF8C42"
+
+  worker:
+    name: "Park Worker"
+    color: "#888888"
+    sprites:
+      idle: worker.png
+    style:
+      color: "#888888"
