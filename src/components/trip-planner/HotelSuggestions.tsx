@@ -1,0 +1,171 @@
+import { useState } from "react";
+import { Hotel, MapPin, Star, ChevronDown, ChevronUp, ExternalLink, Bell } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+
+interface HotelCategory {
+  label: string;
+  emoji: string;
+  description: string;
+  hotels: {
+    name: string;
+    priceRange: string;
+    distanceMiles: number;
+    amenities: string[];
+    bestFor: string;
+    bookingUrl?: string;
+  }[];
+}
+
+const CURATED_HOTELS: HotelCategory[] = [
+  {
+    label: "Budget-Friendly",
+    emoji: "💰",
+    description: "Great value hotels under $120/night",
+    hotels: [
+      { name: "Rosen Inn at Pointe Orlando", priceRange: "$80-110", distanceMiles: 8, amenities: ["Pool", "Shuttle", "Free Parking"], bestFor: "Families on a budget" },
+      { name: "Holiday Inn Resort Orlando Suites", priceRange: "$95-130", distanceMiles: 7, amenities: ["Water Park", "Kids Eat Free", "Shuttle"], bestFor: "Families with young kids" },
+      { name: "Avanti International Resort", priceRange: "$75-100", distanceMiles: 9, amenities: ["Pool", "Kitchenette", "Free Parking"], bestFor: "Extended stays" },
+    ],
+  },
+  {
+    label: "Family Suites",
+    emoji: "👨‍👩‍👧‍👦",
+    description: "Room for the whole crew with kitchens",
+    hotels: [
+      { name: "Floridays Resort Orlando", priceRange: "$140-200", distanceMiles: 5, amenities: ["Full Kitchen", "2BR Suites", "Pool", "Free Parking"], bestFor: "Cooking meals to save money" },
+      { name: "Marriott's Harbour Lake", priceRange: "$160-250", distanceMiles: 4, amenities: ["Full Kitchen", "Water Park", "Mini Golf"], bestFor: "Resort feel without Disney prices" },
+      { name: "Drury Plaza Hotel Orlando", priceRange: "$130-180", distanceMiles: 6, amenities: ["Free Breakfast", "Evening Reception", "Pool"], bestFor: "Free meals included" },
+    ],
+  },
+  {
+    label: "Close to Parks",
+    emoji: "🏰",
+    description: "5 minutes or less from Disney gates",
+    hotels: [
+      { name: "Wyndham Garden Lake Buena Vista", priceRange: "$100-150", distanceMiles: 1.5, amenities: ["Shuttle", "Pool", "Walk to Disney Springs"], bestFor: "Closest off-site option" },
+      { name: "Hilton Orlando Buena Vista Palace", priceRange: "$150-220", distanceMiles: 1, amenities: ["Shuttle", "Spa", "Character Breakfast"], bestFor: "Extra Magic Hours eligible" },
+      { name: "B Resort & Spa (Disney Springs)", priceRange: "$130-190", distanceMiles: 0.5, amenities: ["Walk to Disney Springs", "Pool", "Spa"], bestFor: "Walk to Disney Springs dining" },
+    ],
+  },
+];
+
+interface Props {
+  lodging: string;
+  startDate: string;
+  endDate: string;
+  adults: number;
+  children: number;
+}
+
+export default function HotelSuggestions({ lodging, startDate, endDate, adults, children }: Props) {
+  const navigate = useNavigate();
+  const [expandedCategory, setExpandedCategory] = useState<string | null>("Budget-Friendly");
+
+  // Only show for off-property or undecided lodging
+  if (lodging === "disney-resort") return null;
+
+  const nights = startDate && endDate
+    ? Math.max(1, Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000))
+    : 1;
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="px-5 py-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <Hotel className="w-4 h-4 text-primary" />
+          <h3 className="text-sm font-bold text-foreground">🏨 Off-Site Hotel Recommendations</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          Curated picks for {nights} night{nights > 1 ? "s" : ""} · {adults} adult{adults > 1 ? "s" : ""}{children > 0 ? ` + ${children} kid${children > 1 ? "s" : ""}` : ""}
+        </p>
+      </div>
+
+      <div className="divide-y divide-border">
+        {CURATED_HOTELS.map(category => {
+          const isExpanded = expandedCategory === category.label;
+          return (
+            <div key={category.label}>
+              <button
+                onClick={() => setExpandedCategory(isExpanded ? null : category.label)}
+                className="w-full flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{category.emoji}</span>
+                  <div>
+                    <p className="text-xs font-bold text-foreground">{category.label}</p>
+                    <p className="text-[10px] text-muted-foreground">{category.description}</p>
+                  </div>
+                </div>
+                {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+              </button>
+
+              {isExpanded && (
+                <div className="px-5 pb-4 space-y-2">
+                  {category.hotels.map((hotel, i) => (
+                    <div
+                      key={hotel.name}
+                      className={`p-3 rounded-xl border transition-colors ${
+                        i === 0
+                          ? "border-primary/30 bg-primary/5"
+                          : "border-border bg-muted/30"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold text-foreground">{hotel.name}</p>
+                            {i === 0 && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
+                                Top Pick
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-primary font-semibold">{hotel.priceRange}/night</span>
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                              <MapPin className="w-3 h-3" /> {hotel.distanceMiles} mi from Disney
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <p className="text-[10px] text-muted-foreground mt-1">✨ {hotel.bestFor}</p>
+
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {hotel.amenities.map(a => (
+                          <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{a}</span>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-2 mt-2">
+                        {isFeatureEnabled("hotelAlerts") && (
+                          <button
+                            onClick={() => navigate("/hotel-alerts")}
+                            className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg border border-primary/40 text-primary font-semibold hover:bg-primary/10 transition-colors"
+                          >
+                            <Bell className="w-3 h-3" /> Track Price
+                          </button>
+                        )}
+                        <span className="flex items-center gap-1 text-[10px] px-2.5 py-1.5 rounded-lg border border-border text-muted-foreground">
+                          <ExternalLink className="w-3 h-3" /> Booking coming soon
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="px-5 py-3 bg-muted/20 border-t border-border">
+        <p className="text-[10px] text-muted-foreground">
+          💡 <strong>Pro tip:</strong> Hotels with kitchens can save $50-80/day on meals. 
+          Set up a <button onClick={() => navigate("/hotel-alerts")} className="text-primary font-semibold hover:underline">Hotel Price Alert</button> to get notified when rates drop.
+        </p>
+      </div>
+    </div>
+  );
+}
