@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
+import SiteFooter from "@/components/SiteFooter";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Check, Shield, Loader2, AlertTriangle, Crown } from "lucide-react";
@@ -411,6 +412,7 @@ const Pricing = () => {
       </section>
 
       <Footer />
+      <SiteFooter />
     </div>
   );
 };

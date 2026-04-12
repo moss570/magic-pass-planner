@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import Header from "@/components/Header";
+import SiteFooter from "@/components/SiteFooter";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -183,6 +184,7 @@ const Index = () => {
       </section>
 
       <Footer />
+      <SiteFooter />
     </div>
   );
 };
