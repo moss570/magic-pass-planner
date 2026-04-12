@@ -709,6 +709,7 @@ function TripPlannerWizard() {
           nonParkDays: draft.mode === 'day-trip' ? 0 : nonParkDayCount,
           mustDoAttractions: draft.mustDoAttractions,
           walkingSpeedKmh: draft.walkingSpeedKmh,
+          mealPlanPreferences: draft.mealPlanPreferences,
         }),
       });
 
