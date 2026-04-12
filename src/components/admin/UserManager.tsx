@@ -259,18 +259,26 @@ export default function UserManager() {
             ) : filtered.map(u => (
               <TableRow key={u.id}>
                 <TableCell>
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{u.first_name || ""} {u.last_name || ""}</p>
-                    <p className="text-xs text-muted-foreground">{u.email}</p>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-medium text-foreground text-sm">{u.first_name || ""} {u.last_name || ""}</p>
+                      <p className="text-xs text-muted-foreground">{u.email}</p>
+                    </div>
+                    {u.is_vip && u.vip_type === "beta_tester" && (
+                      <Badge className="bg-blue-500/20 text-blue-400 text-[10px] px-1.5 py-0">Beta</Badge>
+                    )}
+                    {u.is_vip && u.vip_type !== "beta_tester" && (
+                      <Badge className="bg-yellow-500/20 text-yellow-400 text-[10px] px-1.5 py-0">VIP</Badge>
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   <Select
                     value={u.plan_name || "none"}
                     onValueChange={v => handleTierChange(u.id, v)}
-                    disabled={tierLoading === u.id}
+                    disabled={tierLoading === u.id || (u.is_vip && u.vip_type !== "beta_tester")}
                   >
-                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectTrigger className="w-[180px] h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
