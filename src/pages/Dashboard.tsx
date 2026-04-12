@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [activeAlertCount, setActiveAlertCount] = useState<number | null>(null);
   const [realAlerts, setRealAlerts] = useState<any[]>([]);
   const [mostRecentTrip, setMostRecentTrip] = useState<any>(null);
+  const [activeVersion, setActiveVersion] = useState<{ name: string; version_number: number } | null>(null);
   const [tripExpenses, setTripExpenses] = useState<{ total: number; budget: number } | null>(null);
   const [weatherForecast, setWeatherForecast] = useState<any[]>([]);
   const [subscription, setSubscription] = useState<any>(null);
