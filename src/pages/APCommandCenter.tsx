@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Castle, Info } from "lucide-react";
-import CompassButton from "@/components/CompassButton";
+import { Castle } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -13,11 +12,7 @@ import MerchDropAlertsSection from "@/components/ap/MerchDropAlertsSection";
 import StackingCalculator from "@/components/ap/StackingCalculator";
 import { useSubscription } from "@/hooks/useSubscription";
 import { FeatureGate } from "@/components/FeatureGate";
-
-
-// Calendar helpers
-const blockedDates = [24, 25, 26, 27];
-const today = 3;
+import BlockoutCalendar from "@/components/ap/BlockoutCalendar";
 
 const APCommandCenter = () => {
   const [liveOffers, setLiveOffers] = useState<any[]>([]);
@@ -35,8 +30,6 @@ const APCommandCenter = () => {
         setOffersLoading(false);
       });
   }, []);
-
-  const calendarDays = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
     <DashboardLayout title="🎟️ AP Command Center" subtitle="Your Annual Passholder headquarters — blockouts, discounts, renewals, and deals">
@@ -72,68 +65,14 @@ const APCommandCenter = () => {
           </div>
         </div>
 
-        {/* Section 2: Calendar + Best Days */}
-        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-6">
-          {/* Blockout Calendar */}
-          <FeatureGate hasAccess={!!access.apBlockoutCalendar} featureName="AP Blockout Calendar" requiredPlan="Magic Pass Planner">
-            <div className="rounded-xl bg-card gold-border p-4 md:p-6">
-              <h2 className="text-sm md:text-base font-bold text-foreground mb-1">📅 Blockout Calendar — Incredi-Pass</h2>
-              <p className="text-xs text-muted-foreground mb-4">Days you CANNOT enter the parks on your pass</p>
-
-              <div className="rounded-xl bg-muted/20 border border-primary/10 p-3 md:p-4 mb-4">
-                <div className="text-center mb-3">
-                  <span className="text-sm font-bold text-foreground">May 2026</span>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-[10px] text-muted-foreground mb-1">
-                  {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => <span key={d} className="font-semibold">{d}</span>)}
-                </div>
-                <div className="grid grid-cols-7 gap-1">
-                  {Array.from({ length: 5 }).map((_, i) => <div key={`e${i}`} />)}
-                  {calendarDays.map((day) => {
-                    const blocked = blockedDates.includes(day);
-                    const isToday = day === today;
-                    return (
-                      <div key={day} className={`aspect-square flex items-center justify-center rounded-md text-[11px] font-semibold ${
-                        blocked ? "bg-red-500/20 text-red-400" : "text-green-400"
-                      } ${isToday ? "ring-2 ring-primary" : ""}`}>
-                        {day}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground mb-3">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-red-500/20" /> Blocked</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-green-500/20" /> Available</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-yellow-500/20" /> Predicted Busy</span>
-              </div>
-
-              <p className="text-xs text-foreground mb-1">Next blocked period: <span className="text-red-400 font-semibold">Memorial Day Weekend — May 23–26</span></p>
-              <p className="text-xs text-green-400 mb-2">Next fully open stretch: May 13–22 (10 consecutive open days)</p>
-              <p className="text-[10px] text-muted-foreground italic">Blockout dates are estimated based on your pass tier. Always verify at disneyworld.com before visiting.</p>
-            </div>
-          </FeatureGate>
-
-          {/* Best Days */}
-          {isFeatureEnabled("bestDaysToGoV2") ? (
-            <BestDaysWidget userPassTier={null} />
-          ) : (
-            <div className="rounded-xl bg-card gold-border p-4 md:p-6">
-              <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧠 Best Days to Go</h2>
-              <p className="text-xs text-muted-foreground">Coming soon — real 10-day forecast</p>
-            </div>
-          )}
-        </div>
-
-        {/* LIVE DISNEY OFFERS */}
+        {/* Section 2: Current Disney Offers (moved above calendar) */}
         <div className="rounded-xl p-4 md:p-5 border border-white/8" style={{ background: "#111827" }}>
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-sm font-bold text-foreground">🚨 Current Disney Offers</h2>
               <p className="text-xs text-muted-foreground">Live from disneyworld.disney.go.com · Updated 5x daily</p>
             </div>
-            <Link to="/feed" className="text-xs text-primary hover:underline">Insider Feed →</Link>
+            <Link to="/social-feed" className="text-xs text-primary hover:underline">Social Feed →</Link>
           </div>
           {liveOffers.length === 0 ? (
             <p className="text-xs text-muted-foreground py-3">Loading current offers...</p>
@@ -160,7 +99,23 @@ const APCommandCenter = () => {
           )}
         </div>
 
-        {/* Section 3: AP Discounts — full DB gated to Plus only */}
+        {/* Section 3: Calendar + Best Days */}
+        <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-6">
+          <FeatureGate hasAccess={!!access.apBlockoutCalendar} featureName="AP Blockout Calendar" requiredPlan="Magic Pass Planner">
+            <BlockoutCalendar passTier="incredi-pass" />
+          </FeatureGate>
+
+          {isFeatureEnabled("bestDaysToGoV2") ? (
+            <BestDaysWidget userPassTier={null} />
+          ) : (
+            <div className="rounded-xl bg-card gold-border p-4 md:p-6">
+              <h2 className="text-sm md:text-base font-bold text-foreground mb-1">🧠 Best Days to Go</h2>
+              <p className="text-xs text-muted-foreground">Coming soon — real 10-day forecast</p>
+            </div>
+          )}
+        </div>
+
+        {/* Section 4: AP Discounts */}
         <FeatureGate hasAccess={!!access.apDiscountDatabase} featureName="AP Discount Database" requiredPlan="Magic Pass Plus">
           {isFeatureEnabled("apCommandCenterV2") ? (
             <ActiveDiscountsSection />
@@ -172,7 +127,7 @@ const APCommandCenter = () => {
           )}
         </FeatureGate>
 
-        {/* Section 4: Hotel + Merch Alerts */}
+        {/* Section 5: Hotel + Merch Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <FeatureGate hasAccess={!!access.apHotelAlerts} featureName="AP Hotel Deal Alerts" requiredPlan="Magic Pass Planner">
             {isFeatureEnabled("apCommandCenterV2") ? (
@@ -196,7 +151,7 @@ const APCommandCenter = () => {
           </FeatureGate>
         </div>
 
-        {/* Section 5: Stacking Calculator — not gated per milestone */}
+        {/* Section 6: Stacking Calculator */}
         {isFeatureEnabled("apCommandCenterV2") ? (
           <StackingCalculator />
         ) : (
