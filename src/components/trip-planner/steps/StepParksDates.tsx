@@ -101,17 +101,23 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
   };
 
   const setNonParkDay = (date: string) => {
+    const current = assignments.find(a => a.date === date);
+    const isAlreadyNonPark = current?.parkIds.includes(NON_PARK_ID);
     const next = assignments.map(a =>
-      a.date === date ? { date, parkId: null, parkIds: [], eveningOnly: [] } : a
+      a.date === date
+        ? isAlreadyNonPark
+          ? { date, parkId: null, parkIds: [], eveningOnly: [] }
+          : { date, parkId: NON_PARK_ID, parkIds: [NON_PARK_ID], eveningOnly: [] }
+        : a
     );
     onChange({ parkDayAssignments: next });
   };
 
-  const nonParkDayCount = assignments.filter(a => a.parkIds.length === 0).length;
+  const [expandedNonPark, setExpandedNonPark] = useState<Record<string, boolean>>({});
+
+  const nonParkDayCount = assignments.filter(a => a.parkIds.includes(NON_PARK_ID)).length;
   const hasEmptyDays = assignments.some(a => a.parkIds.length === 0);
-  // Every day must have at least one park OR be explicitly a non-park day (user must actively choose)
   const allDaysAssigned = assignments.length > 0 && assignments.every(a => a.parkIds.length > 0);
-  // Allow continue if parks selected, days exist, and all days have assignments (or all are non-park which is fine too)
   const canContinue = draft.selectedParks.length > 0 && tripDays.length > 0 && (allDaysAssigned || !hasEmptyDays);
 
   return (
@@ -144,8 +150,9 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
           <div className="space-y-2">
             {assignments.map((a, i) => {
               const dayLabel = new Date(a.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-              const isNonPark = a.parkIds.length === 0;
+              const isNonPark = a.parkIds.includes(NON_PARK_ID);
               const isEmpty = a.parkIds.length === 0;
+              const isExpanded = expandedNonPark[a.date] ?? false;
               return (
                 <div key={a.date} className={`rounded-lg bg-muted border p-3 ${isEmpty ? "border-destructive/30" : "border-border"}`}>
                   <p className="text-xs font-semibold text-foreground mb-2">Day {i + 1} — {dayLabel}</p>
@@ -153,17 +160,19 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
                     {draft.selectedParks.map(park => {
                       const selected = a.parkIds.includes(park);
                       const isEvening = a.eveningOnly.includes(park);
-                      const atLimit = !selected && a.parkIds.length >= 3;
+                      const realParkCount = a.parkIds.filter(p => p !== NON_PARK_ID).length;
+                      const atLimit = !selected && realParkCount >= 3;
+                      const disabledByNonPark = isNonPark && !selected;
                       return (
                         <div key={park} className="flex items-center gap-0.5">
-                          <button onClick={() => toggleDayPark(a.date, park)}
-                            disabled={atLimit}
+                          <button onClick={() => { if (isNonPark) setNonParkDay(a.date); toggleDayPark(a.date, park); }}
+                            disabled={atLimit || disabledByNonPark}
                             className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${
                               selected
                                 ? isEvening
                                   ? "bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/50"
                                   : "bg-primary text-primary-foreground border-primary"
-                                : atLimit
+                                : (atLimit || disabledByNonPark)
                                   ? "border-border text-muted-foreground/40 cursor-not-allowed"
                                   : "border-border text-muted-foreground hover:border-primary/40"
                             }`}>
@@ -185,10 +194,32 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
                       );
                     })}
                     <button onClick={() => setNonParkDay(a.date)}
-                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${isNonPark ? "bg-secondary text-secondary-foreground border-secondary" : "border-border text-muted-foreground hover:border-secondary/40"}`}>
+                      className={`px-2.5 py-1 rounded text-xs font-semibold border transition-colors ${isNonPark ? "bg-accent text-accent-foreground border-accent" : "border-border text-muted-foreground hover:border-accent/40"}`}>
                       🏖️ Non-Park
                     </button>
                   </div>
+
+                  {isNonPark && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => setExpandedNonPark(prev => ({ ...prev, [a.date]: !isExpanded }))}
+                        className="flex items-center gap-1 text-xs font-semibold text-accent-foreground"
+                      >
+                        🗺️ Suggested activities
+                        {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      </button>
+                      {isExpanded && (
+                        <div className="mt-1.5 grid grid-cols-2 gap-1">
+                          {NON_PARK_ACTIVITIES.map(act => (
+                            <span key={act} className="text-xs text-muted-foreground bg-background/50 px-2 py-1 rounded border border-border">
+                              {act}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {a.eveningOnly.length > 0 && (
                     <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
                       🌙 {a.eveningOnly.join(", ")} — evening only (dinner/fireworks)
@@ -199,7 +230,7 @@ export default function StepParksDates({ draft, onChange, onContinue, onBack }: 
             })}
           </div>
           {nonParkDayCount > 0 && (
-            <p className="text-xs text-muted-foreground mt-2">📌 {nonParkDayCount} non-park day{nonParkDayCount > 1 ? "s" : ""} — we'll suggest activities!</p>
+            <p className="text-xs text-muted-foreground mt-2">📌 {nonParkDayCount} non-park day{nonParkDayCount > 1 ? "s" : ""} — we'll suggest local attractions & dining!</p>
           )}
         </div>
       )}
