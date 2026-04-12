@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { TripDraft } from "@/lib/tripDraft";
 
 interface Props {
@@ -7,8 +10,9 @@ interface Props {
 }
 
 export default function StepBasics({ draft, onChange, onContinue }: Props) {
+  const [touched, setTouched] = useState(false);
   const isDayTrip = draft.mode === 'day-trip';
-  const canContinue = !!draft.startDate;
+  const canContinue = !!draft.tripName.trim() && !!draft.startDate;
 
   const budgetMin = isDayTrip ? 100 : 1000;
   const budgetMax = isDayTrip ? 2000 : 15000;
@@ -17,16 +21,30 @@ export default function StepBasics({ draft, onChange, onContinue }: Props) {
   return (
     <div className="space-y-5">
       <div>
-        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 block">
-          {isDayTrip ? 'Day Trip Name' : 'Trip Name'}
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
+          {isDayTrip ? 'Day Trip Name' : 'Trip Name'} <span className="text-red-400">*</span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-[240px] text-xs">
+              Give your trip a unique name — you can save up to 3 versions under each name (e.g. "Budget Version", "Splurge Version"). This helps you find and compare trips later.
+            </TooltipContent>
+          </Tooltip>
         </label>
         <input
           type="text"
           value={draft.tripName}
-          onChange={e => onChange({ tripName: e.target.value })}
+          onChange={e => { onChange({ tripName: e.target.value }); setTouched(true); }}
+          onBlur={() => setTouched(true)}
           placeholder={isDayTrip ? "e.g. Saturday at EPCOT" : "e.g. Summer Disney 2026"}
-          className="w-full px-3 py-2.5 rounded-lg bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40"
+          className={`w-full px-3 py-2.5 rounded-lg bg-muted border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 ${
+            touched && !draft.tripName.trim() ? 'border-red-400/60' : 'border-border'
+          }`}
         />
+        {touched && !draft.tripName.trim() && (
+          <p className="text-[11px] text-red-400 mt-1">Please name your trip to continue</p>
+        )}
       </div>
 
       <div>

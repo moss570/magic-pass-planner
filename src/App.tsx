@@ -55,6 +55,7 @@ import ShowFireworksPriorities from "./pages/ShowFireworksPriorities";
 import GroupPolls from "./pages/GroupPolls";
 import PhotoOpps from "./pages/PhotoOpps";
 import OrlandoInsidersGuide from "./pages/OrlandoInsidersGuide";
+import MyTrips from "./pages/MyTrips";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/trip-planner" element={<ProtectedRoute><TripPlanner /></ProtectedRoute>} />
+            <Route path="/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
             <Route path="/dining-alerts" element={<ProtectedRoute><DiningAlerts /></ProtectedRoute>} />
             <Route path="/gift-card-tracker" element={<ProtectedRoute><GiftCardTracker /></ProtectedRoute>} />
             <Route path="/live-park" element={<ProtectedRoute><LivePark /></ProtectedRoute>} />

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useState, useState as _useState, useEffect } from "react";
-import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail, Star, Heart, Vote, MapPin, Sun } from "lucide-react";
+import { Castle, Home, Map, UtensilsCrossed, Gift, Zap, Ticket, Users, UserPlus, Wallet, Settings, Bell, LogOut, Menu, X, Sparkles, Radio, Camera, Gamepad2, MessageSquare, Newspaper, Inbox, Hotel, Plane, Mail, Star, Heart, Vote, MapPin, Sun, FolderOpen } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +10,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
   { icon: Map, label: "Trip Planner", path: "/trip-planner" },
+  { icon: FolderOpen, label: "My Trips", path: "/my-trips" },
   { icon: Newspaper, label: "Social Feed", path: "/feed" },
   { icon: Inbox, label: "Inbox", path: "/inbox" },
   { icon: UtensilsCrossed, label: "Dining Alerts", path: "/dining-alerts" },

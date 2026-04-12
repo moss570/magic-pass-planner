@@ -633,7 +633,20 @@ const Settings = () => {
       {/* Section 5c: Trip Planner Defaults */}
       <TripPlannerDefaultsSection userId={user?.id} />
 
-      <TripProfilesSection userId={user?.id} navigate={navigate} />
+      {/* My Trips link card */}
+      <Card className="border-primary/20 bg-card/80 mb-6 overflow-hidden">
+        <CardContent className="p-4 md:p-6 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-foreground">🎒 My Saved Trips</p>
+            <p className="text-xs text-muted-foreground">View and manage all your trip plans</p>
+          </div>
+          <Link to="/my-trips">
+            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10 text-xs">
+              View Trips →
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
 
       {/* Section 6: Referral Program — Coming Soon */}
       <Card className="border-primary/30 bg-card/80 mb-6 overflow-hidden relative">
