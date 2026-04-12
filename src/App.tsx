@@ -104,6 +104,7 @@ const App = () => (
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
+            <Route path="/admin/tier-access" element={<ProtectedRoute><TierAccess /></ProtectedRoute>} />
             <Route path="/attraction-priorities" element={<ProtectedRoute><AttractionPriorities /></ProtectedRoute>} />
             <Route path="/character-meets" element={<ProtectedRoute><CharacterMeets /></ProtectedRoute>} />
             <Route path="/shows-fireworks" element={<ProtectedRoute><ShowFireworksPriorities /></ProtectedRoute>} />
