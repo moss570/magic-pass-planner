@@ -599,29 +599,47 @@ function TripPlannerWizard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const prefillDates = params.get("prefillDates");
-    const prefillPark = params.get("prefillPark");
-    if (prefillDates) {
-      const dates = prefillDates.split(",").filter(Boolean).sort();
-      if (dates.length > 0) {
-        const patch: Partial<TripDraft> = {
-          startDate: dates[0],
-          endDate: dates[dates.length - 1],
-        };
-        if (prefillPark) {
-          const parkNames: Record<string, string> = {
-            "magic-kingdom": "Magic Kingdom",
-            "epcot": "EPCOT",
-            "hollywood-studios": "Hollywood Studios",
-            "animal-kingdom": "Animal Kingdom",
-          };
-          const name = parkNames[prefillPark] || prefillPark;
-          patch.selectedParks = [name];
+    const prefillParks = params.get("prefillParks") || params.get("prefillPark");
+    const prefillMode = params.get("mode") as TripMode | null;
+    const prefillParkHopper = params.get("parkHopper") === "true";
+
+    if (prefillDates || prefillMode) {
+      const dates = prefillDates ? prefillDates.split(",").filter(Boolean).sort() : [];
+      const parkNames: Record<string, string> = {
+        "magic-kingdom": "Magic Kingdom",
+        "epcot": "EPCOT",
+        "hollywood-studios": "Hollywood Studios",
+        "animal-kingdom": "Animal Kingdom",
+      };
+      const patch: Partial<TripDraft> = {};
+
+      if (prefillMode === 'day-trip' || prefillMode === 'vacation') {
+        patch.mode = prefillMode;
+        if (prefillMode === 'day-trip') {
+          patch.budget = 500;
         }
-        setDraft(prev => ({ ...prev, ...patch }));
-        setShowResumeBanner(false);
-        // Clean URL
-        window.history.replaceState({}, "", window.location.pathname);
       }
+
+      if (dates.length > 0) {
+        patch.startDate = dates[0];
+        patch.endDate = dates[dates.length - 1];
+      }
+
+      if (prefillParks) {
+        const parkIds = prefillParks.split(",").filter(Boolean);
+        patch.selectedParks = parkIds.map(id => parkNames[id] || id);
+      }
+
+      if (prefillParkHopper) {
+        patch.parkHopper = true;
+      }
+
+      setDraft(prev => ({ ...prev, ...patch }));
+      setShowResumeBanner(false);
+      setModeSelected(true);
+
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
