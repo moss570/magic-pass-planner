@@ -13,23 +13,32 @@ interface GameCardProps {
   badge?: string;
   onClick: () => void;
   delay?: number;
+  disabled?: boolean;
 }
 
-export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, imageUrl, badge, onClick, delay = 0 }: GameCardProps) {
+export default function GameCard({ emoji, name, description, players, time, gradient, glowColor, imageUrl, badge, onClick, delay = 0, disabled = false }: GameCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, rotateX: 15 }}
       animate={{ opacity: 1, y: 0, rotateX: 0 }}
       transition={{ delay, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ 
+      whileHover={disabled ? {} : { 
         scale: 1.04, 
         y: -8,
         transition: { duration: 0.2 }
       }}
-      whileTap={{ scale: 0.97 }}
-      onClick={onClick}
-      className="relative cursor-pointer group"
+      whileTap={disabled ? {} : { scale: 0.97 }}
+      onClick={disabled ? undefined : onClick}
+      className={`relative group ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
     >
+      {/* Coming Soon overlay */}
+      {disabled && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-black/40 backdrop-blur-[2px]">
+          <span className="px-4 py-2 bg-amber-500 text-black font-black text-sm rounded-full tracking-wider uppercase">
+            Coming Soon
+          </span>
+        </div>
+      )}
       {/* Glow effect behind card */}
       <div className={`absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-300`}
         style={{ background: glowColor }} />

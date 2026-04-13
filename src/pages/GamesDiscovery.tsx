@@ -197,6 +197,14 @@ const GamesDiscovery = () => {
           </p>
         </motion.div>
 
+        {/* Under Development Banner */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          className="mb-8">
+          <div className="max-w-2xl mx-auto rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-center py-3 px-4 font-bold text-sm md:text-base tracking-wide">
+            🚧 Games are currently under development. Stay tuned! 🚧
+          </div>
+        </motion.div>
+
         {/* Difficulty Selector */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
           className="flex justify-center gap-2 mb-10">
@@ -232,6 +240,7 @@ const GamesDiscovery = () => {
               badge={(game as any).badge}
               onClick={() => session ? navigate(game.path) : navigate("/signup")}
               delay={idx * 0.06}
+              disabled={true}
             />
           ))}
         </div>
