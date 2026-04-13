@@ -9,8 +9,9 @@ import {
   Clock, DollarSign, Star, Hotel, Plane, CalendarCheck,
   Gamepad2, Camera, Sparkles, Wallet
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import LaunchSignupModal from "@/components/LaunchSignupModal";
 
 const StarField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -90,6 +91,7 @@ const stats = [
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const [signupOpen, setSignupOpen] = useState(false);
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
       <Header />
@@ -138,11 +140,16 @@ const Index = () => {
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4">
-            <a href="#how-it-works">
-              <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
-                See How It Works
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Button onClick={() => setSignupOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-12 text-base">
+                🚀 Get Early Access
               </Button>
-            </a>
+              <a href="#how-it-works">
+                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
+                  See How It Works
+                </Button>
+              </a>
+            </div>
 
             <div className="mt-4 flex flex-col items-center gap-2">
               <p className="text-sm font-semibold text-primary tracking-wide uppercase">Coming Soon</p>
@@ -296,12 +303,21 @@ const Index = () => {
         <p className="text-muted-foreground mb-8">
           {user ? "Head to your dashboard to get started." : "Start your 7-day free trial — no credit card required."}
         </p>
-        <Link to={user ? "/dashboard" : "/signup"}>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-10 h-12 text-base">
-            {user ? "Go to Dashboard" : "Get Started Free"}
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link to={user ? "/dashboard" : "/signup"}>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-10 h-12 text-base">
+              {user ? "Go to Dashboard" : "Get Started Free"}
+            </Button>
+          </Link>
+          {!user && (
+            <Button variant="outline" onClick={() => setSignupOpen(true)} className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
+              🚀 Get Early Access
+            </Button>
+          )}
+        </div>
       </section>
+
+      <LaunchSignupModal open={signupOpen} onOpenChange={setSignupOpen} />
 
       <Footer />
       <SiteFooter />
