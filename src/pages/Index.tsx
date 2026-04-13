@@ -135,17 +135,25 @@ const Index = () => {
             Plan smarter. Save more. Enjoy every minute.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to={user ? "/dashboard" : "/signup"}>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-12 text-base">
-                {user ? "Go to Dashboard" : "Start Free Trial"}
-              </Button>
-            </Link>
+          <div className="mt-10 flex flex-col items-center gap-4">
             <a href="#how-it-works">
               <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
                 See How It Works
               </Button>
             </a>
+
+            <div className="mt-4 flex flex-col items-center gap-2">
+              <p className="text-sm font-semibold text-primary tracking-wide uppercase">Coming Soon</p>
+              <p className="text-xs text-muted-foreground">Complete App on Google Play and Apple App Store</p>
+              <div className="flex items-center gap-4 mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="w-8 h-8 text-muted-foreground">
+                  <path fill="currentColor" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" className="w-7 h-7 text-muted-foreground">
+                  <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-27.1-46.9-42.2-83.7-45.4-35.6-3.1-74.4 20.9-88.5 20.9-15 0-49.4-19.7-74.3-19.7C60.5 141.1 0 187.7 0 281.4c0 28.2 5.1 57.5 15.4 87.8 13.7 39.7 63.1 136.8 114.6 135.1 26.5-.6 45.2-19 79.7-19 33.5 0 50.8 19 80.4 18.4 52.3-.8 96.5-88.2 109.3-128.1-69.4-32.9-68.7-96.5-68.7-98.9zM261.5 73.3c27.3-33 24.5-63.3 23.6-74.3-23.6 1.3-51 15.7-66.9 34.1-17.4 19.9-27.6 44.7-25.4 73.1 25.5 1.9 49.1-12.7 68.7-32.9z"/>
+                </svg>
+              </div>
+            </div>
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
