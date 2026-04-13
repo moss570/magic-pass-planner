@@ -6,42 +6,42 @@ import SiteFooter from "@/components/SiteFooter";
 
 const features = [
   {
-    icon: Bell, emoji: "🔔", title: "Unlimited Reservation Alerts",
+    icon: Bell, emoji: "🔔", title: "Unlimited Reservation Alerts", image: "/feature-art/dining-alerts.png",
     desc: "Never miss a dining reservation again. Monitor every restaurant in every park — unlimited alerts, 24/7 monitoring, instant email and SMS notifications the moment a table opens.",
     highlight: "Get alerted in seconds, not hours.",
     color: "from-yellow-500/20 to-orange-500/20",
     border: "border-yellow-500/30",
   },
   {
-    icon: Radio, emoji: "📡", title: "Magic Beacon",
+    icon: Radio, emoji: "📡", title: "Magic Beacon", image: "/feature-art/magic-beacon.png",
     desc: "Find fellow Annual Passholders in the park! The Magic Beacon lets you connect with nearby AP holders without sharing personal info until you both opt in. Perfect for meetups, group rides, and making new park friends.",
     highlight: "Meet your park community.",
     color: "from-purple-500/20 to-fuchsia-500/20",
     border: "border-purple-500/30",
   },
   {
-    icon: Calendar, emoji: "🎪", title: "Events & Experiences",
+    icon: Calendar, emoji: "🎪", title: "Events & Experiences", image: "/feature-art/dining-alerts.png",
     desc: "Track every special event, seasonal experience, and limited-time offering. Get alerts for character meet-and-greets, fireworks viewing spots, festival food booths, and exclusive AP events before they fill up.",
     highlight: "First to know, first in line.",
     color: "from-blue-500/20 to-indigo-500/20",
     border: "border-blue-500/30",
   },
   {
-    icon: Users, emoji: "💬", title: "Social Feed & Community",
+    icon: Users, emoji: "💬", title: "Social Feed & Community", image: "/feature-art/group-expenses.png",
     desc: "Join the Magic Pass Plus community! Share trip photos, tips, and reviews. Follow other passholders, get insider intel from our team, and stay connected between visits. Your own Disney social network.",
     highlight: "Your park community, always connected.",
     color: "from-green-500/20 to-emerald-500/20",
     border: "border-green-500/30",
   },
   {
-    icon: Ticket, emoji: "🎟️", title: "AP Command Center",
+    icon: Ticket, emoji: "🎟️", title: "AP Command Center", image: "/feature-art/ap-hub.png",
     desc: "Everything you need in one place: blockout calendar synced to your pass type, AP discount database, hotel deal alerts exclusive to passholders, merchandise drop notifications, and renewal reminders.",
     highlight: "Your AP life, organized.",
     color: "from-amber-500/20 to-yellow-500/20",
     border: "border-amber-500/30",
   },
   {
-    icon: Sparkles, emoji: "🎮", title: "In-Park Games",
+    icon: Sparkles, emoji: "🎮", title: "In-Park Games", image: "/feature-art/line-games.png",
     desc: "Turn wait times into fun times! Play multiplayer games with your group while waiting in line — detective mysteries, card games, puzzles, and more. QR code to join, no downloads needed.",
     highlight: "Never a boring line again.",
     color: "from-pink-500/20 to-rose-500/20",
@@ -96,6 +96,7 @@ export default function ForPassholders() {
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-xl bg-black/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-2xl">{f.emoji}</span>
+                      {(f as any).image && <img src={(f as any).image} alt={f.title} className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-10" />}
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white mb-2">{f.title}</h3>

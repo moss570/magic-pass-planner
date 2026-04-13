@@ -6,56 +6,56 @@ import SiteFooter from "@/components/SiteFooter";
 
 const features = [
   {
-    icon: Plane, emoji: "✈️", title: "Airfare Tracking & Alerts",
+    icon: Plane, emoji: "✈️", title: "Airfare Tracking & Alerts", image: "/feature-art/airfare-tracker.png",
     desc: "Set your travel dates and we'll monitor flight prices daily. Get instant alerts when prices drop — whether it's a flash sale or a gradual decrease. Compare airlines, track price history, and book at the perfect moment.",
     highlight: "Save hundreds on flights.",
     color: "from-blue-500/20 to-cyan-500/20",
     border: "border-blue-500/30",
   },
   {
-    icon: Hotel, emoji: "🏨", title: "Hotel Deal Tracking",
+    icon: Hotel, emoji: "🏨", title: "Hotel Deal Tracking", image: "/feature-art/hotel-deals.png",
     desc: "Monitor hotel prices near the parks. We track Disney resorts, partner hotels, and nearby options — alerting you when rates drop or special packages appear. See price history charts to know if you're getting a real deal.",
     highlight: "Never overpay for a hotel.",
     color: "from-purple-500/20 to-violet-500/20",
     border: "border-purple-500/30",
   },
   {
-    icon: DollarSign, emoji: "💰", title: "Trip Budget Manager",
+    icon: DollarSign, emoji: "💰", title: "Trip Budget Manager", image: "/feature-art/budget-manager.png",
     desc: "Plan your entire trip budget in one place. Track tickets, hotel, flights, dining, merchandise, and extras. Set daily spending limits, monitor actual vs. planned spending, and keep your vacation on budget.",
     highlight: "Know exactly what your trip costs.",
     color: "from-green-500/20 to-emerald-500/20",
     border: "border-green-500/30",
   },
   {
-    icon: Users, emoji: "👨‍👩‍👧‍👦", title: "Group Expenses & Settle-Up",
+    icon: Users, emoji: "👨‍👩‍👧‍👦", title: "Group Expenses & Settle-Up", image: "/feature-art/group-expenses.png",
     desc: "Traveling with family or friends? Track shared expenses, split bills fairly, and settle up at the end of the trip. No more awkward 'who owes what' conversations. Everyone sees the same numbers in real time.",
     highlight: "Split costs without the drama.",
     color: "from-orange-500/20 to-amber-500/20",
     border: "border-orange-500/30",
   },
   {
-    icon: Map, emoji: "🗺️", title: "AI Trip Planner",
+    icon: Map, emoji: "🗺️", title: "AI Trip Planner", image: "/feature-art/ai-trip-planner.png",
     desc: "Tell us your dates, party size, and priorities — our AI builds a personalized day-by-day itinerary. Optimized for crowd levels, park hours, dining reservations, and your must-do list. Share it with your whole group.",
     highlight: "Your perfect trip, planned in minutes.",
     color: "from-yellow-500/20 to-orange-500/20",
     border: "border-yellow-500/30",
   },
   {
-    icon: Calendar, emoji: "🍽️", title: "Dining Reservation Alerts",
+    icon: Calendar, emoji: "🍽️", title: "Dining Reservation Alerts", image: "/feature-art/dining-alerts.png",
     desc: "The hardest part of a Disney trip? Getting the restaurants you want. We monitor 150+ dining locations 24/7 and alert you the moment a table opens at your dream restaurant. Be Our Guest? Cinderella's Royal Table? We've got you.",
     highlight: "Snag the impossible reservation.",
     color: "from-red-500/20 to-pink-500/20",
     border: "border-red-500/30",
   },
   {
-    icon: Sparkles, emoji: "🎁", title: "Gift Card Deal Tracker",
+    icon: Sparkles, emoji: "🎁", title: "Gift Card Deal Tracker", image: "/feature-art/gift-cards.png",
     desc: "Save money before you even arrive. We track discounted Disney Gift Cards from 13+ retailers. Buy gift cards at a discount, use them to pay for everything in the parks — instant savings on dining, merchandise, and more.",
     highlight: "Save 5-15% on everything in the parks.",
     color: "from-teal-500/20 to-cyan-500/20",
     border: "border-teal-500/30",
   },
   {
-    icon: Shield, emoji: "📊", title: "Trip Comparison Tool",
+    icon: Shield, emoji: "📊", title: "Trip Comparison Tool", image: "/feature-art/budget-manager.png",
     desc: "Planning multiple trip options? Compare different date ranges, hotel options, and itineraries side by side. See total costs, crowd level predictions, and weather forecasts for each option to make the best choice.",
     highlight: "Make data-driven vacation decisions.",
     color: "from-indigo-500/20 to-purple-500/20",
@@ -110,6 +110,7 @@ export default function ForTravelers() {
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-xl bg-black/30 flex items-center justify-center flex-shrink-0">
                         <span className="text-2xl">{f.emoji}</span>
+                      {(f as any).image && <img src={(f as any).image} alt={f.title} className="absolute inset-0 w-full h-full object-cover rounded-xl opacity-10" />}
                       </div>
                       <div>
                         <h3 className="text-xl font-bold text-white mb-2">{f.title}</h3>
