@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, ArrowLeft, Trash2, Plus } from "lucide-react";
+import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, ArrowLeft, Trash2, Plus, Mail, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 
@@ -42,6 +43,13 @@ export default function EarlyAccessLeads() {
   const [editing, setEditing] = useState<Lead | null>(null);
   const [editForm, setEditForm] = useState<Partial<Lead>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Send email state
+  const [showSendEmail, setShowSendEmail] = useState(false);
+  const [sendTemplate, setSendTemplate] = useState<"beta_welcome" | "beta_update">("beta_welcome");
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [sendingEmails, setSendingEmails] = useState(false);
+  const [sendProgress, setSendProgress] = useState(0);
 
   // Adding single lead
   const [showAdd, setShowAdd] = useState(false);
@@ -171,7 +179,70 @@ export default function EarlyAccessLeads() {
     toast({ title: `✅ Exported ${sorted.length} leads` });
   };
 
-  // CSV Import
+  const toggleSelectLead = (id: string) => {
+    setSelectedLeads(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLeads.size === sorted.length) {
+      setSelectedLeads(new Set());
+    } else {
+      setSelectedLeads(new Set(sorted.map(l => l.id)));
+    }
+  };
+
+  const sendEmailToSelected = async () => {
+    const targets = sorted.filter(l => selectedLeads.has(l.id) && l.status === "active" && l.marketing_consent);
+    if (targets.length === 0) {
+      toast({ title: "No eligible leads selected", description: "Leads must be active with marketing consent", variant: "destructive" });
+      return;
+    }
+    if (!confirm(`Send "${sendTemplate === "beta_welcome" ? "Beta Welcome" : "Beta Update"}" email to ${targets.length} leads?`)) return;
+
+    setSendingEmails(true);
+    setSendProgress(0);
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    const templateHtml = localStorage.getItem(sendTemplate === "beta_welcome" ? "beta_welcome_template" : "beta_update_template");
+
+    let sent = 0, failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const lead = targets[i];
+      try {
+        const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=invite`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "x-client-authorization": `Bearer ${token}`,
+            "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: lead.email,
+            first_name: lead.first_name || "Disney Fan",
+            type: "beta_tester",
+            reason: "Beta tester from early access list",
+            template_name: sendTemplate,
+            custom_html: templateHtml || undefined,
+          }),
+        });
+        const data = await resp.json();
+        if (data.success) sent++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+      setSendProgress(i + 1);
+      if (i < targets.length - 1) await new Promise(r => setTimeout(r, 500));
+    }
+    setSendingEmails(false);
+    setSelectedLeads(new Set());
+    toast({ title: `✅ Sent ${sent} emails`, description: failed > 0 ? `${failed} failed` : undefined });
+  };
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -298,7 +369,46 @@ export default function EarlyAccessLeads() {
           <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1">
             <Download className="w-3 h-3" /> Export CSV
           </Button>
+
+          <Button size="sm" variant="outline" onClick={() => setShowSendEmail(!showSendEmail)} className="gap-1">
+            <Mail className="w-3 h-3" /> Send Email
+          </Button>
         </div>
+
+        {/* Send Email Panel */}
+        {showSendEmail && (
+          <div className="rounded-xl p-4 border space-y-3" style={{ background: "#111827", borderColor: "rgba(59,130,246,0.3)" }}>
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Send className="w-4 h-4 text-blue-400" /> Send Email to Selected Leads
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Select value={sendTemplate} onValueChange={(v) => setSendTemplate(v as "beta_welcome" | "beta_update")}>
+                <SelectTrigger className="w-[200px] bg-[#0c1225] border-white/10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beta_welcome">🧪 Beta Welcome</SelectItem>
+                  <SelectItem value="beta_update">📢 Beta Update</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                {selectedLeads.size} selected · {sorted.filter(l => selectedLeads.has(l.id) && l.status === "active" && l.marketing_consent).length} eligible
+              </span>
+              <Button size="sm" onClick={sendEmailToSelected} disabled={sendingEmails || selectedLeads.size === 0} className="gap-1">
+                <Send className="w-3 h-3" /> {sendingEmails ? `Sending ${sendProgress}...` : "Send"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setShowSendEmail(false); setSelectedLeads(new Set()); }}>Cancel</Button>
+            </div>
+            {sendingEmails && (
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${(sendProgress / selectedLeads.size) * 100}%` }} />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              💡 Edit templates in <a href="/admin" className="text-primary underline">Admin → Email Template Editor</a>. Only active leads with marketing consent will receive emails.
+            </p>
+          </div>
+        )}
 
         {/* Add form */}
         {showAdd && (
@@ -330,6 +440,12 @@ export default function EarlyAccessLeads() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "#111827" }}>
+                    {showSendEmail && (
+                      <th className="px-3 py-3 w-8">
+                        <input type="checkbox" checked={selectedLeads.size === sorted.length && sorted.length > 0}
+                          onChange={toggleSelectAll} className="accent-primary" />
+                      </th>
+                    )}
                     {([
                       ["email", "Email"],
                       ["first_name", "Name"],
@@ -349,9 +465,15 @@ export default function EarlyAccessLeads() {
                 </thead>
                 <tbody>
                   {sorted.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">No leads found</td></tr>
+                    <tr><td colSpan={showSendEmail ? 9 : 8} className="text-center py-12 text-muted-foreground">No leads found</td></tr>
                   ) : sorted.map(lead => (
-                    <tr key={lead.id} className="border-t border-white/5 hover:bg-white/[0.02]">
+                    <tr key={lead.id} className={`border-t border-white/5 hover:bg-white/[0.02] ${selectedLeads.has(lead.id) ? "bg-blue-500/5" : ""}`}>
+                      {showSendEmail && (
+                        <td className="px-3 py-2">
+                          <input type="checkbox" checked={selectedLeads.has(lead.id)}
+                            onChange={() => toggleSelectLead(lead.id)} className="accent-primary" />
+                        </td>
+                      )}
                       {editing?.id === lead.id ? (
                         <>
                           <td className="px-4 py-2">
