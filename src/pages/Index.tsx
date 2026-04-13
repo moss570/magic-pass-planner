@@ -118,6 +118,13 @@ const Index = () => {
         </Link>
       </section>
 
+      {/* Beta Banner */}
+      <div className="max-w-4xl mx-auto mt-4 px-4">
+        <div className="rounded-lg bg-yellow-500 text-black text-center py-3 px-4 font-bold text-sm md:text-base tracking-wide">
+          🚧 WE ARE IN BETA TESTING MODE — Some features are not currently operating correctly. 🚧
+        </div>
+      </div>
+
       {/* Hero */}
       <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-4 overflow-hidden">
         <StarField />
