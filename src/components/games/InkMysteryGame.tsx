@@ -12,11 +12,11 @@ import { GPSWatcher, ParkZone, PARK_ZONES } from "@/lib/gpsTracker";
 
 // Load compiled Ink JSON story
 
-const LOCATION_BACKGROUNDS: Record<string, { emoji: string; color: string }> = {
-  main_plaza: { emoji: "🏰", color: "#F59E0B" },
-  park_map: { emoji: "🗺️", color: "#3B82F6" },
-  carousel: { emoji: "🎠", color: "#EC4899" },
-  tunnels: { emoji: "🔧", color: "#6B7280" },
+const LOCATION_BACKGROUNDS: Record<string, { emoji: string; color: string; image?: string }> = {
+  main_plaza: { emoji: "🏰", color: "#F59E0B", image: "/game-art/mystery/location-parkmap.png" },
+  park_map: { emoji: "🗺️", color: "#3B82F6", image: "/game-art/mystery/location-parkmap.png" },
+  carousel: { emoji: "🎠", color: "#EC4899", image: "/game-art/mystery/location-carousel.png" },
+  tunnels: { emoji: "🔧", color: "#6B7280", image: "/game-art/mystery/location-tunnels.png" },
   office: { emoji: "🏢", color: "#EF4444" },
   workshop: { emoji: "⚙️", color: "#8B5CF6" },
   kitchen: { emoji: "🍳", color: "#F59E0B" },
@@ -25,6 +25,14 @@ const LOCATION_BACKGROUNDS: Record<string, { emoji: string; color: string }> = {
   interrogation: { emoji: "🕵️", color: "#DC2626" },
   evidence_board: { emoji: "📋", color: "#F97316" },
   reveal: { emoji: "⚖️", color: "#7C3AED" },
+};
+
+const SUSPECT_PORTRAITS: Record<string, string> = {
+  dave: "/game-art/mystery/suspect-dave.png",
+  wendy: "/game-art/mystery/suspect-wendy.png",
+  pete: "/game-art/mystery/suspect-pete.png",
+  janet: "/game-art/mystery/suspect-janet.png",
+  teddy: "/game-art/mystery/suspect-teddy.png",
 };
 
 interface Props {
@@ -193,6 +201,8 @@ export default function InkMysteryGame({ onClose }: Props) {
 
   return (
     <div className="min-h-screen bg-[#060a14] flex flex-col relative overflow-hidden">
+      {/* Location background image */}
+      {loc.image && <img src={loc.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none" />}
       {/* Location-based ambient glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-20 right-1/4 w-72 h-72 rounded-full blur-[100px] opacity-15" style={{ background: loc.color }} />
