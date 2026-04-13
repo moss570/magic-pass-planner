@@ -112,11 +112,11 @@ const Index = () => {
                 {user ? "Go to Dashboard" : "Start Free Trial"}
               </Button>
             </Link>
-            <Link to="/#features">
+            <a href="#how-it-works">
               <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
                 See How It Works
               </Button>
-            </Link>
+            </a>
           </div>
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
@@ -130,6 +130,76 @@ const Index = () => {
                 <span>{badge}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section id="how-it-works" className="py-20 md:py-28 px-4 border-b border-white/5">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground text-center mb-4">
+            How <span className="text-primary">Magic Pass Plus</span> Works
+          </h2>
+          <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
+            Three simple steps to never miss a reservation again.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <div className="text-center group">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+                <span className="text-4xl">🔔</span>
+              </div>
+              <div className="inline-block bg-primary/20 text-primary text-xs font-bold px-3 py-1 rounded-full mb-3">STEP 1</div>
+              <h3 className="text-xl font-bold text-white mb-2">Set Your Alerts</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Choose the restaurants and experiences you want. Set your dates, party size, and preferred times. We start monitoring instantly.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="text-center group">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+                <span className="text-4xl">⚡</span>
+              </div>
+              <div className="inline-block bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3">STEP 2</div>
+              <h3 className="text-xl font-bold text-white mb-2">Get Instant Notifications</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                The moment a reservation opens up, you get an alert via email and/or SMS — usually within seconds. We monitor 24/7 so you don't have to.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="text-center group">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
+                <span className="text-4xl">🎉</span>
+              </div>
+              <div className="inline-block bg-yellow-500/20 text-yellow-400 text-xs font-bold px-3 py-1 rounded-full mb-3">STEP 3</div>
+              <h3 className="text-xl font-bold text-white mb-2">Book It & Enjoy</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Tap the alert, book your reservation on Disney's site, and enjoy! Plus use our AI trip planner, GPS navigator, and budget tracker to plan every detail.
+              </p>
+            </div>
+          </div>
+
+          {/* Additional Info Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12">
+            <div className="rounded-xl bg-card gold-border p-5">
+              <h4 className="font-bold text-white mb-2 flex items-center gap-2">🎯 150+ Restaurants & Experiences</h4>
+              <p className="text-muted-foreground text-sm">Monitor dining reservations at every Disney restaurant plus hard-to-get experiences like Savi's Workshop, Bibbidi Bobbidi Boutique, and character dining.</p>
+            </div>
+            <div className="rounded-xl bg-card gold-border p-5">
+              <h4 className="font-bold text-white mb-2 flex items-center gap-2">📱 Works on Any Device</h4>
+              <p className="text-muted-foreground text-sm">Use Magic Pass Plus on your phone, tablet, or computer. Get alerts via email, SMS, or both. Our responsive design works beautifully everywhere.</p>
+            </div>
+            <div className="rounded-xl bg-card gold-border p-5">
+              <h4 className="font-bold text-white mb-2 flex items-center gap-2">🤖 AI Trip Planner</h4>
+              <p className="text-muted-foreground text-sm">Our AI builds you a personalized day-by-day itinerary based on your dates, party, and priorities. Optimized for crowd levels, park hours, and dining times.</p>
+            </div>
+            <div className="rounded-xl bg-card gold-border p-5">
+              <h4 className="font-bold text-white mb-2 flex items-center gap-2">🏰 Built for Annual Passholders</h4>
+              <p className="text-muted-foreground text-sm">AP Command Center with blockout calendars, AP-exclusive hotel deals, merchandise drop alerts, discount database, and renewal reminders all in one place.</p>
+            </div>
           </div>
         </div>
       </section>
