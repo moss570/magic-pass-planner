@@ -303,12 +303,21 @@ const Index = () => {
         <p className="text-muted-foreground mb-8">
           {user ? "Head to your dashboard to get started." : "Start your 7-day free trial — no credit card required."}
         </p>
-        <Link to={user ? "/dashboard" : "/signup"}>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-10 h-12 text-base">
-            {user ? "Go to Dashboard" : "Get Started Free"}
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <Link to={user ? "/dashboard" : "/signup"}>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-10 h-12 text-base">
+              {user ? "Go to Dashboard" : "Get Started Free"}
+            </Button>
+          </Link>
+          {!user && (
+            <Button variant="outline" onClick={() => setSignupOpen(true)} className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
+              🚀 Get Early Access
+            </Button>
+          )}
+        </div>
       </section>
+
+      <LaunchSignupModal open={signupOpen} onOpenChange={setSignupOpen} />
 
       <Footer />
       <SiteFooter />
