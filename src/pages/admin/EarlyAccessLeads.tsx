@@ -369,7 +369,46 @@ export default function EarlyAccessLeads() {
           <Button size="sm" variant="outline" onClick={exportCSV} className="gap-1">
             <Download className="w-3 h-3" /> Export CSV
           </Button>
+
+          <Button size="sm" variant="outline" onClick={() => setShowSendEmail(!showSendEmail)} className="gap-1">
+            <Mail className="w-3 h-3" /> Send Email
+          </Button>
         </div>
+
+        {/* Send Email Panel */}
+        {showSendEmail && (
+          <div className="rounded-xl p-4 border space-y-3" style={{ background: "#111827", borderColor: "rgba(59,130,246,0.3)" }}>
+            <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Send className="w-4 h-4 text-blue-400" /> Send Email to Selected Leads
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Select value={sendTemplate} onValueChange={(v) => setSendTemplate(v as "beta_welcome" | "beta_update")}>
+                <SelectTrigger className="w-[200px] bg-[#0c1225] border-white/10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beta_welcome">🧪 Beta Welcome</SelectItem>
+                  <SelectItem value="beta_update">📢 Beta Update</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                {selectedLeads.size} selected · {sorted.filter(l => selectedLeads.has(l.id) && l.status === "active" && l.marketing_consent).length} eligible
+              </span>
+              <Button size="sm" onClick={sendEmailToSelected} disabled={sendingEmails || selectedLeads.size === 0} className="gap-1">
+                <Send className="w-3 h-3" /> {sendingEmails ? `Sending ${sendProgress}...` : "Send"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => { setShowSendEmail(false); setSelectedLeads(new Set()); }}>Cancel</Button>
+            </div>
+            {sendingEmails && (
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="h-full bg-blue-500 transition-all duration-300" style={{ width: `${(sendProgress / selectedLeads.size) * 100}%` }} />
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              💡 Edit templates in <a href="/admin" className="text-primary underline">Admin → Email Template Editor</a>. Only active leads with marketing consent will receive emails.
+            </p>
+          </div>
+        )}
 
         {/* Add form */}
         {showAdd && (
