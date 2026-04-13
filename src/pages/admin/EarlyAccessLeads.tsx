@@ -179,7 +179,70 @@ export default function EarlyAccessLeads() {
     toast({ title: `✅ Exported ${sorted.length} leads` });
   };
 
-  // CSV Import
+  const toggleSelectLead = (id: string) => {
+    setSelectedLeads(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedLeads.size === sorted.length) {
+      setSelectedLeads(new Set());
+    } else {
+      setSelectedLeads(new Set(sorted.map(l => l.id)));
+    }
+  };
+
+  const sendEmailToSelected = async () => {
+    const targets = sorted.filter(l => selectedLeads.has(l.id) && l.status === "active" && l.marketing_consent);
+    if (targets.length === 0) {
+      toast({ title: "No eligible leads selected", description: "Leads must be active with marketing consent", variant: "destructive" });
+      return;
+    }
+    if (!confirm(`Send "${sendTemplate === "beta_welcome" ? "Beta Welcome" : "Beta Update"}" email to ${targets.length} leads?`)) return;
+
+    setSendingEmails(true);
+    setSendProgress(0);
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    const templateHtml = localStorage.getItem(sendTemplate === "beta_welcome" ? "beta_welcome_template" : "beta_update_template");
+
+    let sent = 0, failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const lead = targets[i];
+      try {
+        const resp = await fetch(`https://wknelhrmgspuztehetpa.supabase.co/functions/v1/vip-invite?action=invite`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "x-client-authorization": `Bearer ${token}`,
+            "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: lead.email,
+            first_name: lead.first_name || "Disney Fan",
+            type: "beta_tester",
+            reason: "Beta tester from early access list",
+            template_name: sendTemplate,
+            custom_html: templateHtml || undefined,
+          }),
+        });
+        const data = await resp.json();
+        if (data.success) sent++;
+        else failed++;
+      } catch {
+        failed++;
+      }
+      setSendProgress(i + 1);
+      if (i < targets.length - 1) await new Promise(r => setTimeout(r, 500));
+    }
+    setSendingEmails(false);
+    setSelectedLeads(new Set());
+    toast({ title: `✅ Sent ${sent} emails`, description: failed > 0 ? `${failed} failed` : undefined });
+  };
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
