@@ -91,6 +91,7 @@ const stats = [
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const [signupOpen, setSignupOpen] = useState(false);
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
       <Header />
@@ -139,11 +140,16 @@ const Index = () => {
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4">
-            <a href="#how-it-works">
-              <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
-                See How It Works
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Button onClick={() => setSignupOpen(true)} className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-8 h-12 text-base">
+                🚀 Get Early Access
               </Button>
-            </a>
+              <a href="#how-it-works">
+                <Button variant="outline" className="border-primary/40 text-primary hover:bg-primary/10 font-semibold rounded-lg px-8 h-12 text-base">
+                  See How It Works
+                </Button>
+              </a>
+            </div>
 
             <div className="mt-4 flex flex-col items-center gap-2">
               <p className="text-sm font-semibold text-primary tracking-wide uppercase">Coming Soon</p>
