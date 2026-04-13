@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Map, UtensilsCrossed, Gift, Zap, Ticket, Users,
-  Clock, DollarSign, Star
+  Clock, DollarSign, Star, Hotel, Plane, CalendarCheck,
+  Gamepad2, Camera, Sparkles, Wallet
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
