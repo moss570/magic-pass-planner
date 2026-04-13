@@ -440,6 +440,12 @@ export default function EarlyAccessLeads() {
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ background: "#111827" }}>
+                    {showSendEmail && (
+                      <th className="px-3 py-3 w-8">
+                        <input type="checkbox" checked={selectedLeads.size === sorted.length && sorted.length > 0}
+                          onChange={toggleSelectAll} className="accent-primary" />
+                      </th>
+                    )}
                     {([
                       ["email", "Email"],
                       ["first_name", "Name"],
@@ -459,9 +465,15 @@ export default function EarlyAccessLeads() {
                 </thead>
                 <tbody>
                   {sorted.length === 0 ? (
-                    <tr><td colSpan={8} className="text-center py-12 text-muted-foreground">No leads found</td></tr>
+                    <tr><td colSpan={showSendEmail ? 9 : 8} className="text-center py-12 text-muted-foreground">No leads found</td></tr>
                   ) : sorted.map(lead => (
-                    <tr key={lead.id} className="border-t border-white/5 hover:bg-white/[0.02]">
+                    <tr key={lead.id} className={`border-t border-white/5 hover:bg-white/[0.02] ${selectedLeads.has(lead.id) ? "bg-blue-500/5" : ""}`}>
+                      {showSendEmail && (
+                        <td className="px-3 py-2">
+                          <input type="checkbox" checked={selectedLeads.has(lead.id)}
+                            onChange={() => toggleSelectLead(lead.id)} className="accent-primary" />
+                        </td>
+                      )}
                       {editing?.id === lead.id ? (
                         <>
                           <td className="px-4 py-2">
