@@ -911,8 +911,23 @@ export default function Admin() {
                 {showTemplateEditor ? "Hide Editor" : "Edit Template"}
               </button>
             </div>
+
+            {/* Template selector */}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              {(Object.keys(TEMPLATE_REGISTRY) as TemplateName[]).map(name => (
+                <button
+                  key={name}
+                  onClick={() => switchTemplate(name)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors font-medium ${activeTemplate === name ? "border-primary/60 bg-primary/15 text-primary" : "border-white/10 text-muted-foreground hover:text-foreground hover:border-white/20"}`}
+                >
+                  {TEMPLATE_REGISTRY[name].label}
+                  {localStorage.getItem(TEMPLATE_REGISTRY[name].storageKey) ? " ✏️" : ""}
+                </button>
+              ))}
+            </div>
+
             <p className="text-xs text-muted-foreground mb-3">
-              Use <code className="text-primary">{"{{first_name}}"}</code> and <code className="text-primary">{"{{signup_url}}"}</code> as placeholders. Changes apply to all future invites.
+              Placeholders: <code className="text-primary">{TEMPLATE_REGISTRY[activeTemplate].placeholders}</code> · Changes apply to future sends using this template.
             </p>
 
             {showTemplateEditor && (

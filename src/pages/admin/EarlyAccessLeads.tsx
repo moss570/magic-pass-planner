@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, ArrowLeft, Trash2, Plus } from "lucide-react";
+import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, ArrowLeft, Trash2, Plus, Mail, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 
