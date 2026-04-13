@@ -1755,6 +1755,51 @@ export type Database = {
         }
         Relationships: []
       }
+      launch_signups: {
+        Row: {
+          consent_timestamp: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          ip_address: string | null
+          marketing_consent: boolean
+          signup_type: string
+          source: string | null
+          status: string
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          consent_timestamp?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          ip_address?: string | null
+          marketing_consent?: boolean
+          signup_type?: string
+          source?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consent_timestamp?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          ip_address?: string | null
+          marketing_consent?: boolean
+          signup_type?: string
+          source?: string | null
+          status?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       merchandise: {
         Row: {
           created_at: string
