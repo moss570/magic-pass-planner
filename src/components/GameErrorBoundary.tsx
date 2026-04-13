@@ -24,6 +24,9 @@ export default class GameErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     console.error("Game error:", error);
+    import("@/lib/errorLogger").then(({ logComponentError }) => {
+      logComponentError(error, "GameErrorBoundary");
+    });
   }
 
   handleReset = () => {

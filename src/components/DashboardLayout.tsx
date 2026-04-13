@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
+import FeedbackWidget from "@/components/FeedbackWidget";
 
 const sidebarNav = [
   { icon: Home, label: "Dashboard", path: "/dashboard" },
@@ -207,6 +208,8 @@ const DashboardLayout = ({ children, title, subtitle }: DashboardLayoutProps) =>
           More
         </button>
       </nav>
+
+      <FeedbackWidget />
 
       {/* More drawer — mobile */}
       {moreOpen && (
