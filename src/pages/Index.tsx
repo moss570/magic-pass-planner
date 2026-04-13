@@ -67,10 +67,17 @@ const StarField = () => {
 const features = [
   { icon: Map, emoji: "🗺️", title: "AI Trip Planner", desc: "Personalized itineraries built around your dates, party, and budget" },
   { icon: UtensilsCrossed, emoji: "🍽️", title: "Dining Reservation Alerts", desc: "Instant alerts the moment a hard-to-get reservation opens" },
+  { icon: CalendarCheck, emoji: "🎪", title: "Event & Experience Alerts", desc: "Get notified when hard-to-book events like dessert parties and fireworks cruises open up" },
   { icon: Gift, emoji: "🎁", title: "Gift Card Deal Tracker", desc: "24/7 monitor for discounted Disney gift cards at Sam's, Target & Costco" },
-  { icon: Zap, emoji: "⚡", title: "Live Wait Time Alerts", desc: "Real-time push when rides drop to short waits — act in seconds" },
+  { icon: Zap, emoji: "⚡", title: "Live Wait Times & Lightning Lane", desc: "Real-time wait time alerts and Lightning Lane gap finder — act in seconds" },
+  { icon: Hotel, emoji: "🏨", title: "Hotel Price Alerts", desc: "Track Disney resort and off-property hotel prices — get alerted when rates drop" },
+  { icon: Plane, emoji: "✈️", title: "Airfare Tracker", desc: "Monitor flight prices to Orlando and get notified when fares hit your target" },
+  { icon: Wallet, emoji: "💰", title: "Budget Manager", desc: "Track every dollar — auto-categorize expenses, set caps, and export reports" },
   { icon: Ticket, emoji: "🎟️", title: "Annual Passholder Hub", desc: "Blockout calendar, AP discounts, renewal alerts — all in one place" },
-  { icon: Users, emoji: "👨‍👩‍👧", title: "Group Coordinator", desc: "Shared itinerary, split expenses, and group dining alerts" },
+  { icon: Users, emoji: "👨‍👩‍👧", title: "Group Coordinator", desc: "Shared itinerary, split expenses, group polls, and group dining alerts" },
+  { icon: Gamepad2, emoji: "🎮", title: "Line Games & Trivia", desc: "Disney trivia, mystery games, and party games to play while waiting in line" },
+  { icon: Camera, emoji: "📸", title: "Photo Opportunities", desc: "Fireworks ride timing, golden hour planner, and PhotoPass proximity alerts" },
+  { icon: Sparkles, emoji: "🎆", title: "Shows & Fireworks Planner", desc: "Rank must-see shows, get viewing spot suggestions, and sync with your itinerary" },
   { icon: Users, emoji: "🏰", title: "AP Meetup Beacon", desc: "Meet fellow Annual Passholders in the park — no personal info shared until you both choose to connect" },
 ];
 
