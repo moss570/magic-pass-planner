@@ -9,8 +9,9 @@ import {
   Clock, DollarSign, Star, Hotel, Plane, CalendarCheck,
   Gamepad2, Camera, Sparkles, Wallet
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import LaunchSignupModal from "@/components/LaunchSignupModal";
 
 const StarField = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
