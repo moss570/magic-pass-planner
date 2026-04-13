@@ -39,6 +39,7 @@ import LineGames from "./pages/LineGames";
 import GamesDiscovery from "./pages/GamesDiscovery";
 import Leaderboards from "./pages/Leaderboards";
 import Feed from "./pages/Feed";
+import Features from "./pages/Features";
 import InboxPage from "./pages/Inbox";
 import HotelAlerts from "./pages/HotelAlerts";
 import AirfareTracker from "./pages/AirfareTracker";
@@ -68,6 +69,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />

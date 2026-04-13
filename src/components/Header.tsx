@@ -17,7 +17,7 @@ const Header = () => {
   }, []);
 
   const publicLinks = [
-    { label: "Features", href: "/#features" },
+    { label: "Features", href: "/features" },
     { label: "Pricing", href: "/pricing" },
     { label: "For Annual Passholders", href: "/pricing" },
   ];
