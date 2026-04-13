@@ -124,7 +124,7 @@ const Index = () => {
       </section>
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 overflow-hidden">
+      <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-4 overflow-hidden">
         <StarField />
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-tight tracking-tight">
