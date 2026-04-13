@@ -1,4 +1,5 @@
 // Plan definitions matching the official pricing sheet
+// LIVE MODE — Updated April 12, 2026
 
 export type PlanId =
   | 'free'
@@ -43,7 +44,7 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: false,
     dataDeletesOnExpiry: true,
     stripePriceIds: {
-      oneTime: 'price_1TIFUJHGyELqjZIIs9kh5fxU',
+      oneTime: 'price_1TLXwjHd9LGS7BQDyLANm9fk',
     },
   },
   ninety_day_friend: {
@@ -55,7 +56,7 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: false,
     dataDeletesOnExpiry: true,
     stripePriceIds: {
-      oneTime: 'price_1TL6ncHGyELqjZIItXdgKKLt',
+      oneTime: 'price_1TLXuyHd9LGS7BQD4jjwoaZg',
     },
   },
   magic_pass_planner: {
@@ -67,8 +68,8 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      monthly: 'price_1TL6pTHGyELqjZIIHzN49S29',
-      annual: 'price_1TL6oyHGyELqjZIIzgPyCYTV',
+      monthly: 'price_1TLXuIHd9LGS7BQDVUMpYWFW',
+      annual: 'price_1TLXoCHd9LGS7BQD48aLSEoz',
     },
   },
   magic_pass_plus: {
@@ -80,8 +81,8 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      monthly: 'price_1TL6shHGyELqjZIIIE8I8au3',
-      annual: 'price_1TL6sKHGyELqjZIIfvrVZxhJ',
+      monthly: 'price_1TLXnNHd9LGS7BQDayVF912J',
+      annual: 'price_1TLXnNHd9LGS7BQD7cvP52b5',
     },
   },
   founders_pass: {
@@ -93,27 +94,10 @@ export const PLANS: Record<PlanId, PlanMeta> = {
     autoRenews: true,
     dataDeletesOnExpiry: false,
     stripePriceIds: {
-      annual: 'price_1TL6tbHGyELqjZII6iClFSFM',
+      annual: 'price_1TLXlnHd9LGS7BQDd4uF2qM7',
     },
   },
 };
 
-// Legacy PRICE_IDS for backward compatibility with existing create-checkout / stripe-webhook
-export const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {
-  "Pre-Trip Planner": {
-    monthly: "price_1TIFQjHGyELqjZIIWYcXXufY",
-    annual: "price_1TIFRRHGyELqjZIIgxUOhMUF",
-  },
-  "Magic Pass": {
-    monthly: "price_1TIFRwHGyELqjZIIy7UMYR2U",
-    annual: "price_1TIFSLHGyELqjZIIZ8Jw8MP2",
-  },
-  "AP Command Center": {
-    monthly: "price_1TIFSwHGyELqjZII9yTjfkYd",
-    annual: "price_1TIFTMHGyELqjZIIwZqYxeUt",
-  },
-  "AP Command Center PLUS": {
-    monthly: "price_1TIFTqHGyELqjZII0qpW5oiT",
-    annual: "price_1TIFUJHGyELqjZIIs9kh5fxU",
-  },
-};
+// Legacy PRICE_IDS removed — all checkout should use PLANS above
+export const PRICE_IDS: Record<string, { monthly: string; annual: string }> = {};
