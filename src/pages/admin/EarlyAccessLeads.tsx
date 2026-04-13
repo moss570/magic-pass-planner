@@ -44,6 +44,13 @@ export default function EarlyAccessLeads() {
   const [editForm, setEditForm] = useState<Partial<Lead>>({});
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Send email state
+  const [showSendEmail, setShowSendEmail] = useState(false);
+  const [sendTemplate, setSendTemplate] = useState<"beta_welcome" | "beta_update">("beta_welcome");
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
+  const [sendingEmails, setSendingEmails] = useState(false);
+  const [sendProgress, setSendProgress] = useState(0);
+
   // Adding single lead
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ email: "", first_name: "", signup_type: "updates" as string, source: "admin_import" });
