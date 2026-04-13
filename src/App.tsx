@@ -27,6 +27,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import SupportFaq from "./pages/SupportFaq";
 import AffiliateProgram from "./pages/AffiliateProgram";
+import ForPassholders from "./pages/ForPassholders";
+import ForTravelers from "./pages/ForTravelers";
 import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
@@ -87,6 +89,8 @@ const App = () => (
             <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/for-passholders" element={<ForPassholders />} />
+            <Route path="/for-travelers" element={<ForTravelers />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/support" element={<SupportFaq />} />

@@ -19,7 +19,8 @@ const Header = () => {
   const publicLinks = [
     { label: "Features", href: "/features" },
     { label: "Pricing", href: "/pricing" },
-    { label: "For Annual Passholders", href: "/pricing" },
+    { label: "For Annual Passholders", href: "/for-passholders" },
+    { label: "For Travelers", href: "/for-travelers" },
   ];
 
   return (
