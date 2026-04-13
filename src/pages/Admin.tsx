@@ -415,6 +415,9 @@ export default function Admin() {
             <a href="/admin/users" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
               👥 Users
             </a>
+            <a href="/admin/early-access" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
+              📋 Early Access
+            </a>
             <span className="text-xs text-muted-foreground">Last refresh: {lastRefresh.toLocaleTimeString()}</span>
             <button
               onClick={loadStats}

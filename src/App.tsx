@@ -58,6 +58,7 @@ import ShowFireworksPriorities from "./pages/ShowFireworksPriorities";
 import GroupPolls from "./pages/GroupPolls";
 import PhotoOpps from "./pages/PhotoOpps";
 import OrlandoInsidersGuide from "./pages/OrlandoInsidersGuide";
+import EarlyAccessLeads from "./pages/admin/EarlyAccessLeads";
 import MyTrips from "./pages/MyTrips";
 
 const queryClient = new QueryClient();
@@ -116,6 +117,7 @@ const App = () => (
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
             <Route path="/admin/tier-access" element={<ProtectedRoute><TierAccess /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute><UserManagerPage /></ProtectedRoute>} />
+            <Route path="/admin/early-access" element={<ProtectedRoute><EarlyAccessLeads /></ProtectedRoute>} />
             <Route path="/attraction-priorities" element={<ProtectedRoute><AttractionPriorities /></ProtectedRoute>} />
             <Route path="/character-meets" element={<ProtectedRoute><CharacterMeets /></ProtectedRoute>} />
             <Route path="/shows-fireworks" element={<ProtectedRoute><ShowFireworksPriorities /></ProtectedRoute>} />
