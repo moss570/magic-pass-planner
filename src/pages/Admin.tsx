@@ -130,8 +130,15 @@ export default function Admin() {
   const [bulkProgress, setBulkProgress] = useState(0);
   const bulkFileRef = useRef<HTMLInputElement>(null);
 
-  // Email template editor
-  const DEFAULT_EMAIL_TEMPLATE = `<!DOCTYPE html>
+  // Email template editor — multi-template system
+  type TemplateName = "vip_invite" | "beta_welcome" | "beta_update";
+
+  const TEMPLATE_REGISTRY: Record<TemplateName, { label: string; storageKey: string; placeholders: string; defaultHtml: string }> = {
+    vip_invite: {
+      label: "🎁 VIP Invite",
+      storageKey: "vip_email_template",
+      placeholders: "{{first_name}}, {{signup_url}}",
+      defaultHtml: `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
   <div style="max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
@@ -170,27 +177,135 @@ export default function Admin() {
     </div>
   </div>
 </body>
-</html>`;
+</html>`,
+    },
+    beta_welcome: {
+      label: "🧪 Beta Welcome",
+      storageKey: "beta_welcome_template",
+      placeholders: "{{first_name}}, {{app_url}}",
+      defaultHtml: `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#080E1E,#0D1230);padding:32px;text-align:center;border-bottom:2px solid #F5C842;">
+      <p style="color:#F5C842;font-size:24px;font-weight:bold;margin:0;">🏰 Magic Pass Plus</p>
+      <p style="color:#9CA3AF;font-size:13px;margin:6px 0 0 0;">Beta Testing Program</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#F5C842;font-size:18px;font-weight:bold;margin:0 0 16px 0;">🧪 Welcome to the Beta!</p>
+      <p style="color:#F9FAFB;font-size:15px;margin:0 0 12px 0;">Hi {{first_name}},</p>
+      <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 20px 0;">
+        Thank you for joining the Magic Pass Plus beta program! You're among a small group of Disney fans helping us shape the ultimate vacation planning tool.
+      </p>
+      <div style="background:#0D1230;border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="color:#F5C842;font-size:13px;font-weight:bold;margin:0 0 8px 0;">WHAT TO EXPECT:</p>
+        <ul style="color:#F9FAFB;font-size:13px;margin:0;padding-left:20px;line-height:2;">
+          <li>Early access to new features before public launch</li>
+          <li>Occasional rough edges — that's where you come in!</li>
+          <li>Direct line to our team via the in-app feedback button</li>
+          <li>Your input directly shapes what we build next</li>
+        </ul>
+      </div>
+      <div style="background:#0D1230;border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="color:#60A5FA;font-size:13px;font-weight:bold;margin:0 0 8px 0;">🐛 FOUND A BUG?</p>
+        <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:0;">
+          Look for the <strong style="color:#F9FAFB;">💬 feedback button</strong> in the bottom-right corner of any page. Click it to report bugs or suggest features — it takes just seconds.
+        </p>
+      </div>
+      <a href="{{app_url}}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
+        🏰 Open Magic Pass Plus →
+      </a>
+      <p style="color:#6B7280;font-size:12px;text-align:center;margin:0;">
+        You're receiving this because you signed up for the beta program.<br>
+        <a href="https://magicpassplus.com" style="color:#6B7280;">Unsubscribe</a>
+      </p>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
+      <p style="color:#4B5563;font-size:11px;margin:0;">© 2026 Magic Pass Plus LLC · magicpassplus.com<br>Not affiliated with The Walt Disney Company</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    },
+    beta_update: {
+      label: "📢 Beta Update",
+      storageKey: "beta_update_template",
+      placeholders: "{{first_name}}, {{app_url}}",
+      defaultHtml: `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
+  <div style="max-width:500px;margin:20px auto;background:#111827;border-radius:16px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#080E1E,#0D1230);padding:32px;text-align:center;border-bottom:2px solid #F5C842;">
+      <p style="color:#F5C842;font-size:24px;font-weight:bold;margin:0;">🏰 Magic Pass Plus</p>
+      <p style="color:#9CA3AF;font-size:13px;margin:6px 0 0 0;">Beta Update</p>
+    </div>
+    <div style="padding:32px;">
+      <p style="color:#F5C842;font-size:18px;font-weight:bold;margin:0 0 16px 0;">📢 What's New</p>
+      <p style="color:#F9FAFB;font-size:15px;margin:0 0 12px 0;">Hi {{first_name}},</p>
+      <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 20px 0;">
+        Here's what we've been working on based on your feedback:
+      </p>
+      <div style="background:#0D1230;border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <p style="color:#F5C842;font-size:13px;font-weight:bold;margin:0 0 8px 0;">✨ RECENT UPDATES:</p>
+        <ul style="color:#F9FAFB;font-size:13px;margin:0;padding-left:20px;line-height:2;">
+          <li>[Add your update here]</li>
+          <li>[Add your update here]</li>
+          <li>[Add your update here]</li>
+        </ul>
+      </div>
+      <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
+        Keep the feedback coming — every bug report and feature request helps us make Magic Pass Plus better for everyone. 💛
+      </p>
+      <a href="{{app_url}}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
+        🏰 Check It Out →
+      </a>
+      <p style="color:#6B7280;font-size:12px;text-align:center;margin:0;">
+        You're receiving this because you're a beta tester.<br>
+        <a href="https://magicpassplus.com" style="color:#6B7280;">Unsubscribe</a>
+      </p>
+    </div>
+    <div style="padding:16px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;">
+      <p style="color:#4B5563;font-size:11px;margin:0;">© 2026 Magic Pass Plus LLC · magicpassplus.com<br>Not affiliated with The Walt Disney Company</p>
+    </div>
+  </div>
+</body>
+</html>`,
+    },
+  };
 
-  const [emailTemplate, setEmailTemplate] = useState(() => localStorage.getItem("vip_email_template") || DEFAULT_EMAIL_TEMPLATE);
+  const [activeTemplate, setActiveTemplate] = useState<TemplateName>("vip_invite");
+  const [emailTemplate, setEmailTemplate] = useState(() => localStorage.getItem(TEMPLATE_REGISTRY.vip_invite.storageKey) || TEMPLATE_REGISTRY.vip_invite.defaultHtml);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [templatePreviewMode, setTemplatePreviewMode] = useState<"code" | "preview">("code");
 
+  const switchTemplate = (name: TemplateName) => {
+    setActiveTemplate(name);
+    const reg = TEMPLATE_REGISTRY[name];
+    setEmailTemplate(localStorage.getItem(reg.storageKey) || reg.defaultHtml);
+  };
+
   const saveTemplate = () => {
-    localStorage.setItem("vip_email_template", emailTemplate);
-    toast({ title: "✅ Email template saved" });
+    localStorage.setItem(TEMPLATE_REGISTRY[activeTemplate].storageKey, emailTemplate);
+    toast({ title: `✅ ${TEMPLATE_REGISTRY[activeTemplate].label} template saved` });
   };
 
   const resetTemplate = () => {
-    setEmailTemplate(DEFAULT_EMAIL_TEMPLATE);
-    localStorage.removeItem("vip_email_template");
-    toast({ title: "Template reset to default" });
+    const reg = TEMPLATE_REGISTRY[activeTemplate];
+    setEmailTemplate(reg.defaultHtml);
+    localStorage.removeItem(reg.storageKey);
+    toast({ title: `Template reset to default` });
+  };
+
+  const getTemplateHtml = (name: TemplateName) => {
+    const reg = TEMPLATE_REGISTRY[name];
+    return localStorage.getItem(reg.storageKey) || reg.defaultHtml;
   };
 
   const previewHtml = useMemo(() => {
     return emailTemplate
       .replace(/\{\{first_name\}\}/g, "Jane")
-      .replace(/\{\{signup_url\}\}/g, "https://magicpassplus.com/signup?vip=demo123");
+      .replace(/\{\{signup_url\}\}/g, "https://magicpassplus.com/signup?vip=demo123")
+      .replace(/\{\{app_url\}\}/g, "https://magicpassplus.com/dashboard");
   }, [emailTemplate]);
 
   // Access control
@@ -302,7 +417,7 @@ export default function Admin() {
           "apikey": "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: vipEmail, first_name: vipFirstName, last_name: vipLastName, reason: vipReason, notes: vipNotes, custom_html: emailTemplate !== DEFAULT_EMAIL_TEMPLATE ? emailTemplate : undefined }),
+        body: JSON.stringify({ email: vipEmail, first_name: vipFirstName, last_name: vipLastName, reason: vipReason, notes: vipNotes, template_name: activeTemplate, custom_html: getTemplateHtml(activeTemplate) !== TEMPLATE_REGISTRY[activeTemplate].defaultHtml ? getTemplateHtml(activeTemplate) : undefined }),
       });
       const data = await resp.json();
       if (data.success) {
