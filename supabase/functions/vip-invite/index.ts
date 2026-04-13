@@ -129,7 +129,7 @@ serve(async (req) => {
 
     // ── INVITE VIP ────────────────────────────────────────
     if (action === "invite" && req.method === "POST") {
-      const { email, first_name, last_name, reason, notes, type: inviteType, custom_html } = await req.json();
+      const { email, first_name, last_name, reason, notes, type: inviteType, custom_html, template_name } = await req.json();
       if (!email) throw new Error("Email required");
 
       const accountType = inviteType === "beta_tester" ? "beta_tester" : "vip";
@@ -158,7 +158,7 @@ serve(async (req) => {
           first_name: first_name || "",
           last_name: last_name || "",
           reason: reason || (accountType === "beta_tester" ? "Beta tester invite" : "VIP invite"),
-          notes: notes || "",
+          notes: notes ? `${notes}${template_name ? ` [template: ${template_name}]` : ""}` : (template_name ? `[template: ${template_name}]` : ""),
           invited_by: userData.user.id,
           invite_sent_at: new Date().toISOString(),
           status: "invited",
