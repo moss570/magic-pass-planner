@@ -92,11 +92,6 @@ const Index = () => {
   const { user, loading } = useAuth();
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
-      {/* Beta Banner */}
-      <div className="fixed top-0 left-0 right-0 z-[60] bg-yellow-500 text-black text-center py-2 px-4 font-bold text-sm md:text-base tracking-wide">
-        🚧 WE ARE IN BETA TESTING MODE — Some features are not currently operating correctly. 🚧
-      </div>
-
       <Header />
 
       {/* Founders Pass Banner */}
