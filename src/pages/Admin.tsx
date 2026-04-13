@@ -846,7 +846,7 @@ export default function Admin() {
                               last_name: row.last_name,
                               reason: bulkType === "beta_tester" ? "Beta tester invite" : "VIP invite",
                               type: bulkType,
-                              custom_html: emailTemplate !== DEFAULT_EMAIL_TEMPLATE ? emailTemplate : undefined,
+                              custom_html: getTemplateHtml(activeTemplate) !== TEMPLATE_REGISTRY[activeTemplate].defaultHtml ? getTemplateHtml(activeTemplate) : undefined,
                             }),
                           });
                           const data = await resp.json();
