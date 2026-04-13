@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Map, UtensilsCrossed, Gift, Zap, Ticket, Users,
   Hotel, Plane, CalendarCheck, Gamepad2, Camera,
-  Sparkles, Wallet, Castle
+  Sparkles, Wallet, Castle, Compass
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -62,6 +62,13 @@ const moreFeatures = [
     title: "Airfare Tracker",
     desc: "Monitor flight prices to Orlando from any origin. Set your target price and get notified when fares drop.",
     link: "/airfare",
+  },
+  {
+    icon: Compass,
+    emoji: "🧭",
+    title: "Live Compass & In-Park GPS",
+    desc: "Real-time turn-by-turn walking navigation inside the parks. Our GPS compass guides you to rides, dining, and shows with live distance tracking, shortcut detection, and off-route alerts — never get lost again.",
+    link: "/live-park",
   },
   {
     icon: Wallet,
