@@ -141,7 +141,7 @@ const Index = () => {
             Everything You Need for the <span className="text-primary">Perfect Trip</span>
           </h2>
           <p className="text-muted-foreground text-center mb-16 max-w-xl mx-auto">
-            Seven powerful tools designed for Disney families and Annual Passholders.
+            Fourteen powerful tools designed for Disney families and Annual Passholders.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 [&>*:nth-child(7)]:md:col-start-1 [&>*:nth-child(7)]:lg:col-start-2">
