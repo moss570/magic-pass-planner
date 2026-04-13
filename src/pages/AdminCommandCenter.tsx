@@ -1368,6 +1368,10 @@ export default function AdminCommandCenter() {
           <SupportInbox />
         )}
 
+        {tab === "feedback" && (
+          <BetaFeedbackPanel />
+        )}
+
       </div>
     </div>
   );
