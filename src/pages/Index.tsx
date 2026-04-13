@@ -160,9 +160,9 @@ const Index = () => {
 
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
             {[
-              "15-Second Wait Time Alerts",
-              "Save $300+ on Every Trip",
-              "Built for Annual Passholders",
+              "Smart Itinerary Builder, Budgeting, Dining and Event Alerts",
+              "In Park Live Mode With GPS Navigator",
+              "Built for Travelers & Annual Passholders",
             ].map((badge) => (
               <div key={badge} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="w-2 h-2 rounded-full bg-success live-pulse" />
