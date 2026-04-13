@@ -1,66 +1,50 @@
 
 
-## Beta Feedback & Error Reporting System
+## Multi-Template Email System for Beta Testers
 
-### Overview
-Three components: (1) an in-app feedback widget accessible to all logged-in users, (2) automatic client-side error logging, and (3) an admin dashboard tab to view both.
+### What You Get
+- A **Beta Tester Welcome** email template pre-loaded in the template editor alongside the existing VIP Invite template
+- A **template selector dropdown** so you can pick which template to use before sending
+- Templates stored in localStorage (same pattern as today) with unique keys per template
+- Each template has its own set of placeholders documented in the editor
 
-### Database
+### Changes
 
-**New table: `beta_feedback`**
-- `id` (uuid, PK)
-- `user_id` (uuid, references auth.users, nullable for anonymous)
-- `user_email` (text)
-- `type` (text: 'bug', 'feature', 'general')
-- `title` (text)
-- `description` (text)
-- `page_url` (text) — auto-captured current route
-- `user_agent` (text) — auto-captured browser info
-- `screenshot_url` (text, nullable) — future use
-- `status` (text: 'new', 'reviewing', 'resolved', 'wont_fix', default 'new')
-- `admin_notes` (text, nullable)
-- `created_at` (timestamptz)
+**`src/pages/Admin.tsx`**
 
-**New table: `client_error_log`**
-- `id` (uuid, PK)
-- `user_id` (uuid, nullable)
-- `error_message` (text)
-- `error_stack` (text, nullable)
-- `component_name` (text, nullable)
-- `page_url` (text)
-- `user_agent` (text)
-- `metadata` (jsonb, nullable)
-- `created_at` (timestamptz)
+1. **Template registry** — Replace the single `emailTemplate` state with a multi-template system:
+   - `vip_invite` (existing default template, unchanged)
+   - `beta_welcome` (new template welcoming beta testers, thanking them for signing up, explaining how to report bugs via the feedback widget, and setting expectations)
+   - `beta_update` (new template for sending product updates/changelog to beta testers)
+   
+2. **Template selector** — Add a dropdown above the editor to switch between templates. Each template loads/saves independently in localStorage (`vip_email_template`, `beta_welcome_template`, `beta_update_template`).
 
-**RLS**: Public insert on both tables (so errors log even without auth). Select/update restricted to admin emails.
+3. **Placeholder docs** — Update the placeholder hint text dynamically per template. Beta templates use `{{first_name}}` and `{{app_url}}` instead of `{{signup_url}}`.
 
-### Frontend Components
+4. **Send flow integration** — When sending from the Early Access Leads page or VIP section, the selected template name is passed along so the correct HTML is used. Add a template picker dropdown to the VIP invite send area.
 
-**1. `src/components/FeedbackWidget.tsx`** — Floating button (bottom-right corner) visible to logged-in users
-- Opens a slide-up form: type selector (Bug / Feature Request / General), title, description
-- Auto-captures current URL and user agent
-- Inserts into `beta_feedback` table
-- Shows success toast on submit
+**`src/pages/admin/EarlyAccessLeads.tsx`**
 
-**2. `src/lib/errorLogger.ts`** — Global error capture utility
-- `window.onerror` and `window.onunhandledrejection` handlers
-- Batches errors and inserts into `client_error_log` via Supabase
-- Deduplicates rapid-fire identical errors (debounce by message)
-- Initialize in `src/main.tsx`
+5. **"Send Email" action** — Add a "Send Email" button that lets you select beta testers (individually or filtered batch), pick a template (beta_welcome or beta_update), and send via the existing `vip-invite` edge function (which already supports `custom_html`).
 
-**3. Update `GameErrorBoundary.tsx`** — Log caught errors to `client_error_log` in `componentDidCatch`
+**`supabase/functions/vip-invite/index.ts`**
 
-**4. Admin tab: `src/components/admin/BetaFeedbackPanel.tsx`** — New tab in AdminCommandCenter
-- Two sub-views: **Feedback** and **Errors**
-- Feedback view: filterable list by type/status, click to expand, update status, add admin notes
-- Errors view: grouped by error message with count + latest occurrence, expandable stack traces
-- Stats bar: New feedback count, unresolved bugs, errors today
+6. Minor update — Accept a `template_name` field for logging purposes so you can track which template was used in the audit trail.
 
-**5. Wire into `AdminCommandCenter.tsx`** — Add "feedback" tab with Bug icon
+### Template Content (Beta Welcome)
+The beta welcome template will include:
+- Magic Pass Plus branding header
+- Personal greeting with `{{first_name}}`
+- Thank you for joining the beta program
+- What to expect (features in testing, rough timelines)
+- How to report bugs (mention the in-app feedback button)
+- CTA button linking to the app
+- Footer with unsubscribe/opt-out language (marketing compliance)
 
-### Technical Details
-- Feedback widget only renders inside `DashboardLayout` (logged-in users)
-- Error logger initializes once in `main.tsx` with a fire-and-forget pattern (no blocking)
-- Error deduplication: same message within 10 seconds = skip
-- Rate limit: max 50 error logs per session to prevent flood
+### How Template Selection Works
+1. Open Email Template Editor in Admin
+2. Use the dropdown to switch between: **VIP Invite**, **Beta Welcome**, **Beta Update**
+3. Edit and save — each saves independently
+4. When sending an invite or beta email, the currently selected template is used
+5. The Early Access Leads page gets a "Send Email" flow with its own template picker
 
