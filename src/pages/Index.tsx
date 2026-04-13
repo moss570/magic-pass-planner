@@ -92,10 +92,39 @@ const Index = () => {
   const { user, loading } = useAuth();
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
+      {/* Beta Banner */}
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-yellow-500 text-black text-center py-2 px-4 font-bold text-sm md:text-base tracking-wide">
+        🚧 WE ARE IN BETA TESTING MODE — Some features are not currently operating correctly. 🚧
+      </div>
+
       <Header />
 
+      {/* Founders Pass Banner */}
+      <section className="relative mt-16 pt-4 px-4">
+        <Link to="/pricing" className="block max-w-4xl mx-auto">
+          <div className="rounded-xl border-2 border-primary/60 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 p-5 md:p-6 flex flex-col sm:flex-row items-center gap-4 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group cursor-pointer">
+            <div className="text-4xl md:text-5xl">🏰</div>
+            <div className="flex-1 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-widest text-primary">Limited to 500 Members</span>
+                <span className="inline-block w-2 h-2 rounded-full bg-success live-pulse" />
+              </div>
+              <h3 className="text-xl md:text-2xl font-extrabold text-foreground group-hover:text-primary transition-colors">
+                Founders Pass — $74.99/year
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Lock in lifetime pricing with every feature included. Early supporters get priority access and exclusive perks forever.
+              </p>
+            </div>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg px-6 h-10 text-sm shrink-0">
+              Claim Your Spot
+            </Button>
+          </div>
+        </Link>
+      </section>
+
       {/* Hero */}
-      <section className="relative pt-32 pb-20 md:pt-44 md:pb-32 px-4 overflow-hidden">
+      <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-4 overflow-hidden">
         <StarField />
         <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-foreground leading-tight tracking-tight">
