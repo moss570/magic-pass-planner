@@ -210,7 +210,18 @@ export default function BudgetManager() {
     toast({ title: "📥 CSV exported" });
   };
 
-  if (loading && trips.length === 0) {
+  if (loading) {
+    return (
+      <DashboardLayout title="💰 Budget Manager" subtitle="Track your Disney trip expenses">
+        <div className="flex flex-col items-center justify-center py-24">
+          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4" />
+          <p className="text-sm text-muted-foreground">Loading budget data…</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (trips.length === 0) {
     return (
       <DashboardLayout title="💰 Budget Manager" subtitle="Track your Disney trip expenses">
         <div className="text-center py-16">
@@ -463,7 +474,7 @@ export default function BudgetManager() {
               <div key={m.id} className={`flex items-center justify-between px-4 py-3 ${i < members.length - 1 ? "border-b border-border/50" : ""}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
-                    {m.first_name[0]}{m.last_name?.[0] || ""}
+                    {m.first_name?.[0] || "?"}{m.last_name?.[0] || ""}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-foreground">{m.first_name} {m.last_name}</p>
