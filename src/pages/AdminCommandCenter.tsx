@@ -4,7 +4,7 @@ import {
   Gamepad2, MessageSquare, Image, HelpCircle, Shield, RefreshCw, Globe,
   Edit2, Trash2, Check, X, Send, Eye, Archive, ChevronDown, ChevronUp,
   TrendingUp, Clock, Users, Star, Plus, Search, Calendar, Activity, AlertTriangle, Play,
-  Smartphone, Laugh, Mail
+  Smartphone, Laugh, Mail, Bug
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +15,9 @@ const SUPABASE_ANON = "sb_publishable_nQdtcwDbXVyr0Tc44YLTKA_9BfIKXQC";
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
 import SupportInbox from "@/components/admin/SupportInbox";
+import BetaFeedbackPanel from "@/components/admin/BetaFeedbackPanel";
 
-type Tab = "games" | "trivia" | "photos" | "messages" | "events" | "health" | "sources" | "linemind" | "haaaa" | "support";
+type Tab = "games" | "trivia" | "photos" | "messages" | "events" | "health" | "sources" | "linemind" | "haaaa" | "support" | "feedback";
 
 export default function AdminCommandCenter() {
   const { user, session } = useAuth();
@@ -337,6 +338,7 @@ export default function AdminCommandCenter() {
     { id: "linemind", label: "Line Mind Words", icon: Smartphone },
     { id: "haaaa", label: "Haaaa!! Prompts", icon: Laugh },
     { id: "support", label: "Support Inbox", icon: Mail },
+    { id: "feedback", label: "Beta Feedback", icon: Bug },
   ];
 
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
