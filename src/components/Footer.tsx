@@ -23,9 +23,9 @@ const Footer = () => {
               {[
                 { label: "Features", to: "/#features" },
                 { label: "Pricing", to: "/pricing" },
-                { label: "For Annual Passholders", to: "/pricing" },
-                { label: "Blog", to: "#" },
-                { label: "Contact", to: "#" },
+                { label: "For Annual Passholders", to: "/ap-command-center" },
+                { label: "Blog", to: "/feed" },
+                { label: "Contact", to: "/support" },
               ].map((l) => (
                 <li key={l.label}>
                   <Link to={l.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{l.label}</Link>
@@ -38,9 +38,14 @@ const Footer = () => {
           <div>
             <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">Legal</p>
             <ul className="space-y-2">
-              {["Privacy Policy", "Terms of Service", "Affiliate Program", "Support"].map((l) => (
-                <li key={l}>
-                  <Link to="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">{l}</Link>
+              {[
+                { label: "Privacy Policy", to: "/privacy-policy" },
+                { label: "Terms of Service", to: "/terms" },
+                { label: "Affiliate Program", to: "/affiliate" },
+                { label: "Support", to: "/support" },
+              ].map((l) => (
+                <li key={l.label}>
+                  <Link to={l.to} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
