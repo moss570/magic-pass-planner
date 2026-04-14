@@ -100,7 +100,7 @@ function AdminSidebar() {
             (item) => location.pathname === item.url
           );
           return (
-            <SidebarGroup key={group.label} defaultOpen={hasActiveRoute || group.label === "Overview"}>
+            <SidebarGroup key={group.label}>
               <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 {collapsed ? group.emoji : `${group.emoji} ${group.label}`}
               </SidebarGroupLabel>

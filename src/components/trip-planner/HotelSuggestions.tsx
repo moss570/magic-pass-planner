@@ -1,23 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Hotel, MapPin, ChevronDown, ChevronUp, ExternalLink, Bell, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildBookingUrl } from "@/lib/affiliate";
-
-interface CuratedHotel {
-  id: string;
-  name: string;
-  price_range: string;
-  distance_miles: number;
-  amenities: string[];
-  best_for: string;
-  category: string;
-  default_target_price: number;
-  booking_search_url: string;
-  is_active: boolean;
-}
+import { CURATED_HOTELS, CuratedHotel } from "@/lib/curatedHotels";
 
 interface HotelCategory {
   label: string;
@@ -39,21 +26,10 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
   const { session } = useAuth();
   const [expandedCategory, setExpandedCategory] = useState<string | null>("Budget-Friendly");
   const [maxPrice, setMaxPrice] = useState("");
-  const [hotels, setHotels] = useState<CuratedHotel[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadHotels = async () => {
-      try {
-        const { data } = await supabase.from("curated_hotels").select("*").eq("is_active", true);
-        setHotels(data || []);
-      } catch (err) { console.error(err); }
-      finally { setLoading(false); }
-    };
-    loadHotels();
-  }, []);
+  if (lodging === "disney-resort") return null;
 
-  if (lodging === "disney-resort" || loading) return null;
+  const hotels = CURATED_HOTELS;
 
   const nights = startDate && endDate
     ? Math.max(1, Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000))
@@ -141,10 +117,12 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
                             <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                               <MapPin className="w-3 h-3" /> {hotel.distanceMiles} mi from Disney
                             </span>
+                            </span>
                           </div>
                         </div>
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-1">✨ {hotel.bestFor}</p>
+
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {hotel.amenities.map(a => (
                           <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{a}</span>

@@ -14,7 +14,7 @@ export default function TermsOfService() {
     noindexMeta.content = "noindex, follow";
     document.head.appendChild(noindexMeta);
     
-    return () => document.head.removeChild(noindexMeta);
+    return () => { document.head.removeChild(noindexMeta); };
   }, []);
   return (
     <div className="min-h-screen bg-[#060a14] flex flex-col">
