@@ -1,8 +1,14 @@
+Sitemap: https://magicpassplus.com/sitemap.xml
+
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /settings
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin
+Disallow: /settings
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +18,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /api

@@ -1,10 +1,21 @@
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SiteFooter from "@/components/SiteFooter";
 
 export default function PrivacyPolicy() {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Add noindex meta tag to this page
+    const noindexMeta = document.createElement("meta");
+    noindexMeta.name = "robots";
+    noindexMeta.content = "noindex, follow";
+    document.head.appendChild(noindexMeta);
+    
+    return () => document.head.removeChild(noindexMeta);
+  }, []);
   return (
     <div className="min-h-screen bg-[#060a14] flex flex-col">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
