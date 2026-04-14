@@ -44,9 +44,9 @@ export default function CuratedHotels() {
   const loadHotels = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("curated_hotels").select("*").order("category").order("name");
+      const { data, error } = await (supabase.from("curated_hotels" as any).select("*") as any).order("category").order("name");
       if (error) throw error;
-      setHotels(data || []);
+      setHotels((data || []) as CuratedHotel[]);
     } catch (err) { console.error(err); toast({ title: "Failed to load hotels", variant: "destructive" }); }
     finally { setLoading(false); }
   };
@@ -56,11 +56,11 @@ export default function CuratedHotels() {
 
     try {
       if (editingId) {
-        const { error } = await supabase.from("curated_hotels").update(formData).eq("id", editingId);
+        const { error } = await (supabase.from("curated_hotels" as any).update(formData) as any).eq("id", editingId);
         if (error) throw error;
         toast({ title: "✅ Hotel updated" });
       } else {
-        const { error } = await supabase.from("curated_hotels").insert([formData]);
+        const { error } = await (supabase.from("curated_hotels" as any).insert([formData]) as any);
         if (error) throw error;
         toast({ title: "✅ Hotel added" });
       }
@@ -71,7 +71,7 @@ export default function CuratedHotels() {
   const deleteHotel = async (id: string) => {
     if (!confirm("Delete this hotel?")) return;
     try {
-      const { error } = await supabase.from("curated_hotels").delete().eq("id", id);
+      const { error } = await (supabase.from("curated_hotels" as any).delete() as any).eq("id", id);
       if (error) throw error;
       toast({ title: "✅ Hotel deleted" });
       loadHotels();
@@ -80,7 +80,7 @@ export default function CuratedHotels() {
 
   const toggleActive = async (id: string, active: boolean) => {
     try {
-      await supabase.from("curated_hotels").update({ is_active: !active }).eq("id", id);
+      await (supabase.from("curated_hotels" as any).update({ is_active: !active }) as any).eq("id", id);
       setHotels(prev => prev.map(h => h.id === id ? { ...h, is_active: !active } : h));
       toast({ title: !active ? "✅ Activated" : "✅ Deactivated" });
     } catch (err) { toast({ title: "Toggle failed", variant: "destructive" }); }

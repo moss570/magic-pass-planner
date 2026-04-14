@@ -42,12 +42,12 @@ export default function BlogEditor() {
   const loadPosts = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
+      const { data, error } = await (supabase
+        .from("blog_posts" as any)
+        .select("*") as any)
         .order("published_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
-      setPosts(data || []);
+      setPosts((data || []) as BlogPost[]);
     } catch (err) { console.error(err); toast({ title: "Failed to load posts", variant: "destructive" }); }
     finally { setLoading(false); }
   };
@@ -59,16 +59,16 @@ export default function BlogEditor() {
 
     try {
       if (editing) {
-        const { error } = await supabase
-          .from("blog_posts")
-          .update({ ...post, slug, updated_at: new Date().toISOString() })
+        const { error } = await (supabase
+          .from("blog_posts" as any)
+          .update({ ...post, slug, updated_at: new Date().toISOString() }) as any)
           .eq("id", editing.id);
         if (error) throw error;
         toast({ title: "✅ Post updated" });
       } else {
-        const { error } = await supabase
-          .from("blog_posts")
-          .insert([{ ...post, slug, author_email: user?.email }]);
+        const { error } = await (supabase
+          .from("blog_posts" as any)
+          .insert([{ ...post, slug, author_email: user?.email }]) as any);
         if (error) throw error;
         toast({ title: "✅ Post created" });
       }
@@ -81,7 +81,7 @@ export default function BlogEditor() {
   const deletePost = async (id: string) => {
     if (!confirm("Delete this post?")) return;
     try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+      const { error } = await (supabase.from("blog_posts" as any).delete() as any).eq("id", id);
       if (error) throw error;
       toast({ title: "✅ Post deleted" });
       loadPosts();
@@ -90,12 +90,12 @@ export default function BlogEditor() {
 
   const togglePublish = async (post: BlogPost) => {
     try {
-      const { error } = await supabase
-        .from("blog_posts")
+      const { error } = await (supabase
+        .from("blog_posts" as any)
         .update({
           is_published: !post.is_published,
           published_at: !post.is_published ? new Date().toISOString() : null,
-        })
+        }) as any)
         .eq("id", post.id);
       if (error) throw error;
       toast({ title: !post.is_published ? "✅ Published" : "✅ Unpublished" });
