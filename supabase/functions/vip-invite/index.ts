@@ -39,6 +39,29 @@ async function sendVIPInviteEmail(params: {
       .replace(/\{\{vip_link\}\}/g, vipLink)
       .replace(/\{\{free_month_link\}\}/g, freeMonthLink);
   } else {
+    // Type-specific default email content
+    let tagline: string;
+    let bodyText: string;
+    let ctaLabel: string;
+    let ctaLink: string;
+
+    if (params.enrollType === "beta_tester") {
+      tagline = "🧪 You've been invited to beta test!";
+      bodyText = `You've been personally invited by Brandon to join Magic Pass Plus as a <strong style="color:#F5C842;">Beta Tester — 1 Year Free Access</strong>. Get early access to new features and help shape the future of the platform. No credit card required.`;
+      ctaLabel = "🧪 Join the Beta →";
+      ctaLink = betaLink;
+    } else if (params.enrollType === "free_month") {
+      tagline = "🎉 You've got a free month!";
+      bodyText = `You've been personally invited by Brandon to try Magic Pass Plus with <strong style="color:#F5C842;">One Free Month — Full Access</strong>. Enjoy 30 days of every feature, completely free. No credit card required.`;
+      ctaLabel = "🎉 Claim Your Free Month →";
+      ctaLink = freeMonthLink;
+    } else {
+      tagline = "🎁 You've been invited!";
+      bodyText = `You've been personally invited by Brandon to join Magic Pass Plus as a <strong style="color:#F5C842;">VIP Member — Free Forever</strong>. No credit card required, ever.`;
+      ctaLabel = "🏰 Claim Your Free VIP Account →";
+      ctaLink = vipLink;
+    }
+
     html = `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#080E1E;font-family:'Segoe UI',Arial,sans-serif;">
@@ -48,13 +71,13 @@ async function sendVIPInviteEmail(params: {
       <p style="color:#9CA3AF;font-size:13px;margin:6px 0 0 0;">Your complete Disney vacation command center</p>
     </div>
     <div style="padding:32px;">
-      <p style="color:#F5C842;font-size:18px;font-weight:bold;margin:0 0 16px 0;">🎁 You've been invited!</p>
+      <p style="color:#F5C842;font-size:18px;font-weight:bold;margin:0 0 16px 0;">${tagline}</p>
       <p style="color:#F9FAFB;font-size:15px;margin:0 0 12px 0;">Hi ${params.firstName || "there"},</p>
       <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
-        You've been personally invited by Brandon to join Magic Pass Plus as a <strong style="color:#F5C842;">VIP Member — Free Forever</strong>. No credit card required, ever.
+        ${bodyText}
       </p>
-      <a href="${signupUrl}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
-        🏰 Claim Your Free VIP Account →
+      <a href="${ctaLink}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
+        ${ctaLabel}
       </a>
       <p style="color:#6B7280;font-size:12px;text-align:center;margin:0;">
         This invitation is personal to you. Please don't share the link.
