@@ -118,20 +118,21 @@ const App = () => (
             <Route path="/faq" element={<FAQ />} />
             <Route path="/game-developer" element={<ProtectedRoute><GameDeveloper /></ProtectedRoute>} />
             <Route path="/photo-contest" element={<ProtectedRoute><PhotoContest /></ProtectedRoute>} />
-            <Route path="/admin/command-center" element={<ProtectedRoute><AdminCommandCenter /></ProtectedRoute>} />
-            <Route path="/magic-beacon" element={<ProtectedRoute><MagicBeacon /></ProtectedRoute>} />
-            <Route path="/photo-fun" element={<ProtectedRoute><PhotoFun /></ProtectedRoute>} />
-            <Route path="/feed" element={<ProtectedRoute><SocialFeed /></ProtectedRoute>} />
-            <Route path="/event-alerts" element={<ProtectedRoute><EventAlerts /></ProtectedRoute>} />
-            <Route path="/games" element={<ProtectedRoute><GamesDiscovery /></ProtectedRoute>} />
-            <Route path="/leaderboards" element={<ProtectedRoute><Leaderboards /></ProtectedRoute>} />
-            <Route path="/ride-line-quest" element={<ProtectedRoute><LineGames /></ProtectedRoute>} />
-            <Route path="/inbox" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
-            <Route path="/hotel-alerts" element={<ProtectedRoute><HotelAlerts /></ProtectedRoute>} />
-            <Route path="/airfare" element={<ProtectedRoute><AirfareTracker /></ProtectedRoute>} />
-            <Route path="/reservations" element={<ProtectedRoute><ReservationsInbox /></ProtectedRoute>} />
-            <Route path="/invite/:inviteToken" element={<TripInvite />} />
-            <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
+            <Route path="/admin/command-center" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/admin/system-health" element={<ProtectedRoute><SystemHealth /></ProtectedRoute>} />
+            <Route path="/admin/game-analytics" element={<ProtectedRoute><GameAnalytics /></ProtectedRoute>} />
+            <Route path="/admin/trivia" element={<ProtectedRoute><TriviaQuestions /></ProtectedRoute>} />
+            <Route path="/admin/photo-review" element={<ProtectedRoute><PhotoReview /></ProtectedRoute>} />
+            <Route path="/admin/messages" element={<ProtectedRoute><UserMessages /></ProtectedRoute>} />
+            <Route path="/admin/beacon-events" element={<ProtectedRoute><BeaconEvents /></ProtectedRoute>} />
+            <Route path="/admin/news-sources" element={<ProtectedRoute><NewsSources /></ProtectedRoute>} />
+            <Route path="/admin/linemind" element={<ProtectedRoute><LineMindWords /></ProtectedRoute>} />
+            <Route path="/admin/haaaa" element={<ProtectedRoute><HaaaaPrompts /></ProtectedRoute>} />
+            <Route path="/admin/support" element={<ProtectedRoute><SupportInboxPage /></ProtectedRoute>} />
+            <Route path="/admin/feedback" element={<ProtectedRoute><BetaFeedback /></ProtectedRoute>} />
+            <Route path="/admin/vip" element={<ProtectedRoute><VipInvites /></ProtectedRoute>} />
+            <Route path="/admin/email-templates" element={<ProtectedRoute><VipInvites /></ProtectedRoute>} />
+            <Route path="/admin/system" element={<ProtectedRoute><SystemServices /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
             <Route path="/admin/blog" element={<ProtectedRoute><BlogEditor /></ProtectedRoute>} />
             <Route path="/admin/curated-hotels" element={<ProtectedRoute><CuratedHotels /></ProtectedRoute>} />
