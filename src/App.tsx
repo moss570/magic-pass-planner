@@ -29,6 +29,9 @@ import SupportFaq from "./pages/SupportFaq";
 import AffiliateProgram from "./pages/AffiliateProgram";
 import ForPassholders from "./pages/ForPassholders";
 import ForTravelers from "./pages/ForTravelers";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import BlogEditor from "./pages/admin/BlogEditor";
 import CuratedHotels from "./pages/admin/CuratedHotels";
 import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
@@ -93,6 +96,8 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="/for-passholders" element={<ForPassholders />} />
             <Route path="/for-travelers" element={<ForTravelers />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/support" element={<SupportFaq />} />
@@ -115,6 +120,7 @@ const App = () => (
             <Route path="/invite/:inviteToken" element={<TripInvite />} />
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
+            <Route path="/admin/blog" element={<ProtectedRoute><BlogEditor /></ProtectedRoute>} />
             <Route path="/admin/curated-hotels" element={<ProtectedRoute><CuratedHotels /></ProtectedRoute>} />
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
             <Route path="/admin/tier-access" element={<ProtectedRoute><TierAccess /></ProtectedRoute>} />
