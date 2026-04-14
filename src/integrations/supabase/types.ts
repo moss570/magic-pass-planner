@@ -3799,6 +3799,8 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string
+          enroll_token: string | null
+          enroll_type: string | null
           first_name: string | null
           id: string
           invite_accepted_at: string | null
@@ -3816,6 +3818,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           email: string
+          enroll_token?: string | null
+          enroll_type?: string | null
           first_name?: string | null
           id?: string
           invite_accepted_at?: string | null
@@ -3833,6 +3837,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           email?: string
+          enroll_token?: string | null
+          enroll_type?: string | null
           first_name?: string | null
           id?: string
           invite_accepted_at?: string | null
