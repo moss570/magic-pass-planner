@@ -294,9 +294,9 @@ serve(async (req) => {
 
       // Check if already friends
       const { data: existing } = await supabase.from("friendships")
-        .select("id").or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
-        .limit(1);
-      const alreadyFriends = existing?.some(f => 
+        .select("id, user_id_1, user_id_2").or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
+        .limit(100);
+      const alreadyFriends = existing?.some((f: any) => 
         (f.user_id_1 === userId && f.user_id_2 === target_user_id) ||
         (f.user_id_1 === target_user_id && f.user_id_2 === userId)
       );

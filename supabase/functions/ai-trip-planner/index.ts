@@ -62,7 +62,7 @@ const MK_LOCATIONS: Record<string, {
   "Jungle Cruise":                   { x:15, y:55, land:"Adventureland", rideTime:10, category:"ride", thrillLevel:2, avgWait:{low:10,moderate:25,high:50}, llAvailable:true, tips:"Best jokes in WDW. Morning or evening for best experience." },
   "Walt Disney's Enchanted Tiki Room":{ x:13, y:52, land:"Adventureland", rideTime:12, category:"show", thrillLevel:1, avgWait:{low:5,moderate:10,high:15}, llAvailable:false, tips:"Classic show, great A/C, nearly always available" },
   "The Skipper Canteen":             { x:14, y:53, land:"Adventureland", rideTime:45, category:"dining", thrillLevel:1, avgWait:{low:5,moderate:5,high:5}, llAvailable:false, tips:"Reservation required. Creative pan-Asian menu." },
-  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! The only place to get it in MK.", diningType:"snack", servesMeals:[] },
+  "Aloha Isle":                      { x:17, y:57, land:"Adventureland", rideTime:5, category:"dining", thrillLevel:1, avgWait:{low:3,moderate:8,high:15}, llAvailable:false, tips:"Dole Whip! The only place to get it in MK." },
   
   // Fireworks positions
   "Main Street Hub":                 { x:50, y:48, land:"Main Street U.S.A.", category:"landmark", thrillLevel:1, avgWait:{low:0,moderate:0,high:0}, llAvailable:false, tips:"Center of hub = best fireworks view. Get here by 8:45 PM." },

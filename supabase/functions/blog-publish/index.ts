@@ -55,7 +55,7 @@ serve(async (req) => {
         content,
         category,
         featured_image_url,
-        author_email: user.email,
+        author_email: "api@magicpassplus.com",
         is_published: publish_now,
         published_at: publish_now ? new Date().toISOString() : null,
       }])
@@ -72,6 +72,6 @@ serve(async (req) => {
       is_published: post?.is_published,
     }), { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
-    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

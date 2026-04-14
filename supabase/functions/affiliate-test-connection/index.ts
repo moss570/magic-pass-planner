@@ -93,6 +93,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({ status: "failed", error: friendlyError, isTimeout }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
