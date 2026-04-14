@@ -1,22 +1,26 @@
 
 
-## Fix: Rename "Beta Welcome" to "Beta Invite"
+## Fix: Handle Duplicate Constraint on Lead Type Change
 
 ### Problem
-The built-in template labeled "🧪 Beta Welcome" is actually the invitation email sent to recruit beta testers. The name is confusing — it sounds like a post-signup welcome email, not an invite.
+The `launch_signups` table has a `UNIQUE (email, signup_type)` constraint. When editing a lead's type from "updates" to "beta_tester" (or vice versa), if a row with that email and target type already exists, the update fails with a duplicate key error.
+
+### Solution
+Update the `saveEdit` function in `src/pages/admin/EarlyAccessLeads.tsx` to handle this case:
+
+1. Before updating, check if a row already exists with the same email and the new `signup_type`
+2. If a duplicate exists, delete the old row (the one being edited) and keep the existing row with the target type — then show a toast saying the duplicate was merged
+3. If no duplicate, proceed with the normal update
 
 ### Changes
 
-**`src/pages/admin/VipInvites.tsx` — line 15**
+**`src/pages/admin/EarlyAccessLeads.tsx` — `saveEdit` function (~lines 120-137)**
 
-Rename the built-in template:
-- From: `label: "🧪 Beta Welcome"` / `id: "beta_welcome"` / `storageKey: "beta_welcome_template"`
-- To: `label: "🧪 Beta Invite"` / `id: "beta_invite"` / `storageKey: "beta_invite_template"`
+Replace with logic that:
+- Detects if `signup_type` changed
+- If changed, queries for an existing row with the same email + new type
+- If found, deletes the current row being edited (merging into the existing one) and toasts "Lead merged — duplicate removed"
+- If not found, performs the normal update
 
-Also update the `DEFAULT_HTML` record key from `"beta_welcome_template"` to `"beta_invite_template"` so the default scaffold still loads correctly.
-
-Users who previously saved edits to the old `beta_welcome_template` key in localStorage will need to re-edit under the new key (or we can add a one-time migration that copies the old key's value to the new one).
-
-### Optional addition
-If you'd also like a true **Beta Welcome** email (sent automatically after a beta tester signs up and activates), that would be a separate feature — let me know.
+This is a single-file, frontend-only change. No migration needed.
 
