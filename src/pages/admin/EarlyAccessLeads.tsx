@@ -539,5 +539,6 @@ export default function EarlyAccessLeads() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
