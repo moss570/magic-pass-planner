@@ -1178,5 +1178,6 @@ export default function Admin() {
 
       </div>
     </div>
+    </AdminLayout>
   );
 }
