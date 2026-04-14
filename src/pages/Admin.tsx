@@ -4,6 +4,7 @@ import { Castle, Shield, TrendingUp, Users, Bell, Database, CreditCard, Mail, Me
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 
@@ -482,11 +483,7 @@ export default function Admin() {
   };
 
   if (loading || !user || !ADMIN_EMAILS.includes(user.email || "")) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--background)" }}>
-        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
+    return null;
   }
 
   // Revenue estimate
@@ -502,9 +499,10 @@ export default function Admin() {
   const totalMRR = stats ? estimatedMRR + (stats.trialUsers * 0) : 0; // trials not counted yet
 
   return (
-    <div className="min-h-screen pb-12" style={{ background: "var(--background)" }}>
+    <AdminLayout>
+    <div className="pb-12">
       {/* Header */}
-      <div className="px-4 md:px-8 pt-8 pb-6 border-b" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)" }}>
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -514,25 +512,7 @@ export default function Admin() {
             </div>
             <p className="text-muted-foreground text-sm">Magic Pass Plus — Operations Center</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <a href="/admin/command-center" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              🎛️ Command Center
-            </a>
-            <a href="/admin/affiliates" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              🔗 Affiliate Networks
-            </a>
-            <a href="/admin/park-content" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              🏪 Park Content CMS
-            </a>
-            <a href="/admin/tier-access" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              🔐 Tier Access
-            </a>
-            <a href="/admin/users" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              👥 Users
-            </a>
-            <a href="/admin/early-access" className="text-xs px-3 py-1.5 rounded-lg border border-primary/40 text-primary hover:bg-primary/10 font-semibold">
-              📋 Early Access
-            </a>
+          <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">Last refresh: {lastRefresh.toLocaleTimeString()}</span>
             <button
               onClick={loadStats}
