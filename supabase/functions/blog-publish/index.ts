@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 const ALLOWED_AUTHORS = ["rocket@discountmikeblinds.net", "moss570@gmail.com", "brandon@discountmikeblinds.net"];
+const API_KEY = Deno.env.get("BLOG_PUBLISH_API_KEY") || "";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -14,12 +15,22 @@ serve(async (req) => {
   try {
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-    const authHeader = req.headers.get("authorization") || req.headers.get("x-client-authorization") || "";
-    const token = authHeader.replace("Bearer ", "");
+    // Check for API key auth (primary method for automation)
+    const authHeader = req.headers.get("authorization") || "";
+    const providedKey = authHeader.replace("Bearer ", "");
     
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(token);
-    if (authErr || !user || !ALLOWED_AUTHORS.includes(user.email || "")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // If API key is provided and valid, allow it
+    if (providedKey && API_KEY && providedKey === API_KEY) {
+      // API key authentication successful
+      // Continue to blog post creation
+    } else if (providedKey && providedKey.startsWith("eyJ")) {
+      // Fallback to Supabase token auth for manual testing
+      const { data: { user }, error: authErr } = await supabase.auth.getUser(providedKey);
+      if (authErr || !user || !ALLOWED_AUTHORS.includes(user.email || "")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    } else {
+      return new Response(JSON.stringify({ error: "Missing or invalid API key" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const body = await req.json();
