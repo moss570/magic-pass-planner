@@ -29,6 +29,7 @@ import SupportFaq from "./pages/SupportFaq";
 import AffiliateProgram from "./pages/AffiliateProgram";
 import ForPassholders from "./pages/ForPassholders";
 import ForTravelers from "./pages/ForTravelers";
+import CuratedHotels from "./pages/admin/CuratedHotels";
 import FAQ from "./pages/FAQ";
 import GameDeveloper from "./pages/GameDeveloper";
 import PhotoContest from "./pages/PhotoContest";
@@ -114,6 +115,7 @@ const App = () => (
             <Route path="/invite/:inviteToken" element={<TripInvite />} />
             <Route path="/trip/:tripId/compare" element={<ProtectedRoute><TripCompare /></ProtectedRoute>} />
             <Route path="/admin/affiliates" element={<ProtectedRoute><AffiliateNetworks /></ProtectedRoute>} />
+            <Route path="/admin/curated-hotels" element={<ProtectedRoute><CuratedHotels /></ProtectedRoute>} />
             <Route path="/admin/park-content" element={<ProtectedRoute><ParkContent /></ProtectedRoute>} />
             <Route path="/admin/tier-access" element={<ProtectedRoute><TierAccess /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute><UserManagerPage /></ProtectedRoute>} />

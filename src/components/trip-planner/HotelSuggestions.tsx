@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Hotel, MapPin, ChevronDown, ChevronUp, ExternalLink, Bell, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { buildBookingUrl } from "@/lib/affiliate";
-import { CURATED_HOTELS } from "@/lib/curatedHotels";
+
+interface CuratedHotel {
+  id: string;
+  name: string;
+  price_range: string;
+  distance_miles: number;
+  amenities: string[];
+  best_for: string;
+  category: string;
+  default_target_price: number;
+  booking_search_url: string;
+  is_active: boolean;
+}
 
 interface HotelCategory {
   label: string;
   emoji: string;
   description: string;
-  hotels: typeof CURATED_HOTELS;
+  hotels: CuratedHotel[];
 }
 
 interface Props {
@@ -26,14 +39,27 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
   const { session } = useAuth();
   const [expandedCategory, setExpandedCategory] = useState<string | null>("Budget-Friendly");
   const [maxPrice, setMaxPrice] = useState("");
+  const [hotels, setHotels] = useState<CuratedHotel[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (lodging === "disney-resort") return null;
+  useEffect(() => {
+    const loadHotels = async () => {
+      try {
+        const { data } = await supabase.from("curated_hotels").select("*").eq("is_active", true);
+        setHotels(data || []);
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
+    loadHotels();
+  }, []);
+
+  if (lodging === "disney-resort" || loading) return null;
 
   const nights = startDate && endDate
     ? Math.max(1, Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000))
     : 1;
 
-  const filteredHotels = CURATED_HOTELS.filter(h => !maxPrice || h.defaultTargetPrice <= Number(maxPrice));
+  const filteredHotels = hotels.filter(h => !maxPrice || h.default_target_price <= Number(maxPrice));
 
   const categories: HotelCategory[] = [
     { label: "Budget-Friendly", emoji: "💰", description: "Great value hotels under $120/night", hotels: filteredHotels.filter(h => h.category === "Budget-Friendly") },
@@ -41,19 +67,19 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
     { label: "Close to Parks", emoji: "🏰", description: "5 minutes or less from Disney gates", hotels: filteredHotels.filter(h => h.category === "Close to Parks") },
   ].filter(c => c.hotels.length > 0);
 
-  const handleBookNow = async (hotel: typeof CURATED_HOTELS[0]) => {
+  const handleBookNow = async (hotel: CuratedHotel) => {
     const url = await buildBookingUrl({
       category: "hotels",
-      rawDeeplink: hotel.bookingSearchUrl,
+      rawDeeplink: hotel.booking_search_url,
       context: { checkIn: startDate, checkOut: endDate, adults: String(adults), children: String(children), userId: session?.user?.id },
     });
     window.open(url, "_blank");
   };
 
-  const handleWatchPrice = (hotel: typeof CURATED_HOTELS[0]) => {
+  const handleWatchPrice = (hotel: CuratedHotel) => {
     const params = new URLSearchParams({
       hotel: hotel.name, checkIn: startDate || "", checkOut: endDate || "",
-      adults: String(adults), children: String(children), targetPrice: String(hotel.defaultTargetPrice),
+      adults: String(adults), children: String(children), targetPrice: String(hotel.default_target_price),
     });
     navigate(`/hotel-alerts?${params.toString()}`);
   };
