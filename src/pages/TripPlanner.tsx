@@ -225,7 +225,7 @@ function ResultsView({
   hotelNightlyBudget, tripCoverage, nonParkSuggestions, resortStay, parkHopper,
   onSave, saving, savedTripId, onShare, shareUrl, copied, onExportPDF, onSyncDining, onRegenerate, generating,
   onDayUpdated, getHeaders, supabaseUrl, walkingSpeedKmh, tripId,
-  lodging, startDate, endDate, adults, children, mode,
+  lodging, startDate, endDate, adults, children, mode, transportation,
   tripName, versionLabel,
 }: {
   plans: DayPlan[];
@@ -261,6 +261,7 @@ function ResultsView({
   adults?: number;
   children?: number;
   mode?: string;
+  transportation?: string[];
   tripName?: string;
   versionLabel?: string;
 }) {
@@ -384,6 +385,16 @@ function ResultsView({
       {!resortStay && lodging !== 'disney-resort' && mode !== 'day-trip' && (
         <HotelSuggestions
           lodging={lodging || ''}
+          startDate={startDate || ''}
+          endDate={endDate || ''}
+          adults={adults || 2}
+          children={children || 0}
+        />
+      )}
+
+      {/* Airfare suggestions — show when flying */}
+      {mode !== 'day-trip' && transportation?.some(t => t.toLowerCase().includes('fly') || t.toLowerCase().includes('plane') || t.toLowerCase().includes('air')) && (
+        <AirfareSuggestions
           startDate={startDate || ''}
           endDate={endDate || ''}
           adults={adults || 2}
@@ -956,7 +967,8 @@ function TripPlannerWizard() {
           endDate={draft.endDate}
           adults={draft.adults}
           children={draft.children}
-          mode={draft.mode}
+           mode={draft.mode}
+           transportation={draft.transportation}
           tripName={draft.tripName}
           versionLabel={versions.find(v => v.id === activeVersionId)?.name || 'v1'}
         />
