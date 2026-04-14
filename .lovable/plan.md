@@ -1,26 +1,33 @@
 
 
-## Fix: Handle Duplicate Constraint on Lead Type Change
+## Invite Funnel Tracking: Sent → Clicked → Signed Up
 
-### Problem
-The `launch_signups` table has a `UNIQUE (email, signup_type)` constraint. When editing a lead's type from "updates" to "beta_tester" (or vice versa), if a row with that email and target type already exists, the update fails with a duplicate key error.
-
-### Solution
-Update the `saveEdit` function in `src/pages/admin/EarlyAccessLeads.tsx` to handle this case:
-
-1. Before updating, check if a row already exists with the same email and the new `signup_type`
-2. If a duplicate exists, delete the old row (the one being edited) and keep the existing row with the target type — then show a toast saying the duplicate was merged
-3. If no duplicate, proceed with the normal update
+### What this adds
+1. **Link click tracking** — when someone visits `/signup` with an `enroll` token, a `link_clicked_at` timestamp is recorded on their `vip_accounts` row (even if they don't finish signing up).
+2. **Funnel stats panel** in the VIP Invites admin page showing conversion: Sent → Clicked → Signed Up, with counts and percentages.
 
 ### Changes
 
-**`src/pages/admin/EarlyAccessLeads.tsx` — `saveEdit` function (~lines 120-137)**
+**1. Database migration — add `link_clicked_at` column**
+```sql
+ALTER TABLE vip_accounts ADD COLUMN link_clicked_at timestamptz;
+```
 
-Replace with logic that:
-- Detects if `signup_type` changed
-- If changed, queries for an existing row with the same email + new type
-- If found, deletes the current row being edited (merging into the existing one) and toasts "Lead merged — duplicate removed"
-- If not found, performs the normal update
+**2. Edge Function `vip-invite/index.ts` — new `track-click` action**
+Add a lightweight handler for `?action=track-click` that accepts `{ enroll_token }` (no auth required), looks up the `vip_accounts` row by `enroll_token`, and sets `link_clicked_at = now()` if it's currently null. Returns 200 silently. No email, no side effects.
 
-This is a single-file, frontend-only change. No migration needed.
+**3. `src/pages/Signup.tsx` — fire click tracker on mount**
+In the existing `useEffect` that handles `enrollToken`, add a fire-and-forget fetch to the `track-click` action. This runs once when someone lands on the signup page with an enroll token.
+
+**4. `src/pages/admin/VipInvites.tsx` — add Invite Funnel card**
+Above the VIP list table, add a small stats card that computes from the loaded `vips` array:
+- **Sent**: count where `invite_sent_at` is set
+- **Clicked**: count where `link_clicked_at` is set
+- **Signed Up**: count where `invite_accepted_at` is set
+- Show conversion percentages (Clicked/Sent, Signed Up/Clicked)
+
+Display as three stat boxes in a row with arrows between them.
+
+### Not included
+- Brevo open tracking (unreliable due to email privacy protections — can add later if desired)
 
