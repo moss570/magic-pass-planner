@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Hotel, Plus, Eye, CheckCircle2, Clock, TrendingDown, TrendingUp, X, Search, DollarSign, Pause, Play } from "lucide-react";
+import { Hotel, Search, MapPin, Bell, ExternalLink, ChevronDown, ChevronUp, CheckCircle2, Clock, TrendingDown, TrendingUp, X, Pause, Play } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { getGenericBookingUrl } from "@/lib/affiliate";
+import { buildBookingUrl, getGenericBookingUrl } from "@/lib/affiliate";
 import { useSubscription } from "@/hooks/useSubscription";
 import { AlertLimitBanner, useAlertLimitGuard } from "@/components/AlertLimitBanner";
 import { CURATED_HOTELS } from "@/lib/curatedHotels";
@@ -49,15 +49,9 @@ function PriceSparkline({ history }: { history: { date: string; price: number }[
   const min = Math.min(...prices);
   const max = Math.max(...prices);
   const range = max - min || 1;
-  const w = 120;
-  const h = 32;
+  const w = 120, h = 32;
   const points = prices.map((p, i) => `${(i / (prices.length - 1)) * w},${h - ((p - min) / range) * (h - 4) - 2}`).join(" ");
-
-  return (
-    <svg width={w} height={h} className="inline-block">
-      <polyline points={points} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" />
-    </svg>
-  );
+  return <svg width={w} height={h} className="inline-block"><polyline points={points} fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5" /></svg>;
 }
 
 export default function HotelAlerts() {
@@ -65,39 +59,35 @@ export default function HotelAlerts() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [alerts, setAlerts] = useState<HotelAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAlerts, setShowAlerts] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const [showCreate, setShowCreate] = useState(false);
   const [showBooked, setShowBooked] = useState<string | null>(null);
   const [confirmNum, setConfirmNum] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Create form state
-  const [hotelName, setHotelName] = useState("");
+  // Search form state
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
-  const [targetPrice, setTargetPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [creatingAlert, setCreatingAlert] = useState<string | null>(null);
 
-  // Auto-open create form from URL params (e.g. from Trip Planner "Track Price")
+  // Hydrate from URL params
   useEffect(() => {
     const hotel = searchParams.get("hotel");
-    if (hotel) {
-      setHotelName(hotel);
-      setCheckIn(searchParams.get("checkIn") || "");
-      setCheckOut(searchParams.get("checkOut") || "");
-      setAdults(Number(searchParams.get("adults")) || 2);
-      setChildren(Number(searchParams.get("children")) || 0);
-      setTargetPrice(searchParams.get("targetPrice") || "");
-      setShowCreate(true);
-      // Clear params so refreshing doesn't re-open
+    const ci = searchParams.get("checkIn");
+    const co = searchParams.get("checkOut");
+    if (ci) setCheckIn(ci);
+    if (co) setCheckOut(co);
+    if (searchParams.get("adults")) setAdults(Number(searchParams.get("adults")) || 2);
+    if (searchParams.get("children")) setChildren(Number(searchParams.get("children")) || 0);
+    if (searchParams.get("targetPrice")) setMaxPrice(searchParams.get("targetPrice") || "");
+    if (hotel || ci) {
+      setHasSearched(true);
       setSearchParams({}, { replace: true });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const filteredSuggestions = hotelName.trim().length > 0
-    ? CURATED_HOTELS.filter(h => h.name.toLowerCase().includes(hotelName.toLowerCase()))
-    : CURATED_HOTELS;
 
   const getHeaders = useCallback(() => ({
     "Content-Type": "application/json",
@@ -118,61 +108,66 @@ export default function HotelAlerts() {
 
   useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
 
-  const createAlert = async () => {
-    if (!hotelName || !checkIn || !checkOut || !targetPrice) { toast.error("Fill all required fields"); return; }
+  // Search results
+  const searchResults = hasSearched
+    ? CURATED_HOTELS
+        .filter(h => !maxPrice || h.defaultTargetPrice <= Number(maxPrice))
+        .sort((a, b) => a.defaultTargetPrice - b.defaultTargetPrice)
+    : [];
+
+  const nights = checkIn && checkOut
+    ? Math.max(1, Math.round((new Date(checkOut + "T12:00:00").getTime() - new Date(checkIn + "T12:00:00").getTime()) / 86400000))
+    : 1;
+
+  const handleSearch = () => {
+    if (!checkIn || !checkOut) { toast.error("Please enter check-in and check-out dates"); return; }
+    setHasSearched(true);
+  };
+
+  const handleBookNow = async (hotel: typeof CURATED_HOTELS[0]) => {
+    const url = await buildBookingUrl({
+      category: "hotels",
+      rawDeeplink: hotel.bookingSearchUrl,
+      context: { checkIn, checkOut, adults: String(adults), children: String(children), userId: session?.user?.id },
+    });
+    window.open(url, "_blank");
+  };
+
+  const handleWatchPrice = async (hotel: typeof CURATED_HOTELS[0]) => {
+    if (!session?.access_token) { toast.error("Please sign in"); return; }
+    setCreatingAlert(hotel.name);
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts`, {
         method: "POST", headers: getHeaders(),
-        body: JSON.stringify({ hotel_name: hotelName, check_in: checkIn, check_out: checkOut, adults, children, target_price: Number(targetPrice) }),
+        body: JSON.stringify({
+          hotel_name: hotel.name, check_in: checkIn, check_out: checkOut,
+          adults, children, target_price: hotel.defaultTargetPrice,
+        }),
       });
       if (!resp.ok) throw new Error();
-      toast.success("Hotel alert created!");
-
-      // Fire-and-forget confirmation email
+      toast.success(`Watching ${hotel.name}!`);
       supabase.functions.invoke("send-alert-confirmation", {
         body: {
-          user_id: session!.user.id,
-          alert_type: "hotel",
-          alert_details: {
-            name: hotelName,
-            date: `${checkIn} → ${checkOut}`,
-            extra: `${adults} adults${children > 0 ? `, ${children} children` : ""} · Target: ≤$${targetPrice}/night`,
-          },
+          user_id: session.user.id, alert_type: "hotel",
+          alert_details: { name: hotel.name, date: `${checkIn} → ${checkOut}`, extra: `Target: ≤$${hotel.defaultTargetPrice}/night` },
         },
       }).catch(() => {});
-
-      setShowCreate(false);
-      setHotelName(""); setCheckIn(""); setCheckOut(""); setTargetPrice("");
       fetchAlerts();
     } catch { toast.error("Failed to create alert"); }
+    setCreatingAlert(null);
   };
 
   const cancelAlert = async (id: string) => {
-    try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts?id=${id}`, { method: "DELETE", headers: getHeaders() });
-      if (!resp.ok) throw new Error(await resp.text());
-      toast.success("Alert cancelled");
-      fetchAlerts();
-    } catch (err) {
-      console.error("Cancel failed:", err);
-      toast.error("Failed to cancel alert");
-    }
+    await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts?id=${id}`, { method: "DELETE", headers: getHeaders() });
+    toast.success("Alert cancelled"); fetchAlerts();
   };
 
   const pauseResumeAlert = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === "paused" ? "watching" : "paused";
-    try {
-      const resp = await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts`, {
-        method: "PATCH", headers: getHeaders(),
-        body: JSON.stringify({ id, status: newStatus }),
-      });
-      if (!resp.ok) throw new Error(await resp.text());
-      toast.success(newStatus === "paused" ? "Alert paused" : "Alert resumed");
-      fetchAlerts();
-    } catch (err) {
-      console.error("Pause/resume failed:", err);
-      toast.error("Failed to update alert");
-    }
+    await fetch(`${SUPABASE_URL}/functions/v1/hotel-alerts`, {
+      method: "PATCH", headers: getHeaders(), body: JSON.stringify({ id, status: newStatus }),
+    });
+    toast.success(newStatus === "paused" ? "Alert paused" : "Alert resumed"); fetchAlerts();
   };
 
   const markBooked = async (id: string) => {
@@ -180,175 +175,224 @@ export default function HotelAlerts() {
       method: "PATCH", headers: getHeaders(),
       body: JSON.stringify({ id, status: "booked", confirmation_number: confirmNum }),
     });
-    toast.success("Marked as booked!");
-    setShowBooked(null); setConfirmNum("");
-    fetchAlerts();
+    toast.success("Marked as booked!"); setShowBooked(null); setConfirmNum(""); fetchAlerts();
   };
 
   const { access } = useSubscription();
   const hotelLimit = access.hotelAlerts;
   const watchingCount = alerts.filter(a => a.status === "watching").length;
   const { canAddAlert } = useAlertLimitGuard(hotelLimit, watchingCount);
-
   const filtered = alerts.filter(a => TABS[activeTab].status.includes(a.status as AlertStatus));
 
   return (
-    <DashboardLayout title="Hotel Alerts">
-      <div className="max-w-2xl mx-auto space-y-4 px-4 py-6">
+    <DashboardLayout title="Hotel Search">
+      <div className="max-w-2xl mx-auto space-y-5 px-4 py-6">
         <AlertLimitBanner limit={hotelLimit} currentCount={watchingCount} alertTypeName="Hotel Alerts" />
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Hotel className="w-5 h-5 text-primary" />
-            <h1 className="text-lg font-bold text-foreground">Hotel Alerts</h1>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
-              {watchingCount} watching
-            </span>
+
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <Hotel className="w-5 h-5 text-primary" />
+          <h1 className="text-lg font-bold text-foreground">Find Orlando Hotels</h1>
+        </div>
+        <p className="text-xs text-muted-foreground -mt-3">
+          Search for off-property hotels near Disney World. Book instantly or set up a price alert to watch for drops.
+        </p>
+
+        {/* Search Form */}
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Check-in</label>
+              <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Check-out</label>
+              <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground mt-1" />
+            </div>
           </div>
-          <button onClick={() => setShowCreate(true)} disabled={!canAddAlert} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            <Plus className="w-3.5 h-3.5" /> New Alert
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Adults</label>
+              <input type="number" min={1} value={adults} onChange={e => setAdults(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Children</label>
+              <input type="number" min={0} value={children} onChange={e => setChildren(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground mt-1" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Max $/night</label>
+              <input type="number" min={1} value={maxPrice} onChange={e => setMaxPrice(e.target.value)} placeholder="Any" className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground mt-1 placeholder:text-muted-foreground" />
+            </div>
+          </div>
+          <button onClick={handleSearch} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
+            <Search className="w-4 h-4" /> Search Hotels
           </button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 rounded-xl bg-muted p-1">
-          {TABS.map((tab, i) => (
-            <button key={tab.label} onClick={() => setActiveTab(i)}
-              className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${activeTab === i ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12 text-muted-foreground text-sm">Loading...</div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <Hotel className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">No {TABS[activeTab].label.toLowerCase()} alerts</p>
-          </div>
-        ) : (
+        {/* Search Results */}
+        {hasSearched && (
           <div className="space-y-3">
-            {filtered.map(alert => {
-              const delta = alert.current_price != null ? alert.current_price - alert.target_price : null;
-              const deltaColor = delta != null ? (delta <= 0 ? "text-green-400 bg-green-500/15" : "text-red-400 bg-red-500/15") : "";
-              return (
-                <div key={alert.id} className={`rounded-xl border p-4 ${alert.status === "found" ? "border-green-500/40 bg-green-500/5" : "border-border bg-card"} ${alert.status === "paused" ? "opacity-60" : ""}`}>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-foreground">
+                {searchResults.length} hotel{searchResults.length !== 1 ? "s" : ""} found
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {nights} night{nights > 1 ? "s" : ""} · {adults} adult{adults > 1 ? "s" : ""}{children > 0 ? ` + ${children} kid${children > 1 ? "s" : ""}` : ""}
+              </p>
+            </div>
+            {searchResults.length === 0 ? (
+              <div className="text-center py-8 rounded-xl border border-border bg-card">
+                <Hotel className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No hotels match your budget. Try increasing your max price.</p>
+              </div>
+            ) : (
+              searchResults.map((hotel, i) => (
+                <div key={hotel.name} className={`rounded-xl border p-4 transition-colors ${i === 0 ? "border-primary/30 bg-primary/5" : "border-border bg-card"}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-bold text-foreground">{alert.hotel_name}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(alert.check_in + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} –{" "}
-                        {new Date(alert.check_out + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        {" · "}{alert.adults}A {alert.children > 0 ? `${alert.children}C` : ""}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold text-foreground">{hotel.name}</p>
+                        {i === 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">Best Value</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-primary font-semibold">{hotel.priceRange}/night</span>
+                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                          <MapPin className="w-3 h-3" /> {hotel.distanceMiles} mi from Disney
+                        </span>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Target</p>
-                      <p className="text-sm font-bold text-primary">${alert.target_price}/night</p>
+                      <p className="text-xs text-muted-foreground">Est. total</p>
+                      <p className="text-sm font-bold text-foreground">${hotel.defaultTargetPrice * nights}</p>
                     </div>
                   </div>
-
-                  {alert.current_price != null && (
-                    <div className="flex items-center gap-3 mt-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Current</p>
-                        <p className="text-sm font-bold text-foreground">${alert.current_price}/night</p>
-                      </div>
-                      {delta != null && (
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${deltaColor} flex items-center gap-0.5`}>
-                          {delta <= 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
-                          {delta <= 0 ? `-$${Math.abs(delta)}` : `+$${delta}`}
-                        </span>
-                      )}
-                      <PriceSparkline history={alert.price_history} />
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    {alert.check_count} checks · last {alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleDateString() : "never"}
-                  </div>
-
-                  <div className="flex gap-2 mt-3">
-                    {alert.status === "found" && (
-                      <a href={alert.booking_link || getGenericBookingUrl("hotels")}
-                        target="_blank" rel="noopener noreferrer"
-                        className="flex-1 text-center py-2 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-500 transition-colors">
-                        Book Now →
-                      </a>
-                    )}
-                    {(alert.status === "watching" || alert.status === "found" || alert.status === "paused") && (
-                      <>
-                        <button onClick={() => pauseResumeAlert(alert.id, alert.status)} className="px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                          {alert.status === "paused" ? <><Play className="w-3 h-3 inline mr-1" />Resume</> : <><Pause className="w-3 h-3 inline mr-1" />Pause</>}
-                        </button>
-                        {alert.status !== "paused" && (
-                          <button onClick={() => setShowBooked(alert.id)} className="px-3 py-2 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors">
-                            <CheckCircle2 className="w-3 h-3 inline mr-1" />Mark Booked
-                          </button>
-                        )}
-                        <button onClick={() => cancelAlert(alert.id)} className="px-3 py-2 rounded-lg border border-destructive/30 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors">
-                          <X className="w-3 h-3 inline mr-1" />Cancel
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Create Modal */}
-        {showCreate && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-            <div className="bg-card rounded-2xl border border-border p-6 w-full max-w-md space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-foreground">New Hotel Alert</h2>
-                <button onClick={() => setShowCreate(false)}><X className="w-4 h-4 text-muted-foreground" /></button>
-              </div>
-              <div className="relative">
-                <input
-                  value={hotelName}
-                  onChange={e => { setHotelName(e.target.value); setShowSuggestions(true); }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="Hotel name — type to search"
-                  className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground placeholder:text-muted-foreground"
-                />
-                {showSuggestions && filteredSuggestions.length > 0 && (
-                  <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    {filteredSuggestions.map(h => (
-                      <button
-                        key={h.name}
-                        onClick={() => {
-                          setHotelName(h.name);
-                          if (!targetPrice) setTargetPrice(String(h.defaultTargetPrice));
-                          setShowSuggestions(false);
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-muted/50 transition-colors border-b border-border last:border-0"
-                      >
-                        <p className="text-xs font-semibold text-foreground">{h.name}</p>
-                        <p className="text-[10px] text-muted-foreground">{h.priceRange}/night · {h.distanceMiles}mi · {h.category}</p>
-                      </button>
+                  <p className="text-[10px] text-muted-foreground mt-1">✨ {hotel.bestFor}</p>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {hotel.amenities.map(a => (
+                      <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{a}</span>
                     ))}
                   </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><label className="text-xs text-muted-foreground">Check-in</label><input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
-                <div><label className="text-xs text-muted-foreground">Check-out</label><input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div><label className="text-xs text-muted-foreground">Adults</label><input type="number" min={1} value={adults} onChange={e => setAdults(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
-                <div><label className="text-xs text-muted-foreground">Children</label><input type="number" min={0} value={children} onChange={e => setChildren(Number(e.target.value))} className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
-                <div><label className="text-xs text-muted-foreground">Target $/night</label><input type="number" min={1} value={targetPrice} onChange={e => setTargetPrice(e.target.value)} placeholder="150" className="w-full px-3 py-2 rounded-lg bg-muted border border-border text-sm text-foreground" /></div>
-              </div>
-              <button onClick={createAlert} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors">
-                Create Alert
-              </button>
-            </div>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => handleBookNow(hotel)} className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors">
+                      <ExternalLink className="w-3 h-3" /> Book Now
+                    </button>
+                    <button
+                      onClick={() => handleWatchPrice(hotel)}
+                      disabled={!canAddAlert || creatingAlert === hotel.name}
+                      className="flex items-center gap-1 text-xs px-3 py-2 rounded-lg border border-primary/40 text-primary font-semibold hover:bg-primary/10 transition-colors disabled:opacity-50"
+                    >
+                      <Bell className="w-3 h-3" /> {creatingAlert === hotel.name ? "Creating..." : "Watch Price"}
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+            <p className="text-[10px] text-muted-foreground text-center">
+              💡 Prices shown are estimated low-end rates. Actual prices may vary by date and availability.
+            </p>
           </div>
         )}
+
+        {/* My Alerts Section */}
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <button
+            onClick={() => setShowAlerts(!showAlerts)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-primary" />
+              <span className="text-sm font-bold text-foreground">My Hotel Alerts</span>
+              {watchingCount > 0 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">
+                  {watchingCount} active
+                </span>
+              )}
+            </div>
+            {showAlerts ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+          </button>
+
+          {showAlerts && (
+            <div className="px-4 pb-4 space-y-3">
+              <div className="flex gap-1 rounded-xl bg-muted p-1">
+                {TABS.map((tab, i) => (
+                  <button key={tab.label} onClick={() => setActiveTab(i)}
+                    className={`flex-1 text-xs font-semibold py-2 rounded-lg transition-colors ${activeTab === i ? "bg-card text-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}>
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
+              ) : filtered.length === 0 ? (
+                <div className="text-center py-8">
+                  <Hotel className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">No {TABS[activeTab].label.toLowerCase()} alerts. Search above to find hotels and create alerts.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filtered.map(alert => {
+                    const delta = alert.current_price != null ? alert.current_price - alert.target_price : null;
+                    const deltaColor = delta != null ? (delta <= 0 ? "text-green-400 bg-green-500/15" : "text-red-400 bg-red-500/15") : "";
+                    return (
+                      <div key={alert.id} className={`rounded-xl border p-3 ${alert.status === "found" ? "border-green-500/40 bg-green-500/5" : "border-border bg-muted/20"} ${alert.status === "paused" ? "opacity-60" : ""}`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-bold text-foreground">{alert.hotel_name}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {new Date(alert.check_in + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })} –{" "}
+                              {new Date(alert.check_out + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              {" · "}{alert.adults}A {alert.children > 0 ? `${alert.children}C` : ""}
+                            </p>
+                          </div>
+                          <p className="text-xs font-bold text-primary">${alert.target_price}/night</p>
+                        </div>
+                        {alert.current_price != null && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-foreground font-semibold">${alert.current_price}/night</span>
+                            {delta != null && (
+                              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${deltaColor} flex items-center gap-0.5`}>
+                                {delta <= 0 ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+                                {delta <= 0 ? `-$${Math.abs(delta)}` : `+$${delta}`}
+                              </span>
+                            )}
+                            <PriceSparkline history={alert.price_history} />
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+                          <Clock className="w-3 h-3" /> {alert.check_count} checks
+                        </div>
+                        <div className="flex gap-1.5 mt-2">
+                          {alert.status === "found" && (
+                            <a href={alert.booking_link || getGenericBookingUrl("hotels")} target="_blank" rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 rounded-lg bg-green-600 text-white text-[10px] font-bold hover:bg-green-500 transition-colors">
+                              Book Now →
+                            </a>
+                          )}
+                          {(alert.status === "watching" || alert.status === "found" || alert.status === "paused") && (
+                            <>
+                              <button onClick={() => pauseResumeAlert(alert.id, alert.status)} className="px-2.5 py-1.5 rounded-lg border border-border text-[10px] font-medium text-foreground hover:bg-muted transition-colors">
+                                {alert.status === "paused" ? <><Play className="w-3 h-3 inline mr-0.5" />Resume</> : <><Pause className="w-3 h-3 inline mr-0.5" />Pause</>}
+                              </button>
+                              {alert.status !== "paused" && (
+                                <button onClick={() => setShowBooked(alert.id)} className="px-2.5 py-1.5 rounded-lg border border-border text-[10px] font-medium text-foreground hover:bg-muted transition-colors">
+                                  <CheckCircle2 className="w-3 h-3 inline mr-0.5" />Booked
+                                </button>
+                              )}
+                              <button onClick={() => cancelAlert(alert.id)} className="px-2.5 py-1.5 rounded-lg border border-destructive/30 text-[10px] font-medium text-destructive hover:bg-destructive/10 transition-colors">
+                                <X className="w-3 h-3 inline mr-0.5" />Cancel
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Mark Booked Modal */}
         {showBooked && (
