@@ -9,6 +9,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import CompassButton from "@/components/CompassButton";
 import ItineraryCard from "@/components/trip-planner/ItineraryCard";
 import HotelSuggestions from "@/components/trip-planner/HotelSuggestions";
+import AirfareSuggestions from "@/components/trip-planner/AirfareSuggestions";
 import { useAuth } from "@/contexts/AuthContext";
 import { TipBar } from "@/components/FeatureTip";
 import { useToast } from "@/hooks/use-toast";
