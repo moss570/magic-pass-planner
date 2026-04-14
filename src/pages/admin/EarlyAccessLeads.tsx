@@ -119,6 +119,27 @@ export default function EarlyAccessLeads() {
 
   const saveEdit = async () => {
     if (!editing) return;
+    const typeChanged = editForm.signup_type !== editing.signup_type;
+    if (typeChanged) {
+      const { data: existing } = await supabase
+        .from("launch_signups")
+        .select("id")
+        .eq("email", editForm.email)
+        .eq("signup_type", editForm.signup_type)
+        .neq("id", editing.id)
+        .maybeSingle();
+      if (existing) {
+        const { error } = await supabase.from("launch_signups").delete().eq("id", editing.id);
+        if (error) {
+          toast({ title: "Merge failed", description: error.message, variant: "destructive" });
+        } else {
+          toast({ title: "Lead merged — duplicate removed" });
+          setEditing(null);
+          loadLeads();
+        }
+        return;
+      }
+    }
     const { error } = await supabase.from("launch_signups").update({
       email: editForm.email,
       first_name: editForm.first_name,
