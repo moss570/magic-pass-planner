@@ -1,29 +1,22 @@
 
 
-## Fix: Type-Specific Default Email Bodies
+## Fix: Rename "Beta Welcome" to "Beta Invite"
 
 ### Problem
-When sending a beta tester or free month invite without a customized template, the edge function falls back to a single hardcoded default HTML body that always says "VIP Member — Free Forever." The subject line correctly varies by type, but the body does not.
-
-### Solution
-Update the default HTML fallback in `supabase/functions/vip-invite/index.ts` to generate type-specific email bodies based on `enrollType`.
+The built-in template labeled "🧪 Beta Welcome" is actually the invitation email sent to recruit beta testers. The name is confusing — it sounds like a post-signup welcome email, not an invite.
 
 ### Changes
 
-**1. `supabase/functions/vip-invite/index.ts` — lines 41-68**
+**`src/pages/admin/VipInvites.tsx` — line 15**
 
-Replace the single hardcoded default HTML block with type-aware content:
+Rename the built-in template:
+- From: `label: "🧪 Beta Welcome"` / `id: "beta_welcome"` / `storageKey: "beta_welcome_template"`
+- To: `label: "🧪 Beta Invite"` / `id: "beta_invite"` / `storageKey: "beta_invite_template"`
 
-- **VIP** (default/current): "VIP Member — Free Forever", CTA: "Claim Your Free VIP Account →"
-- **Beta Tester**: "Beta Tester — 1 Year Free Access", body mentions early access and helping shape the platform, CTA: "Join the Beta →"
-- **Free Month**: "One Free Month of Magic Pass Plus", body mentions 30-day full access trial, CTA: "Claim Your Free Month →"
+Also update the `DEFAULT_HTML` record key from `"beta_welcome_template"` to `"beta_invite_template"` so the default scaffold still loads correctly.
 
-The structure (branded header, footer, layout) stays identical — only the messaging text, CTA label, and link vary by type. The link will use the appropriate enrollment URL (`betaLink`, `vipLink`, or `freeMonthLink`) instead of always using `signupUrl`.
+Users who previously saved edits to the old `beta_welcome_template` key in localStorage will need to re-edit under the new key (or we can add a one-time migration that copies the old key's value to the new one).
 
-**2. Redeploy `vip-invite` edge function**
-
-### Technical Details
-- The `else` block (no `customHtml`) on line 41 becomes a switch on `params.enrollType` to pick the right copy
-- Each variant uses its corresponding tokenized link (e.g., beta uses `betaLink`)
-- No frontend changes needed — this is purely a backend fix
+### Optional addition
+If you'd also like a true **Beta Welcome** email (sent automatically after a beta tester signs up and activates), that would be a separate feature — let me know.
 
