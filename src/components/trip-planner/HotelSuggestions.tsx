@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Hotel, MapPin, ChevronDown, ChevronUp, ExternalLink, Bell, Search } from "lucide-react";
+import { Hotel, MapPin, ChevronDown, ChevronUp, ExternalLink, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -29,13 +29,11 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
 
   if (lodging === "disney-resort") return null;
 
-  const hotels = CURATED_HOTELS;
+  const filteredHotels = CURATED_HOTELS.filter(h => !maxPrice || h.defaultTargetPrice <= Number(maxPrice));
 
   const nights = startDate && endDate
     ? Math.max(1, Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000))
     : 1;
-
-  const filteredHotels = hotels.filter(h => !maxPrice || h.default_target_price <= Number(maxPrice));
 
   const categories: HotelCategory[] = [
     { label: "Budget-Friendly", emoji: "💰", description: "Great value hotels under $120/night", hotels: filteredHotels.filter(h => h.category === "Budget-Friendly") },
@@ -46,7 +44,7 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
   const handleBookNow = async (hotel: CuratedHotel) => {
     const url = await buildBookingUrl({
       category: "hotels",
-      rawDeeplink: hotel.booking_search_url,
+      rawDeeplink: hotel.bookingSearchUrl,
       context: { checkIn: startDate, checkOut: endDate, adults: String(adults), children: String(children), userId: session?.user?.id },
     });
     window.open(url, "_blank");
@@ -55,7 +53,7 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
   const handleWatchPrice = (hotel: CuratedHotel) => {
     const params = new URLSearchParams({
       hotel: hotel.name, checkIn: startDate || "", checkOut: endDate || "",
-      adults: String(adults), children: String(children), targetPrice: String(hotel.default_target_price),
+      adults: String(adults), children: String(children), targetPrice: String(hotel.defaultTargetPrice),
     });
     navigate(`/hotel-alerts?${params.toString()}`);
   };
@@ -70,7 +68,6 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
         <p className="text-xs text-muted-foreground mt-1">
           Curated picks for {nights} night{nights > 1 ? "s" : ""} · {adults} adult{adults > 1 ? "s" : ""}{children > 0 ? ` + ${children} kid${children > 1 ? "s" : ""}` : ""}
         </p>
-        {/* Mini filter */}
         <div className="flex items-center gap-2 mt-2">
           <label className="text-[10px] text-muted-foreground">Max $/night:</label>
           <input
@@ -117,12 +114,10 @@ export default function HotelSuggestions({ lodging, startDate, endDate, adults, 
                             <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                               <MapPin className="w-3 h-3" /> {hotel.distanceMiles} mi from Disney
                             </span>
-                            </span>
                           </div>
                         </div>
                       </div>
                       <p className="text-[10px] text-muted-foreground mt-1">✨ {hotel.bestFor}</p>
-
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {hotel.amenities.map(a => (
                           <span key={a} className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{a}</span>
