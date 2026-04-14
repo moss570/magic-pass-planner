@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import Footer from "@/components/Footer";
-import { Castle, Loader2, Gift } from "lucide-react";
+import { Castle, Loader2, Gift, Sparkles, Beaker } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,11 +10,19 @@ import { buildPostAuthRedirect, clearStoredPostAuthRedirect, preparePostAuthRedi
 
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";
 
+const ENROLL_BANNERS: Record<string, { icon: React.ReactNode; text: string; color: string }> = {
+  beta_tester: { icon: <Beaker className="w-4 h-4 shrink-0" />, text: "You've been invited as a Beta Tester! Full access for 1 year.", color: "bg-purple-500/10 border-purple-500/30 text-purple-400" },
+  vip: { icon: <Gift className="w-4 h-4 shrink-0" />, text: "You've been invited as a VIP Member — Free Forever!", color: "bg-primary/10 border-primary/30 text-primary" },
+  free_month: { icon: <Sparkles className="w-4 h-4 shrink-0" />, text: "You've got one free month of Magic Pass Plus!", color: "bg-blue-500/10 border-blue-500/30 text-blue-400" },
+};
+
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
+  const enrollToken = searchParams.get("enroll");
+  const enrollType = searchParams.get("type") || "vip";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +35,11 @@ const Signup = () => {
     if (inviteToken) {
       localStorage.setItem("mpp:pending-invite", inviteToken);
     }
-  }, [inviteToken]);
+    if (enrollToken) {
+      localStorage.setItem("mpp:pending-enroll", enrollToken);
+      localStorage.setItem("mpp:pending-enroll-type", enrollType);
+    }
+  }, [inviteToken, enrollToken, enrollType]);
 
   const acceptInviteAfterSignup = async (accessToken: string) => {
     const pendingInvite = localStorage.getItem("mpp:pending-invite");
@@ -45,6 +57,22 @@ const Signup = () => {
       localStorage.removeItem("mpp:pending-invite");
     } catch {
       // Non-critical — user can accept later
+    }
+  };
+
+  const acceptEnrollAfterSignup = async () => {
+    const pendingEnroll = localStorage.getItem("mpp:pending-enroll");
+    if (!pendingEnroll) return;
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/vip-invite?action=accept-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enroll_token: pendingEnroll }),
+      });
+      localStorage.removeItem("mpp:pending-enroll");
+      localStorage.removeItem("mpp:pending-enroll-type");
+    } catch {
+      // Non-critical
     }
   };
 
@@ -74,6 +102,7 @@ const Signup = () => {
 
     if (data.session) {
       await acceptInviteAfterSignup(data.session.access_token);
+      await acceptEnrollAfterSignup();
       navigate(postAuthRedirect);
     } else {
       setSuccess("Check your email to confirm your account.");
@@ -95,6 +124,8 @@ const Signup = () => {
     }
   };
 
+  const enrollBanner = enrollToken ? ENROLL_BANNERS[enrollType] || ENROLL_BANNERS.vip : null;
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(180deg, var(--background) 0%, var(--muted) 100%)" }}>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
@@ -107,10 +138,17 @@ const Signup = () => {
 
           <h1 className="text-2xl font-bold text-foreground text-center mb-2">Create your account</h1>
           <p className="text-sm text-muted-foreground text-center mb-8">
-            Start your 7-day free trial today
+            {enrollToken ? "Complete your signup to activate your invite" : "Start your 7-day free trial today"}
           </p>
 
-          {inviteToken && (
+          {enrollBanner && (
+            <div className={`mb-4 rounded-lg border px-4 py-3 flex items-center gap-2 ${enrollBanner.color}`}>
+              {enrollBanner.icon}
+              <p className="text-sm font-medium">{enrollBanner.text}</p>
+            </div>
+          )}
+
+          {!enrollToken && inviteToken && (
             <div className="mb-4 rounded-lg bg-primary/10 border border-primary/30 px-4 py-3 flex items-center gap-2">
               <Gift className="w-4 h-4 text-primary shrink-0" />
               <p className="text-sm text-primary font-medium">
@@ -160,7 +198,7 @@ const Signup = () => {
               disabled={loading}
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-lg h-11"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Account"}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : enrollToken ? "Create Account & Activate" : "Create Account"}
             </Button>
           </form>
 
@@ -189,9 +227,11 @@ const Signup = () => {
             </Link>
           </p>
 
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            7-day free trial included. No credit card required.
-          </p>
+          {!enrollToken && (
+            <p className="text-center text-xs text-muted-foreground mt-4">
+              7-day free trial included. No credit card required.
+            </p>
+          )}
         </div>
         </div>
       </div>

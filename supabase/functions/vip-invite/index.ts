@@ -14,6 +14,8 @@ async function sendVIPInviteEmail(params: {
   reason: string;
   inviteToken: string;
   customHtml?: string;
+  enrollToken?: string;
+  enrollType?: string;
 }): Promise<boolean> {
   const brevoApiKey = Deno.env.get("BREVO_API_KEY");
   if (!brevoApiKey) {
@@ -22,14 +24,20 @@ async function sendVIPInviteEmail(params: {
   }
 
   const signupUrl = `https://magicpassplus.com/signup?vip=${params.inviteToken}&email=${encodeURIComponent(params.toEmail)}`;
+  const betaLink = params.enrollToken ? `https://magicpassplus.com/signup?enroll=${params.enrollToken}&type=beta_tester` : signupUrl;
+  const vipLink = params.enrollToken ? `https://magicpassplus.com/signup?enroll=${params.enrollToken}&type=vip` : signupUrl;
+  const freeMonthLink = params.enrollToken ? `https://magicpassplus.com/signup?enroll=${params.enrollToken}&type=free_month` : signupUrl;
 
   let html: string;
 
   if (params.customHtml) {
-    // Use admin-provided template with placeholder substitution
     html = params.customHtml
       .replace(/\{\{first_name\}\}/g, params.firstName || "there")
-      .replace(/\{\{signup_url\}\}/g, signupUrl);
+      .replace(/\{\{signup_url\}\}/g, signupUrl)
+      .replace(/\{\{app_url\}\}/g, "https://magicpassplus.com/dashboard")
+      .replace(/\{\{beta_link\}\}/g, betaLink)
+      .replace(/\{\{vip_link\}\}/g, vipLink)
+      .replace(/\{\{free_month_link\}\}/g, freeMonthLink);
   } else {
     html = `<!DOCTYPE html>
 <html>
@@ -45,19 +53,6 @@ async function sendVIPInviteEmail(params: {
       <p style="color:#9CA3AF;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
         You've been personally invited by Brandon to join Magic Pass Plus as a <strong style="color:#F5C842;">VIP Member — Free Forever</strong>. No credit card required, ever.
       </p>
-      <div style="background:#0D1230;border:1px solid rgba(245,200,66,0.3);border-radius:12px;padding:20px;margin-bottom:24px;">
-        <p style="color:#F5C842;font-size:13px;font-weight:bold;margin:0 0 8px 0;">YOUR VIP INCLUDES:</p>
-        <ul style="color:#F9FAFB;font-size:13px;margin:0;padding-left:20px;line-height:2;">
-          <li>AI Trip Planner & full itinerary builder</li>
-          <li>Live wait times & in-park optimizer</li>
-          <li>Disney Gift Card deal tracker</li>
-          <li>Dining reservation alerts</li>
-          <li>Annual Passholder Command Center</li>
-          <li>Fireworks ride timing calculator</li>
-          <li>Group coordinator & AP Meetup Beacon</li>
-          <li><strong style="color:#F5C842;">Free forever — no billing, ever</strong></li>
-        </ul>
-      </div>
       <a href="${signupUrl}" style="display:block;background:#F5C842;color:#080E1E;text-decoration:none;padding:16px;border-radius:10px;font-size:16px;font-weight:bold;text-align:center;margin-bottom:16px;">
         🏰 Claim Your Free VIP Account →
       </a>
@@ -73,6 +68,14 @@ async function sendVIPInviteEmail(params: {
 </html>`;
   }
 
+  // Determine subject based on type
+  let subject = "🏰 You're invited — Free VIP access to Magic Pass Plus";
+  if (params.enrollType === "beta_tester") {
+    subject = "🧪 You're invited to beta test Magic Pass Plus";
+  } else if (params.enrollType === "free_month") {
+    subject = "🎉 You've got one free month of Magic Pass Plus!";
+  }
+
   try {
     const resp = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -83,7 +86,7 @@ async function sendVIPInviteEmail(params: {
       body: JSON.stringify({
         sender: { name: "Magic Pass Plus", email: "alerts@magicpassplus.com" },
         to: [{ email: params.toEmail, name: params.firstName }],
-        subject: "🏰 You're invited — Free VIP access to Magic Pass Plus",
+        subject,
         htmlContent: html,
       }),
     });
@@ -103,7 +106,76 @@ serve(async (req) => {
   );
 
   try {
-    // Verify admin
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action") || "list";
+
+    // ── ACCEPT TOKEN (unauthenticated) ────────────────────
+    if (action === "accept-token" && req.method === "POST") {
+      const { enroll_token } = await req.json();
+      if (!enroll_token) throw new Error("enroll_token required");
+
+      // Look up the VIP record by enroll token
+      const { data: vip, error: vipErr } = await supabase
+        .from("vip_accounts")
+        .select("*")
+        .eq("enroll_token", enroll_token)
+        .single();
+
+      if (vipErr || !vip) {
+        return new Response(JSON.stringify({ error: "Invalid or expired enrollment token" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+        });
+      }
+
+      // Determine period end and stripe customer ID based on enroll type
+      const enrollType = vip.enroll_type || "vip";
+      let periodEnd: string;
+      let stripeCustomerId: string;
+
+      if (enrollType === "free_month") {
+        periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        stripeCustomerId = "free_month_trial";
+      } else if (enrollType === "beta_tester") {
+        periodEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        stripeCustomerId = "beta_tester";
+      } else {
+        periodEnd = new Date("2099-12-31").toISOString();
+        stripeCustomerId = "vip_free_forever";
+      }
+
+      // Find the user by email
+      const { data: existingUsers } = await supabase.auth.admin.listUsers();
+      const existingUser = existingUsers?.users?.find(u => u.email === vip.email?.toLowerCase().trim());
+
+      if (existingUser) {
+        // Grant subscription
+        await supabase.from("subscriptions").upsert({
+          user_id: existingUser.id,
+          stripe_customer_id: stripeCustomerId,
+          stripe_subscription_id: `${enrollType}_${existingUser.id}`,
+          plan_name: "magic_pass_plus",
+          plan_interval: "monthly",
+          status: "active",
+          trial_end: null,
+          current_period_end: periodEnd,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "user_id" });
+
+        // Update VIP record
+        await supabase.from("vip_accounts").update({
+          user_id: existingUser.id,
+          status: "active",
+          invite_accepted_at: new Date().toISOString(),
+          enroll_token: null, // Single-use — clear it
+        }).eq("id", vip.id);
+      }
+
+      return new Response(JSON.stringify({ success: true, type: enrollType }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
+    // ── All other actions require admin auth ──────────────
     const authHeader = req.headers.get("x-client-authorization") ?? req.headers.get("Authorization");
     if (!authHeader) throw new Error("Unauthorized");
     const token = authHeader.replace(/^Bearer\s+/i, "").trim();
@@ -111,9 +183,6 @@ serve(async (req) => {
     if (!userData.user || !ADMIN_EMAILS.includes(userData.user.email || "")) {
       throw new Error("Admin access required");
     }
-
-    const url = new URL(req.url);
-    const action = url.searchParams.get("action") || "list";
 
     // ── LIST VIP ACCOUNTS ─────────────────────────────────
     if (action === "list") {
@@ -132,7 +201,7 @@ serve(async (req) => {
       const { email, first_name, last_name, reason, notes, type: inviteType, custom_html, template_name } = await req.json();
       if (!email) throw new Error("Email required");
 
-      const accountType = inviteType === "beta_tester" ? "beta_tester" : "vip";
+      const accountType = inviteType === "beta_tester" ? "beta_tester" : inviteType === "free_month" ? "free_month" : "vip";
 
       // Check if already active — skip re-sending email
       const { data: existingVip } = await supabase
@@ -147,8 +216,9 @@ serve(async (req) => {
         });
       }
 
-      // Generate invite token
+      // Generate tokens
       const inviteToken = crypto.randomUUID().replace(/-/g, "");
+      const enrollToken = crypto.randomUUID();
 
       // Create VIP record
       const { data: vip, error } = await supabase
@@ -157,12 +227,14 @@ serve(async (req) => {
           email: email.toLowerCase().trim(),
           first_name: first_name || "",
           last_name: last_name || "",
-          reason: reason || (accountType === "beta_tester" ? "Beta tester invite" : "VIP invite"),
+          reason: reason || (accountType === "beta_tester" ? "Beta tester invite" : accountType === "free_month" ? "Free month invite" : "VIP invite"),
           notes: notes ? `${notes}${template_name ? ` [template: ${template_name}]` : ""}` : (template_name ? `[template: ${template_name}]` : ""),
           invited_by: userData.user.id,
           invite_sent_at: new Date().toISOString(),
           status: "invited",
           type: accountType,
+          enroll_token: enrollToken,
+          enroll_type: accountType,
           updated_at: new Date().toISOString(),
         }, { onConflict: "email" })
         .select()
@@ -177,21 +249,30 @@ serve(async (req) => {
         reason: reason || "",
         inviteToken,
         customHtml: custom_html,
+        enrollToken,
+        enrollType: accountType,
       });
 
       // Calculate expiration based on type
-      const periodEnd = accountType === "beta_tester"
-        ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-        : new Date("2099-12-31").toISOString();
+      let periodEnd: string;
+      let stripeCustomerId: string;
 
-      const stripeCustomerId = accountType === "beta_tester" ? "beta_tester" : "vip_free_forever";
+      if (accountType === "free_month") {
+        periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        stripeCustomerId = "free_month_trial";
+      } else if (accountType === "beta_tester") {
+        periodEnd = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+        stripeCustomerId = "beta_tester";
+      } else {
+        periodEnd = new Date("2099-12-31").toISOString();
+        stripeCustomerId = "vip_free_forever";
+      }
 
-      // Create/update their Supabase auth account with free subscription
+      // If user already exists, grant them subscription immediately
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find(u => u.email === email.toLowerCase().trim());
 
       if (existingUser) {
-        // Grant them subscription
         await supabase.from("subscriptions").upsert({
           user_id: existingUser.id,
           stripe_customer_id: stripeCustomerId,
@@ -204,11 +285,11 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
 
-        // Update VIP record with user_id
         await supabase.from("vip_accounts").update({
           user_id: existingUser.id,
           status: "active",
           invite_accepted_at: new Date().toISOString(),
+          enroll_token: null,
         }).eq("email", email.toLowerCase().trim());
       }
 
@@ -219,9 +300,8 @@ serve(async (req) => {
 
     // ── REVOKE VIP ────────────────────────────────────────
     if (action === "revoke" && req.method === "POST") {
-      const { vip_id, email } = await req.json();
+      const { vip_id } = await req.json();
 
-      // Get the VIP record
       const { data: vip } = await supabase
         .from("vip_accounts")
         .select("*")
@@ -229,14 +309,12 @@ serve(async (req) => {
         .single();
 
       if (vip?.user_id) {
-        // Remove their subscription
         await supabase.from("subscriptions")
           .delete()
           .eq("user_id", vip.user_id)
           .eq("stripe_subscription_id", `vip_${vip.user_id}`);
       }
 
-      // Mark as revoked
       await supabase.from("vip_accounts")
         .update({ status: "revoked", updated_at: new Date().toISOString() })
         .eq("id", vip_id);
@@ -257,16 +335,13 @@ serve(async (req) => {
         .single();
 
       if (vip?.user_id) {
-        // Remove subscription
         await supabase.from("subscriptions")
           .delete()
           .eq("user_id", vip.user_id)
           .eq("stripe_subscription_id", `vip_${vip.user_id}`);
-        // Delete user account entirely
         await supabase.auth.admin.deleteUser(vip.user_id);
       }
 
-      // Remove VIP record
       await supabase.from("vip_accounts").delete().eq("id", vip_id);
 
       return new Response(JSON.stringify({ success: true }), {
