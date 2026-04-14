@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 const CATEGORIES = ["Budget-Friendly", "Family Suites", "Close to Parks"];
@@ -95,19 +95,17 @@ export default function CuratedHotels() {
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
 
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
-      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+    <AdminLayout>
+    <div>
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b border-border/50">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-2">
             <Hotel className="w-5 h-5 text-primary" />
             <h1 className="text-xl font-bold text-foreground">Curated Hotels</h1>
           </div>
-          <div className="flex gap-2">
-            <a href="/admin/command-center" className="text-xs text-primary hover:underline">← Command Center</a>
-            <Button size="sm" onClick={() => { setEditingId(null); setFormData({ name: "", price_range: "", distance_miles: 0, amenities: [], best_for: "", category: "Budget-Friendly", default_target_price: 100, booking_search_url: "", is_active: true }); setShowForm(true); }}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> Add Hotel
-            </Button>
-          </div>
+          <Button size="sm" onClick={() => { setEditingId(null); setFormData({ name: "", price_range: "", distance_miles: 0, amenities: [], best_for: "", category: "Budget-Friendly", default_target_price: 100, booking_search_url: "", is_active: true }); setShowForm(true); }}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> Add Hotel
+          </Button>
         </div>
       </div>
 
@@ -177,5 +175,6 @@ export default function CuratedHotels() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
