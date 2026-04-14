@@ -47,7 +47,7 @@ export default function EarlyAccessLeads() {
 
   // Send email state
   const [showSendEmail, setShowSendEmail] = useState(false);
-  const [sendTemplate, setSendTemplate] = useState<"beta_welcome" | "beta_update">("beta_welcome");
+  const [sendTemplate, setSendTemplate] = useState<string>("beta_welcome");
   const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set());
   const [sendingEmails, setSendingEmails] = useState(false);
   const [sendProgress, setSendProgress] = useState(0);
@@ -378,13 +378,15 @@ export default function EarlyAccessLeads() {
               <Send className="w-4 h-4 text-blue-400" /> Send Email to Selected Leads
             </p>
             <div className="flex items-center gap-3 flex-wrap">
-              <Select value={sendTemplate} onValueChange={(v) => setSendTemplate(v as "beta_welcome" | "beta_update")}>
-                <SelectTrigger className="w-[200px] bg-[#0c1225] border-white/10">
+              <Select value={sendTemplate} onValueChange={(v) => setSendTemplate(v)}>
+                <SelectTrigger className="w-[200px] bg-muted/30 border-border/50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="beta_welcome">🧪 Beta Welcome</SelectItem>
                   <SelectItem value="beta_update">📢 Beta Update</SelectItem>
+                  <SelectItem value="vip_invite">🎁 VIP Invite</SelectItem>
+                  <SelectItem value="free_month">🎉 One Month Free</SelectItem>
                 </SelectContent>
               </Select>
               <span className="text-xs text-muted-foreground">
@@ -401,7 +403,7 @@ export default function EarlyAccessLeads() {
               </div>
             )}
             <p className="text-xs text-muted-foreground">
-              💡 Edit templates in <a href="/admin" className="text-primary underline">Admin → Email Template Editor</a>. Only active leads with marketing consent will receive emails.
+              💡 Edit templates in <a href="/admin/vip" className="text-primary underline">VIP Invites → Email Template Editor</a>. Only active leads with marketing consent will receive emails.
             </p>
           </div>
         )}
