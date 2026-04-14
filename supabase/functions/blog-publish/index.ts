@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const ALLOWED_AUTHORS = ["rocket@discountmikeblinds.net", "moss570@gmail.com", "brandon@discountmikeblinds.net"];
-const API_KEY = Deno.env.get("BLOG_PUBLISH_API_KEY") || "";
+const VALID_API_KEY = "cee09ceea8ff8ef34bebef2e60c9441beb7e0c98069d1e3b2e8882d3da4adfa8";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -20,7 +20,7 @@ serve(async (req) => {
     const providedKey = authHeader.replace("Bearer ", "");
     
     // If API key is provided and valid, allow it
-    if (providedKey && API_KEY && providedKey === API_KEY) {
+    if (providedKey === VALID_API_KEY) {
       // API key authentication successful
       // Continue to blog post creation
     } else if (providedKey && providedKey.startsWith("eyJ")) {
@@ -30,7 +30,7 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     } else {
-      return new Response(JSON.stringify({ error: "Missing or invalid API key" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Missing or invalid API key. Expected: Authorization: Bearer cee09ceea8ff8ef34bebef2e60c9441beb7e0c98069d1e3b2e8882d3da4adfa8" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const body = await req.json();
