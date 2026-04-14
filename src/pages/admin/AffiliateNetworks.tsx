@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { isFeatureEnabled } from "@/lib/featureFlags";
 import AffiliateNetworkDrawer from "@/components/admin/AffiliateNetworkDrawer";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 const SUPABASE_URL = "https://wknelhrmgspuztehetpa.supabase.co";

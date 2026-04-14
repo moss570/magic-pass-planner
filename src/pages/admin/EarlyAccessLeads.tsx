@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, ArrowLeft, Trash2, Plus, Mail, Send } from "lucide-react";
+import { Shield, Search, Download, Upload, Edit2, Check, X, ChevronUp, ChevronDown, Trash2, Plus, Mail, Send } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 
@@ -297,20 +298,15 @@ export default function EarlyAccessLeads() {
   }
 
   return (
-    <div className="min-h-screen pb-12" style={{ background: "#070b15" }}>
-      {/* Header */}
-      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0c1225" }}>
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Shield className="w-5 h-5 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">📋 Early Access Leads</h1>
-            </div>
-            <p className="text-xs text-muted-foreground">Manage launch signups and beta tester applications</p>
+    <AdminLayout>
+    <div className="pb-12">
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b border-border/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 mb-1">
+            <Shield className="w-5 h-5 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">📋 Early Access Leads</h1>
           </div>
-          <a href="/admin" className="flex items-center gap-1 text-xs text-primary hover:underline">
-            <ArrowLeft className="w-3 h-3" /> Back to Admin
-          </a>
+          <p className="text-xs text-muted-foreground">Manage launch signups and beta tester applications</p>
         </div>
       </div>
 
@@ -543,5 +539,6 @@ export default function EarlyAccessLeads() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }

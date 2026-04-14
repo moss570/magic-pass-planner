@@ -13,6 +13,7 @@ import MerchFormModal from "@/components/admin/MerchFormModal";
 import SnackFormModal from "@/components/admin/SnackFormModal";
 import PhotoPassFormModal from "@/components/admin/PhotoPassFormModal";
 import SpecialEventFormModal from "@/components/admin/SpecialEventFormModal";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net"];
 const PARKS = ["magic-kingdom", "epcot", "hollywood-studios", "animal-kingdom", "typhoon-lagoon", "blizzard-beach"];
@@ -159,8 +160,9 @@ export default function ParkContent() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
-      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+    <AdminLayout>
+    <div>
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b border-border/50">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div>
             <div className="flex items-center gap-2">
@@ -169,7 +171,6 @@ export default function ParkContent() {
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">Manage merchandise, snacks, PhotoPass, special events</p>
           </div>
-          <a href="/admin/command-center" className="text-xs text-primary hover:underline">← Command Center</a>
         </div>
       </div>
 
@@ -220,5 +221,6 @@ export default function ParkContent() {
       {showPhotoModal && <PhotoPassFormModal item={photoModal} onClose={() => setShowPhotoModal(false)} onSaved={() => { setShowPhotoModal(false); loadData("photopass"); }} />}
       {showEventModal && <SpecialEventFormModal item={eventModal} onClose={() => setShowEventModal(false)} onSaved={() => { setShowEventModal(false); loadData("special_events"); }} />}
     </div>
+    </AdminLayout>
   );
 }

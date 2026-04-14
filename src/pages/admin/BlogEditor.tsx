@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FileText, Plus, Save, Eye, Trash2, ArrowLeft } from "lucide-react";
+import { FileText, Plus, Save, Eye, Trash2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 const ADMIN_EMAILS = ["moss570@gmail.com", "brandon@discountmikeblinds.net", "rocket@discountmikeblinds.net"];
 const CATEGORIES = ["general", "dining", "attractions", "planning", "news", "guides"];
@@ -42,12 +43,12 @@ export default function BlogEditor() {
   const loadPosts = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
+      const { data, error } = await (supabase
+        .from("blog_posts" as any)
+        .select("*") as any)
         .order("published_at", { ascending: false, nullsFirst: false });
       if (error) throw error;
-      setPosts(data || []);
+      setPosts((data || []) as BlogPost[]);
     } catch (err) { console.error(err); toast({ title: "Failed to load posts", variant: "destructive" }); }
     finally { setLoading(false); }
   };
@@ -59,16 +60,16 @@ export default function BlogEditor() {
 
     try {
       if (editing) {
-        const { error } = await supabase
-          .from("blog_posts")
-          .update({ ...post, slug, updated_at: new Date().toISOString() })
+        const { error } = await (supabase
+          .from("blog_posts" as any)
+          .update({ ...post, slug, updated_at: new Date().toISOString() }) as any)
           .eq("id", editing.id);
         if (error) throw error;
         toast({ title: "✅ Post updated" });
       } else {
-        const { error } = await supabase
-          .from("blog_posts")
-          .insert([{ ...post, slug, author_email: user?.email }]);
+        const { error } = await (supabase
+          .from("blog_posts" as any)
+          .insert([{ ...post, slug, author_email: user?.email }]) as any);
         if (error) throw error;
         toast({ title: "✅ Post created" });
       }
@@ -81,7 +82,7 @@ export default function BlogEditor() {
   const deletePost = async (id: string) => {
     if (!confirm("Delete this post?")) return;
     try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+      const { error } = await (supabase.from("blog_posts" as any).delete() as any).eq("id", id);
       if (error) throw error;
       toast({ title: "✅ Post deleted" });
       loadPosts();
@@ -90,12 +91,12 @@ export default function BlogEditor() {
 
   const togglePublish = async (post: BlogPost) => {
     try {
-      const { error } = await supabase
-        .from("blog_posts")
+      const { error } = await (supabase
+        .from("blog_posts" as any)
         .update({
           is_published: !post.is_published,
           published_at: !post.is_published ? new Date().toISOString() : null,
-        })
+        }) as any)
         .eq("id", post.id);
       if (error) throw error;
       toast({ title: !post.is_published ? "✅ Published" : "✅ Unpublished" });
@@ -106,19 +107,17 @@ export default function BlogEditor() {
   if (!user || !ADMIN_EMAILS.includes(user.email || "")) return null;
 
   return (
-    <div className="min-h-screen" style={{ background: "#080E1E" }}>
-      <div className="px-4 md:px-8 pt-6 pb-4 border-b" style={{ borderColor: "rgba(245,200,66,0.15)", background: "#0D1230" }}>
+    <AdminLayout>
+    <div>
+      <div className="px-4 md:px-8 pt-6 pb-4 border-b border-border/50">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-primary" />
             <h1 className="text-xl font-bold text-foreground">Blog Editor</h1>
           </div>
-          <div className="flex gap-2">
-            <a href="/admin/command-center" className="text-xs text-primary hover:underline">← Command Center</a>
-            <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }}>
-              <Plus className="w-3.5 h-3.5 mr-1" /> New Post
-            </Button>
-          </div>
+          <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }}>
+            <Plus className="w-3.5 h-3.5 mr-1" /> New Post
+          </Button>
         </div>
       </div>
 
@@ -158,6 +157,7 @@ export default function BlogEditor() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
 

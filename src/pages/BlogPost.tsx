@@ -23,14 +23,14 @@ export default function BlogPost() {
   useEffect(() => {
     const loadPost = async () => {
       try {
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select("*")
+        const { data, error } = await (supabase
+          .from("blog_posts" as any)
+          .select("*") as any)
           .eq("slug", slug)
           .eq("is_published", true)
           .single();
         if (error || !data) { navigate("/blog"); return; }
-        setPost(data);
+        setPost(data as BlogPost);
       } catch (err) { console.error(err); navigate("/blog"); }
       finally { setLoading(false); }
     };

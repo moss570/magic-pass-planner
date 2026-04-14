@@ -23,12 +23,12 @@ export default function Blog() {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const { data } = await supabase
-          .from("blog_posts")
-          .select("id, title, slug, excerpt, category, featured_image_url, published_at")
+        const { data } = await (supabase
+          .from("blog_posts" as any)
+          .select("id, title, slug, excerpt, category, featured_image_url, published_at") as any)
           .eq("is_published", true)
           .order("published_at", { ascending: false });
-        setPosts(data || []);
+        setPosts((data || []) as BlogPost[]);
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
