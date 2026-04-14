@@ -25,8 +25,19 @@ serve(async (req) => {
     const { data: network, error } = await supabase.from("affiliate_networks").select("*").eq("id", networkId).single();
     if (error || !network) throw new Error("Network not found");
 
-    // Attempt a safe GET to the base_url or a known health endpoint
-    let testUrl = network.base_url || network.deeplink_template?.split("?")[0] || "";
+    // Extract testable URL from deeplink_template or base_url
+    // For Klook, the base_url is a redirect endpoint, so use the template domain instead
+    let testUrl = "";
+    
+    if (network.deeplink_template) {
+      // Extract domain from deeplink template (e.g., https://affiliate.klook.com/redirect?...)
+      const templateUrl = new URL(network.deeplink_template.split("?")[0]);
+      // Test the affiliate API domain itself with a HEAD request
+      testUrl = `${templateUrl.protocol}//${templateUrl.hostname}`;
+    } else if (network.base_url) {
+      testUrl = network.base_url;
+    }
+    
     if (!testUrl) {
       await supabase.from("affiliate_networks").update({
         last_test_status: "failed", last_test_at: new Date().toISOString(),
@@ -38,16 +49,22 @@ serve(async (req) => {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 10000);
+      
+      // Use HEAD request for faster, lighter testing (Klook affiliate domain check)
       const resp = await fetch(testUrl, {
-        method: "GET",
+        method: "HEAD",
         signal: controller.signal,
-        redirect: "follow",  // ✅ FIX #1: Follow redirects (e.g., Klook deeplinks)
-        headers: network.api_key_enc ? { "Authorization": `Bearer ${network.api_key_enc}` } : {},
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (MagicPassPlus-AffiliateTest)",
+          ...(network.api_key_enc ? { "Authorization": `Bearer ${network.api_key_enc}` } : {}),
+        },
       });
       clearTimeout(timeout);
 
       const status = resp.ok ? "success" : "failed";
-      const preview = await resp.text().then(t => t.slice(0, 500));
+      // HEAD requests don't have body, so skip text parsing
+      const preview = `${resp.status} ${resp.statusText} from ${testUrl}`;
 
       await supabase.from("affiliate_networks").update({
         last_test_status: status,
