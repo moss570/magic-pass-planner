@@ -67,13 +67,35 @@ export default function AffiliateNetworks() {
         method: "POST", headers: getHeaders(),
         body: JSON.stringify({ networkId: id }),
       });
+      
+      // ✅ Handle both success and error response codes
+      if (!resp.ok) {
+        toast({ title: `⚠️ HTTP ${resp.status} — Check network auth`, variant: "destructive" });
+        setTestingId(null);
+        return;
+      }
+      
       const data = await resp.json();
+      
       setNetworks(prev => prev.map(n => n.id === id ? {
         ...n, last_test_status: data.status, last_test_at: new Date().toISOString(),
         last_test_error: data.error || null,
       } : n));
-      toast({ title: data.status === "success" ? "✅ Connection successful" : `❌ Test failed: ${data.error}` });
-    } catch { toast({ title: "Test failed", variant: "destructive" }); }
+      
+      // ✅ Enhanced message with redirect info
+      if (data.status === "success") {
+        const msg = data.finalUrl && data.finalUrl !== data.baseUrl 
+          ? `✅ Connected (redirected to ${new URL(data.finalUrl).hostname})`
+          : "✅ Connection successful";
+        toast({ title: msg });
+      } else if (data.isTimeout) {
+        toast({ title: `⏱️ ${data.error || "Timeout"}`, variant: "destructive" });
+      } else {
+        toast({ title: `❌ ${data.error || "Connection failed"}`, variant: "destructive" });
+      }
+    } catch (err) { 
+      toast({ title: `Network error: ${err instanceof Error ? err.message : "Unknown"}`, variant: "destructive" }); 
+    }
     finally { setTestingId(null); }
   };
 
