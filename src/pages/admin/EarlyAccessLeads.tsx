@@ -203,12 +203,13 @@ export default function EarlyAccessLeads() {
       toast({ title: "No eligible leads selected", description: "Leads must be active with marketing consent", variant: "destructive" });
       return;
     }
-    if (!confirm(`Send "${sendTemplate === "beta_welcome" ? "Beta Welcome" : "Beta Update"}" email to ${targets.length} leads?`)) return;
+    if (!confirm(`Send "${sendTemplate}" email to ${targets.length} leads?`)) return;
 
     setSendingEmails(true);
     setSendProgress(0);
     const token = (await supabase.auth.getSession()).data.session?.access_token;
-    const templateHtml = localStorage.getItem(sendTemplate === "beta_welcome" ? "beta_welcome_template" : "beta_update_template");
+    const storageKeyMap: Record<string, string> = { vip_invite: "vip_email_template", beta_welcome: "beta_welcome_template", beta_update: "beta_update_template", free_month: "free_month_template" };
+    const templateHtml = localStorage.getItem(storageKeyMap[sendTemplate] || sendTemplate);
 
     let sent = 0, failed = 0;
     for (let i = 0; i < targets.length; i++) {
@@ -225,7 +226,7 @@ export default function EarlyAccessLeads() {
           body: JSON.stringify({
             email: lead.email,
             first_name: lead.first_name || "Disney Fan",
-            type: "beta_tester",
+            type: sendTemplate === "vip_invite" ? "vip" : sendTemplate === "free_month" ? "free_month" : "beta_tester",
             reason: "Beta tester from early access list",
             template_name: sendTemplate,
             custom_html: templateHtml || undefined,
