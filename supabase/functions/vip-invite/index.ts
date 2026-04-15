@@ -288,7 +288,7 @@ serve(async (req) => {
       if (error) throw error;
 
       // Send invite email
-      const emailSent = await sendVIPInviteEmail({
+      const emailResult = await sendVIPInviteEmail({
         toEmail: email,
         firstName: first_name || "Disney Fan",
         reason: reason || "",
@@ -297,6 +297,12 @@ serve(async (req) => {
         enrollToken,
         enrollType: accountType,
       });
+      const emailSent = !!emailResult;
+
+      // Store Brevo messageId for open tracking
+      if (emailResult && typeof emailResult === "string") {
+        await supabase.from("vip_accounts").update({ brevo_message_id: emailResult }).eq("email", email.toLowerCase().trim());
+      }
 
       // Calculate expiration based on type
       let periodEnd: string;
