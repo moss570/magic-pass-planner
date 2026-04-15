@@ -111,9 +111,16 @@ async function sendVIPInviteEmail(params: {
         to: [{ email: params.toEmail, name: params.firstName }],
         subject,
         htmlContent: html,
+        headers: {
+          "X-Mailin-Tag": "vip-invite",
+        },
       }),
     });
-    return resp.ok;
+    if (resp.ok) {
+      const data = await resp.json();
+      return data?.messageId || true;
+    }
+    return false;
   } catch {
     return false;
   }
