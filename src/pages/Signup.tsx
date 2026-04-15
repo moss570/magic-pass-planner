@@ -38,6 +38,12 @@ const Signup = () => {
     if (enrollToken) {
       localStorage.setItem("mpp:pending-enroll", enrollToken);
       localStorage.setItem("mpp:pending-enroll-type", enrollType);
+      // Fire-and-forget click tracking
+      fetch(`${SUPABASE_URL}/functions/v1/vip-invite?action=track-click`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enroll_token: enrollToken }),
+      }).catch(() => {});
     }
   }, [inviteToken, enrollToken, enrollType]);
 

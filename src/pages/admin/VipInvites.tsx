@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Gift, Upload, Mail, Code, Eye, RotateCcw, RefreshCw, Plus, Copy, Pencil, Trash2 } from "lucide-react";
+import { Gift, Upload, Mail, Code, Eye, RotateCcw, RefreshCw, Plus, Copy, Pencil, Trash2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";

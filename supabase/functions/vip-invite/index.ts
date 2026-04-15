@@ -132,6 +132,21 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get("action") || "list";
 
+    // ── TRACK CLICK (unauthenticated, fire-and-forget) ───
+    if (action === "track-click" && req.method === "POST") {
+      const { enroll_token } = await req.json();
+      if (enroll_token) {
+        await supabase
+          .from("vip_accounts")
+          .update({ link_clicked_at: new Date().toISOString() })
+          .eq("enroll_token", enroll_token)
+          .is("link_clicked_at", null);
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     // ── ACCEPT TOKEN (unauthenticated) ────────────────────
     if (action === "accept-token" && req.method === "POST") {
       const { enroll_token } = await req.json();
