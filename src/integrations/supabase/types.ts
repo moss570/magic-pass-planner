@@ -3842,8 +3842,10 @@ export type Database = {
       }
       vip_accounts: {
         Row: {
+          brevo_message_id: string | null
           created_at: string | null
           email: string
+          email_opened_at: string | null
           enroll_token: string | null
           enroll_type: string | null
           first_name: string | null
@@ -3862,8 +3864,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          brevo_message_id?: string | null
           created_at?: string | null
           email: string
+          email_opened_at?: string | null
           enroll_token?: string | null
           enroll_type?: string | null
           first_name?: string | null
@@ -3882,8 +3886,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          brevo_message_id?: string | null
           created_at?: string | null
           email?: string
+          email_opened_at?: string | null
           enroll_token?: string | null
           enroll_type?: string | null
           first_name?: string | null
