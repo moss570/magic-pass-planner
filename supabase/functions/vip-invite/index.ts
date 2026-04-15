@@ -111,9 +111,16 @@ async function sendVIPInviteEmail(params: {
         to: [{ email: params.toEmail, name: params.firstName }],
         subject,
         htmlContent: html,
+        headers: {
+          "X-Mailin-Tag": "vip-invite",
+        },
       }),
     });
-    return resp.ok;
+    if (resp.ok) {
+      const data = await resp.json();
+      return data?.messageId || true;
+    }
+    return false;
   } catch {
     return false;
   }
@@ -141,6 +148,26 @@ serve(async (req) => {
           .update({ link_clicked_at: new Date().toISOString() })
           .eq("enroll_token", enroll_token)
           .is("link_clicked_at", null);
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
+    // ── BREVO WEBHOOK — open tracking (unauthenticated) ──
+    if (action === "brevo-webhook" && req.method === "POST") {
+      const payload = await req.json();
+      // Brevo sends { event: "opened", "message-id": "<id>" } or array of events
+      const events = Array.isArray(payload) ? payload : [payload];
+      for (const evt of events) {
+        if (evt.event === "opened" && evt["message-id"]) {
+          const msgId = `<${evt["message-id"]}>`;
+          await supabase
+            .from("vip_accounts")
+            .update({ email_opened_at: new Date().toISOString() })
+            .eq("brevo_message_id", msgId)
+            .is("email_opened_at", null);
+        }
       }
       return new Response(JSON.stringify({ ok: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
@@ -281,7 +308,7 @@ serve(async (req) => {
       if (error) throw error;
 
       // Send invite email
-      const emailSent = await sendVIPInviteEmail({
+      const emailResult = await sendVIPInviteEmail({
         toEmail: email,
         firstName: first_name || "Disney Fan",
         reason: reason || "",
@@ -290,6 +317,12 @@ serve(async (req) => {
         enrollToken,
         enrollType: accountType,
       });
+      const emailSent = !!emailResult;
+
+      // Store Brevo messageId for open tracking
+      if (emailResult && typeof emailResult === "string") {
+        await supabase.from("vip_accounts").update({ brevo_message_id: emailResult }).eq("email", email.toLowerCase().trim());
+      }
 
       // Calculate expiration based on type
       let periodEnd: string;

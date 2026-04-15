@@ -217,9 +217,11 @@ export default function VipInvites() {
         {/* Invite Funnel */}
         {(() => {
           const sent = vips.filter(v => v.invite_sent_at).length;
+          const opened = vips.filter(v => v.email_opened_at).length;
           const clicked = vips.filter(v => v.link_clicked_at).length;
           const signedUp = vips.filter(v => v.invite_accepted_at).length;
-          const clickRate = sent > 0 ? Math.round((clicked / sent) * 100) : 0;
+          const openRate = sent > 0 ? Math.round((opened / sent) * 100) : 0;
+          const clickRate = opened > 0 ? Math.round((clicked / opened) * 100) : 0;
           const signupRate = clicked > 0 ? Math.round((signedUp / clicked) * 100) : 0;
           return (
             <div className="rounded-xl p-4 border border-border/50 bg-card">
@@ -228,6 +230,14 @@ export default function VipInvites() {
                 <div className="text-center flex-1">
                   <p className="text-2xl font-bold text-foreground">{sent}</p>
                   <p className="text-xs text-muted-foreground">Sent</p>
+                </div>
+                <div className="text-center shrink-0">
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs text-primary font-medium">{openRate}%</p>
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-foreground">{opened}</p>
+                  <p className="text-xs text-muted-foreground">Opened</p>
                 </div>
                 <div className="text-center shrink-0">
                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
