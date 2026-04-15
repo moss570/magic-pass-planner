@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Gift, Upload, Mail, Code, Eye, RotateCcw, RefreshCw, Plus, Copy, Pencil, Trash2 } from "lucide-react";
+import { Gift, Upload, Mail, Code, Eye, RotateCcw, RefreshCw, Plus, Copy, Pencil, Trash2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -213,6 +213,42 @@ export default function VipInvites() {
     <AdminLayout>
       <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto space-y-6">
         <h1 className="text-xl font-bold text-foreground flex items-center gap-2"><Gift className="w-5 h-5 text-primary" /> VIP Invites & Email Templates</h1>
+
+        {/* Invite Funnel */}
+        {(() => {
+          const sent = vips.filter(v => v.invite_sent_at).length;
+          const clicked = vips.filter(v => v.link_clicked_at).length;
+          const signedUp = vips.filter(v => v.invite_accepted_at).length;
+          const clickRate = sent > 0 ? Math.round((clicked / sent) * 100) : 0;
+          const signupRate = clicked > 0 ? Math.round((signedUp / clicked) * 100) : 0;
+          return (
+            <div className="rounded-xl p-4 border border-border/50 bg-card">
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3">Invite Funnel</h2>
+              <div className="flex items-center justify-center gap-2 md:gap-4">
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-foreground">{sent}</p>
+                  <p className="text-xs text-muted-foreground">Sent</p>
+                </div>
+                <div className="text-center shrink-0">
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs text-primary font-medium">{clickRate}%</p>
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-foreground">{clicked}</p>
+                  <p className="text-xs text-muted-foreground">Clicked</p>
+                </div>
+                <div className="text-center shrink-0">
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs text-primary font-medium">{signupRate}%</p>
+                </div>
+                <div className="text-center flex-1">
+                  <p className="text-2xl font-bold text-foreground">{signedUp}</p>
+                  <p className="text-xs text-muted-foreground">Signed Up</p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Invite Form */}
         <div className="rounded-xl p-5 border border-border/50 bg-card">

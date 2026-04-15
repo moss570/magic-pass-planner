@@ -3853,6 +3853,7 @@ export type Database = {
           invited_by: string | null
           is_game_developer: boolean | null
           last_name: string | null
+          link_clicked_at: string | null
           notes: string | null
           reason: string | null
           status: string | null
@@ -3872,6 +3873,7 @@ export type Database = {
           invited_by?: string | null
           is_game_developer?: boolean | null
           last_name?: string | null
+          link_clicked_at?: string | null
           notes?: string | null
           reason?: string | null
           status?: string | null
@@ -3891,6 +3893,7 @@ export type Database = {
           invited_by?: string | null
           is_game_developer?: boolean | null
           last_name?: string | null
+          link_clicked_at?: string | null
           notes?: string | null
           reason?: string | null
           status?: string | null
