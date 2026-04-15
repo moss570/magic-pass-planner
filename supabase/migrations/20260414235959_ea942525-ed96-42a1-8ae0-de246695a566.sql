@@ -1,0 +1,1 @@
+ALTER TABLE public.vip_accounts ADD COLUMN link_clicked_at timestamptz;
