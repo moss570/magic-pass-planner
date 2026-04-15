@@ -154,6 +154,26 @@ serve(async (req) => {
       });
     }
 
+    // ── BREVO WEBHOOK — open tracking (unauthenticated) ──
+    if (action === "brevo-webhook" && req.method === "POST") {
+      const payload = await req.json();
+      // Brevo sends { event: "opened", "message-id": "<id>" } or array of events
+      const events = Array.isArray(payload) ? payload : [payload];
+      for (const evt of events) {
+        if (evt.event === "opened" && evt["message-id"]) {
+          const msgId = `<${evt["message-id"]}>`;
+          await supabase
+            .from("vip_accounts")
+            .update({ email_opened_at: new Date().toISOString() })
+            .eq("brevo_message_id", msgId)
+            .is("email_opened_at", null);
+        }
+      }
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
+      });
+    }
+
     // ── ACCEPT TOKEN (unauthenticated) ────────────────────
     if (action === "accept-token" && req.method === "POST") {
       const { enroll_token } = await req.json();
